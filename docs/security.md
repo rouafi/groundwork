@@ -11,7 +11,7 @@
 
 ## LLM guardrails
 - Untrusted input: CRM fields, emails and transcripts are passed as data inside clearly delimited blocks, never as instructions.
-- Least privilege: MCP tools are read-only except `submit_for_approval`.
+- Least privilege: every MCP tool is read-only. Side effects (send, queue for approval) happen only in the policy engine, outside the model's control (ADR 0004).
 - Side effects: external emails always go to `ApprovalPort`; internal auto-send only for packs whose evals pass thresholds.
 - Output validation: strict output schema, then `check_claims`; a false claim blocks the email.
 - Limits: max agent steps, max tokens and timeouts per run.

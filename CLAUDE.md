@@ -13,7 +13,8 @@ An FDE deployment kit: a reusable core, domain packs and client packs, demonstra
 8. Every change ships with tests. Every architecture decision ships with an ADR in `docs/adr/`.
 
 ## Workflow
-- Non-trivial change: write a short plan first, then implement in small steps.
+- Implementing a feature: open its PRD in `docs/prd/` (index in `docs/prd/README.md`), restate the plan and the commit list, wait for approval, then follow the PRD's commit plan and acceptance criteria. Never widen its scope.
+- Other non-trivial change: write a short plan first, then implement in small steps.
 - One logical change per commit, Conventional Commits (see docs/conventions.md).
 - Run `make check` before committing. Fix the cause, never bypass hooks (`--no-verify` is forbidden).
 
@@ -33,6 +34,7 @@ An FDE deployment kit: a reusable core, domain packs and client packs, demonstra
 | Secrets, data, LLM guardrails, side effects | docs/security.md |
 | Commits, branches, PRs, tests, definition of done | docs/conventions.md |
 | Client onboarding, packs, discovery | docs/playbook.md |
+| Building a feature | the matching PRD in docs/prd/ (read the index first) |
 | Why something is the way it is | docs/adr/ |
 
 ## Definition of done
