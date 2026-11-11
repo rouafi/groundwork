@@ -23,8 +23,10 @@ Out: real `HubSpotCrm` adapter (optional, later), write operations, pagination, 
 
 **Errors** in `core/domain/errors.py`: `NotFoundError(kind, id)`, `PackError(message)`.
 
-**Port** in `core/ports/crm.py` (Protocol): `get_contact(id)`, `get_company(id)`, `get_deals(contact_id)`, `get_products(ids)`, `list_contact_ids()`.
-Contract: unknown id raises `NotFoundError`; `get_deals` returns `[]` when none; `get_products` keeps input order and raises if any id is missing; no method mutates state.
+**Port** in `core/ports/crm.py` (Protocol): `get_contact(id)`, `get_company(id)`, `get_deal(id)`, `get_deals(contact_id)`, `get_products(ids)`, `list_contact_ids()`, `list_company_ids()`, `list_deal_ids()`, `list_product_ids()`. Collections are returned as tuples.
+Contract: unknown id raises `NotFoundError`; `get_deals` returns `()` when none; `get_products` keeps input order and raises if any id is missing; every listed id can be fetched; no method mutates state.
+
+**Integrity** in `core/services/integrity.py`: `check_integrity(crm: CrmPort, domain: DomainPack) -> tuple[IntegrityIssue, ...]`. Works through the port only: dangling references (deal to contact, contact to company, deal to products) and segments and personas outside the domain vocabulary. The same check runs on fixtures in CI and, later, on a live CRM from a manual command (CI never calls a real CRM).
 
 **Pack config**: `PackConfig` gains a required `domain: str`. A pack now selects `crm`, `messaging`, `vector_store`, `model`, `domain`. Update the existing unit test.
 
@@ -43,7 +45,7 @@ Contract: unknown id raises `NotFoundError`; `get_deals` returns `[]` when none;
 
 ## Acceptance criteria
 1. `groundwork validate-packs` reports 2 packs checked, 0 invalid.
-2. A dangling reference in a fixture (for example a deal pointing to a missing contact) makes `validate-packs` exit 1 with a message naming the file and the id. Covered by a test.
+2. A dangling reference in a fixture (for example a deal pointing to a missing contact) makes `validate-packs` exit 1 with a message naming the pack, the object kind, its id and the missing reference (for example `client_packs/acme: deal d_3 references missing contact c_99`). Covered by a test.
 3. The `CrmPort` contract suite is written against the port only (parametrized fixture) and passes for `FixtureCrm` on both packs, so a second adapter can reuse it unchanged.
 4. import-linter is green; `core/domain` imports nothing from ports or adapters.
 5. `client_packs/` contains only JSON, YAML and Markdown.
@@ -63,3 +65,6 @@ Unit: model validation (frozen, extra forbidden, Decimal), mapping functions inc
 
 ## Risks and open questions
 Keep the HubSpot shape faithful enough that a real adapter only changes the transport. If a simplification above blocks that, amend this PRD and note it.
+
+## Amendments
+- **Port widened with `get_deal` and `list_{company,deal,product}_ids`; integrity moved to the core.** With only `list_contact_ids`, deals are reachable only through existing contacts, so a deal pointing to a missing contact (criterion 2) is invisible through the port. Checking the raw fixture files instead would only work for fixtures, not for a real CRM. Listing every object type keeps the check adapter-agnostic. Criterion 2 now names the pack, kind and id instead of a file, since a real CRM has no file; for a fixture pack the kind maps to its file (`deal` to `deals.json`).
