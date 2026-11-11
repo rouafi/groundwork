@@ -1,0 +1,4 @@
+[
+  {"id": "co_1", "properties": {"name": "Sample Works", "segment": "smb", "country": "FR"}},
+  {"id": "co_2", "properties": {"name": "Sample Group", "segment": "enterprise", "country": "DE"}}
+]

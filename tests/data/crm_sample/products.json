@@ -1,0 +1,4 @@
+[
+  {"id": "p_1", "properties": {"name": "Basic", "description": "Entry plan", "price": "100.00", "currency": "EUR", "allowed_claims": "Setup in one day"}},
+  {"id": "p_2", "properties": {"name": "Pro", "description": "Full plan", "price": "250.50", "currency": "EUR", "allowed_claims": "Setup in one day;99.9% uptime SLA"}}
+]

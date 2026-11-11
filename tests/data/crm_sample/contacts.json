@@ -1,0 +1,5 @@
+[
+  {"id": "c_1", "properties": {"firstname": "Ada", "lastname": "Sample", "email": "ada@example.com", "associatedcompanyid": "co_1", "persona": "economic-buyer"}},
+  {"id": "c_2", "properties": {"firstname": "Bo", "lastname": "Sample", "email": "bo@example.com", "associatedcompanyid": "co_2", "persona": "end-user", "notes": "Prefers short emails."}},
+  {"id": "c_3", "properties": {"firstname": "Cy", "lastname": "Sample", "email": "cy@example.com", "associatedcompanyid": "co_2", "persona": "technical-evaluator"}}
+]
