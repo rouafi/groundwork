@@ -1,0 +1,6 @@
+# acme: synthetic client, B2B analytics software sold to small and mid-sized firms.
+crm: fixture
+messaging: console
+vector_store: lancedb
+model: replay
+domain: comms
