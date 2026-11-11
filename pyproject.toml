@@ -72,6 +72,9 @@ markers = [
 [tool.coverage.run]
 source = ["groundwork.core"]
 
+[tool.coverage.report]
+fail_under = 90
+
 # --- Architecture rules (enforced in pre-commit and CI) ---------------------
 [tool.importlinter]
 root_package = "groundwork"

@@ -11,4 +11,6 @@
 - [ ] Commits follow Conventional Commits and each one stands on its own
 - [ ] No secrets, no real customer data
 - [ ] Docs updated (README, docs/*.md); ADR added if an architecture decision changed
-- [ ] Reviewed with the `code-reviewer` agent
+
+## Outcome vs PRD
+Paste the `fde-reviewer` criteria table from `/verify`.

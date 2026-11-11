@@ -22,9 +22,12 @@ Dependencies point inward. `core` never imports `adapters` or `entrypoints` (imp
 | VectorStorePort | Index and search know-how | lancedb |
 | EmbeddingPort | Embed text | voyage |
 | OntologyStorePort | Read and write the graph | file (JSON + networkx) |
-| ModelPort | Call Claude | claude, replay |
+| ModelPort | Single-shot Claude calls (extraction, judge, contextual chunking) | claude, replay |
+| AgentPort | Run the drafting agent with read-only tools | claude (see ADR 0005), replay |
 
 Adapters translate vendor formats into domain types. The core never sees HubSpot JSON or SDK objects.
+
+The `model` key in `config.yaml` selects the adapter family (`claude` or `replay`) for ModelPort, AgentPort and EmbeddingPort. Replay serves recorded runs and never falls back to a live call.
 
 ## Configuration
 Each client pack selects its adapters in `client_packs/<client>/config.yaml`. Changing a SaaS is one adapter plus one line of config. Precedence: client > domain > core, through config only.
@@ -34,7 +37,7 @@ Each client pack selects its adapters in `client_packs/<client>/config.yaml`. Ch
 2. Context assembly builds a context pack (CRM facts + applicable rules + know-how passages).
 3. The agent drafts the harmonized email using MCP tools.
 4. `check_claims` verifies every factual claim against the ontology.
-5. Policy routes the result: internal and valid → MessagingPort; external → ApprovalPort; false claim → blocked.
+5. Policy (deterministic code, never the model) routes the result: internal and valid → MessagingPort; external → ApprovalPort; false claim → blocked.
 6. The full run is written to `traces/`.
 
 ## Adding things

@@ -6,7 +6,7 @@ Question answered: can this agent write on behalf of this client's teams? Evals 
 Golden set per client: `client_packs/<client>/golden.jsonl`, about 20 cases.
 
 ```json
-{"id": "acme-007", "contact_id": "c_42", "draft": "...", "must_be_true": ["product:pro-plan"], "forbidden": ["discount promise"], "expected_route": "approval"}
+{"id": "acme-007", "contact_id": "c_042", "channel": "external", "draft": "...", "must_contain": ["49"], "forbidden": ["regex"], "expected_route": "approval", "tags": ["false-claim"]}
 ```
 
 | Scorer | Type | Target |
