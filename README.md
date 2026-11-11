@@ -5,7 +5,9 @@
   </picture>
 </p>
 
-**An FDE deployment kit: ship grounded AI use cases on top of any SaaS, client after client, without starting from zero.**
+<h2 align="center">Grounded AI on top of any SaaS, client after client.</h2>
+
+<p align="center">An FDE deployment kit: one reusable core, a client pack per client, a 5-day playbook to fill it.</p>
 
 Most AI deployments restart from scratch at every client: business facts live in the CRM, the know-how lives in people's heads, there is no shared harness and no evals. POCs work once and never scale.
 
