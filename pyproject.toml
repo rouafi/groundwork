@@ -1,0 +1,90 @@
+[project]
+name = "groundwork"
+version = "0.1.0"
+description = "An FDE deployment kit: ship grounded AI use cases on top of any SaaS, client after client."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Reda Ouafi" }]
+requires-python = ">=3.12"
+dependencies = [
+  "anthropic",
+  "fastapi",
+  "mcp>=2",
+  "pydantic>=2",
+  "pyyaml",
+  "typer",
+  "uvicorn",
+]
+
+[project.scripts]
+groundwork = "groundwork.entrypoints.cli:app"
+
+[dependency-groups]
+dev = [
+  "httpx",
+  "import-linter",
+  "mypy",
+  "pre-commit",
+  "pytest",
+  "pytest-cov",
+  "ruff",
+  "types-PyYAML",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/groundwork"]
+
+# --- Lint & format ---------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# E/F errors, I imports, B bugbear, UP pyupgrade, S security (bandit), N naming, SIM, RUF
+select = ["E", "F", "I", "B", "UP", "S", "N", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+# --- Types -----------------------------------------------------------------
+[tool.mypy]
+strict = true
+python_version = "3.12"
+packages = ["groundwork"]
+mypy_path = "src"
+
+# --- Tests -----------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers -q"
+markers = [
+  "unit: fast, pure, no I/O outside tmp_path",
+  "contract: same suite run against every adapter of a port",
+  "integration: real wiring between components, no paid external API",
+  "live: calls real external APIs (Claude, Voyage, HubSpot); manual only",
+]
+
+[tool.coverage.run]
+source = ["groundwork.core"]
+
+# --- Architecture rules (enforced in pre-commit and CI) ---------------------
+[tool.importlinter]
+root_package = "groundwork"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Core never depends on adapters or entrypoints"
+type = "forbidden"
+source_modules = ["groundwork.core"]
+forbidden_modules = ["groundwork.adapters", "groundwork.entrypoints"]
+
+[[tool.importlinter.contracts]]
+name = "Domain is pure (no ports, no SDKs, no web)"
+type = "forbidden"
+source_modules = ["groundwork.core.domain"]
+forbidden_modules = ["groundwork.core.ports", "anthropic", "mcp", "fastapi"]

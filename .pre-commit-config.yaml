@@ -1,0 +1,71 @@
+# Install: make setup   (installs pre-commit, commit-msg and pre-push hooks)
+# Update remote hook versions: uv run pre-commit autoupdate
+default_install_hook_types: [pre-commit, commit-msg, pre-push]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+      - id: detect-private-key
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.6.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: [--strict, feat, fix, refactor, test, docs, build, ci, chore, perf, revert]
+
+  - repo: local
+    hooks:
+      - id: ruff-lint
+        name: ruff lint
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy (strict)
+        entry: uv run mypy
+        language: system
+        pass_filenames: false
+        types: [python]
+      - id: import-linter
+        name: architecture rules (import-linter)
+        entry: uv run lint-imports
+        language: system
+        pass_filenames: false
+        types: [python]
+      - id: validate-packs
+        name: validate client packs
+        entry: uv run groundwork validate-packs
+        language: system
+        pass_filenames: false
+        files: ^client_packs/
+      - id: tests-fast
+        name: unit + contract tests
+        entry: uv run pytest -m "unit or contract"
+        language: system
+        pass_filenames: false
+        types: [python]
+      - id: tests-integration
+        name: integration tests
+        entry: uv run pytest -m integration
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
