@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 64" width="300" height="64" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif">
+  <title>groundwork</title>
+  <!-- The layers in miniature: client rows on top, domain columns, the core underneath. -->
+  <rect x="4" y="4" width="56" height="8" rx="3" fill="#E0A23B"/>
+  <rect x="4" y="15" width="56" height="8" rx="3" fill="#E0A23B"/>
+  <rect x="4" y="26" width="17" height="15" rx="3" fill="#4FB39E"/>
+  <rect x="23.5" y="26" width="17" height="15" rx="3" fill="#4FB39E"/>
+  <rect x="43" y="26" width="17" height="15" rx="3" fill="#4FB39E"/>
+  <rect x="4" y="44" width="56" height="16" rx="4" fill="#6E9BCB"/>
+  <text x="76" y="44" font-size="34" font-weight="700" letter-spacing="-0.5" fill="#E6EDF3">groundwork</text>
+</svg>
