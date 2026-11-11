@@ -1,6 +1,6 @@
-"""Client pack configuration: which adapter each port uses."""
+"""Client pack configuration: which adapter each port uses, and which domain the pack uses."""
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PackConfig(BaseModel):
@@ -12,3 +12,5 @@ class PackConfig(BaseModel):
     messaging: str
     vector_store: str
     model: str
+    # A folder name under domains/: a slug, so it can never escape that folder.
+    domain: str = Field(pattern=r"^[a-z][a-z0-9-]*$")

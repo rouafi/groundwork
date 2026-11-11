@@ -7,7 +7,7 @@ from groundwork.entrypoints.api import app as api
 from groundwork.entrypoints.cli import app
 
 runner = CliRunner()
-VALID = "crm: fixture\nmessaging: console\nvector_store: lancedb\nmodel: replay\n"
+VALID = "crm: fixture\nmessaging: console\nvector_store: lancedb\nmodel: replay\ndomain: comms\n"
 
 
 def _pack(root: Path, name: str, content: str) -> None:

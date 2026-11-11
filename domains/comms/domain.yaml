@@ -1,0 +1,7 @@
+# Domain pack vocabulary for business communications (email harmonization).
+# Client packs that select `domain: comms` may only use these values.
+segments: [smb, mid-market, enterprise]
+personas: [economic-buyer, technical-evaluator, end-user]
+channels: [internal, external]
+defaults:
+  tone: formal
