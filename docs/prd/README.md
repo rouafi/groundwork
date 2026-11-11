@@ -1,6 +1,6 @@
 # Product requirements (PRDs)
 
-One PRD per pull request. A PRD is the contract between the plan and the code: Claude Code implements it, the `code-reviewer` agent checks the diff against it.
+One PRD per pull request. A PRD is the contract between the plan and the code: Claude Code implements it, the `fde-reviewer` agent checks the outcome against it.
 
 ## How to use a PRD (humans and Claude Code)
 1. Read the PRD fully, plus every doc listed under "Read first".
@@ -16,7 +16,7 @@ One PRD per pull request. A PRD is the contract between the plan and the code: C
 - New behavior is tested; coverage of `groundwork.core` stays at or above 90%
 - Docs under `docs/` are updated; an ADR is added for any decision the PRD did not already settle
 - No secrets, no real data; `traces/` and `evals/report.md` are never edited by hand
-- PR template filled in, `code-reviewer` verdict is "ready"
+- `/verify` ends with `make check` green and `fde-reviewer` READY, every acceptance criterion met with evidence (docs/workflow.md)
 
 ## Index
 | ID | Title | Branch | Depends on | Status |
