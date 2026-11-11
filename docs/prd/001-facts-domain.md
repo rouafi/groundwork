@@ -1,5 +1,5 @@
 # PRD-001: Facts domain and CRM port
-Status: todo | Branch: `feat/facts-domain` | Depends on: none
+Status: done | Branch: `feat/facts-domain` | Depends on: none
 
 ## Goal
 Model what the client's CRM knows (companies, contacts, deals, products) as domain types behind a `CrmPort`, with a fixture adapter and two synthetic client packs. After this PR the core reads client facts without knowing HubSpot.

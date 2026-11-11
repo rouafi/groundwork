@@ -80,10 +80,11 @@ Every external system (CRM, email, vector store, model) sits behind a port. Each
 
 ```yaml
 # client_packs/acme/config.yaml
-crm: hubspot        # or: fixture
+crm: fixture        # HubSpot-shaped fixtures; a live hubspot adapter is planned
 messaging: console
 vector_store: lancedb
 model: claude       # or: replay (used by make demo)
+domain: comms       # domain pack under domains/
 ```
 
 To add Salesforce: write one adapter in `adapters/crm/`, pass `tests/contracts/`, change one line of config.

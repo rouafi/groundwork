@@ -5,7 +5,7 @@
 |---|---|---|---|
 | Domain | `src/groundwork/core/domain` | Contact, Deal, Product, Rule, EmailDraft... | nothing |
 | Ports | `src/groundwork/core/ports` | Interfaces to the outside world | domain |
-| Services | `src/groundwork/core/services` | Harness, context assembly, policies, evals runner | domain, ports |
+| Services | `src/groundwork/core/services` | Pack loading, integrity check; later harness, context assembly, policies, evals runner | domain, ports |
 | Adapters (driven) | `src/groundwork/adapters` | HubSpot, LanceDB, Voyage, Claude, replay, file approval | ports, vendor SDKs |
 | Entrypoints (driving) | `src/groundwork/entrypoints` | CLI, HTTP API, MCP server; wire adapters into services | everything |
 | Domain packs | `domains/<domain>` | Ontology schema, skills, prompts, eval scorers | data only |
@@ -16,7 +16,7 @@ Dependencies point inward. `core` never imports `adapters` or `entrypoints` (imp
 ## Ports
 | Port | Purpose | Adapters |
 |---|---|---|
-| CrmPort | Read contacts, companies, deals, products | fixture, hubspot |
+| CrmPort | Read contacts, companies, deals, products | fixture (HubSpot-shaped JSON); hubspot planned |
 | MessagingPort | Send an email | console |
 | ApprovalPort | Queue external emails for a human | file |
 | VectorStorePort | Index and search know-how | lancedb |
@@ -30,7 +30,22 @@ Adapters translate vendor formats into domain types. The core never sees HubSpot
 The `model` key in `config.yaml` selects the adapter family (`claude` or `replay`) for ModelPort, AgentPort and EmbeddingPort. Replay serves recorded runs and never falls back to a live call.
 
 ## Configuration
-Each client pack selects its adapters in `client_packs/<client>/config.yaml`. Changing a SaaS is one adapter plus one line of config. Precedence: client > domain > core, through config only.
+Each client pack selects its adapters and its domain in `client_packs/<client>/config.yaml`. Changing a SaaS is one adapter plus one line of config. Precedence: client > domain > core, through config only.
+
+```yaml
+crm: fixture        # adapter names are resolved in entrypoints/wiring.py
+messaging: console
+vector_store: lancedb
+model: replay
+domain: comms       # a folder under domains/
+```
+
+`entrypoints/wiring.py` is the composition root: the only place that maps a config name to an adapter class. An unknown name fails `validate-packs` with the list of valid names.
+
+## Pack validation
+`groundwork validate-packs` runs in pre-commit and CI. For every folder in `client_packs/` it checks the config schema, that the domain exists, that the CRM fixtures load, and `check_integrity` (`core/services/integrity.py`): dangling references (deal to contact, contact to company, deal to products) and segments or personas outside the domain vocabulary. The check goes through `CrmPort` only, so it will run unchanged against a live CRM from a manual command (CI never calls a real CRM). Each problem is printed with its pack, kind and id, for example `client_packs/acme: deal acme-d-3 references missing contact acme-c-99`.
+
+CRM fixtures live in `client_packs/<client>/fixtures/hubspot/` in HubSpot CRM v3 shape; the mapping and its simplifications are documented in `adapters/crm/hubspot_mapping.py`.
 
 ## Request flow
 1. Entrypoint receives a draft and a contact id.
@@ -41,6 +56,6 @@ Each client pack selects its adapters in `client_packs/<client>/config.yaml`. Ch
 6. The full run is written to `traces/`.
 
 ## Adding things
-- New adapter: implement the port, pass `tests/contracts/<port>`, reference it in a pack config.
+- New adapter: implement the port, add it to the `ADAPTERS` of `tests/contracts/test_<port>_contract.py` and pass that suite, register its name in `entrypoints/wiring.py`, reference it in a pack config.
 - New client: run the playbook (docs/playbook.md); it produces the pack files.
 - New domain: add `domains/<domain>` with schema, skills and scorers; no core change expected.

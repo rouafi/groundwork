@@ -21,7 +21,7 @@ One PRD per pull request. A PRD is the contract between the plan and the code: C
 ## Index
 | ID | Title | Branch | Depends on | Status |
 |---|---|---|---|---|
-| [001](001-facts-domain.md) | Facts domain and CRM port | `feat/facts-domain` | none | todo |
+| [001](001-facts-domain.md) | Facts domain and CRM port | `feat/facts-domain` | none | done |
 | [002](002-knowhow-ontology.md) | Know-how ontology and rule extraction | `feat/knowhow-ontology` | 001 | todo |
 | [003](003-mcp-context-tools.md) | MCP context tools | `feat/mcp-tools` | 001, 002 | todo |
 | [004](004-vector-search.md) | Vector search for know-how | `feat/vector-search` | 002 | todo |
