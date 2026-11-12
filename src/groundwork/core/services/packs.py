@@ -12,6 +12,7 @@ from groundwork.core.domain.pack import PackConfig
 
 DOMAIN_FILE = "domain.yaml"
 CONFIG_FILE = "config.yaml"
+PROMPTS_DIR = "prompts"
 
 
 def load_pack_config(pack_dir: Path) -> PackConfig:
@@ -25,6 +26,14 @@ def load_domain_pack(domains_dir: Path, name: str) -> DomainPack:
     if not domain_dir.is_dir():
         raise PackError(f"domain {name!r} not found: {domain_dir} does not exist")
     return _load_yaml_model(domain_dir / DOMAIN_FILE, DomainPack)
+
+
+def load_prompt(domains_dir: Path, domain: str, name: str) -> str:
+    """Read `<domains_dir>/<domain>/prompts/<name>.md`."""
+    path = domains_dir / domain / PROMPTS_DIR / f"{name}.md"
+    if not path.is_file():
+        raise PackError(f"{path}: prompt not found")
+    return path.read_text(encoding="utf-8")
 
 
 def _load_yaml_model[M: BaseModel](path: Path, model: type[M]) -> M:
