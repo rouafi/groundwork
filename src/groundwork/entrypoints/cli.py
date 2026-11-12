@@ -24,8 +24,9 @@ from groundwork.core.services.packs import (
     load_rules,
 )
 from groundwork.core.services.rules_check import rule_problems
+from groundwork.entrypoints.mcp_server import create_server
 from groundwork.entrypoints.reports import summary, write_run
-from groundwork.entrypoints.wiring import build_crm, build_model
+from groundwork.entrypoints.wiring import build_crm, build_model, build_server_context
 
 app = typer.Typer(no_args_is_help=True, help="groundwork: an FDE deployment kit")
 
@@ -126,12 +127,21 @@ def _located(pack_dir: Path, message: str) -> str:
 
 
 @app.command("mcp-serve")
-def mcp_serve() -> None:
-    """Serve the MCP context server over streamable HTTP."""
-    from groundwork.entrypoints.mcp_server import mcp
-
+def mcp_serve(
+    pack: Annotated[str, typer.Option(help="Client pack the server reads, fixed at start.")],
+    packs_dir: Path = PACKS_DIR,
+    domains_dir: Path = DOMAINS_DIR,
+    traces_dir: Path = TRACES_DIR,
+) -> None:
+    """Serve one pack's read-only context tools over streamable HTTP."""
+    pack_dir = packs_dir / pack
+    try:
+        context = build_server_context(pack_dir, domains_dir, traces_dir)
+    except PackError as exc:
+        typer.echo(_located(pack_dir, exc.message), err=True)
+        raise typer.Exit(code=1) from exc
     # Binding all interfaces is intended: the server runs inside a container.
-    mcp.run(transport="streamable-http", host="0.0.0.0", port=8001)  # noqa: S104
+    create_server(context).run(transport="streamable-http", host="0.0.0.0", port=8001)  # noqa: S104
 
 
 @app.command("demo")
