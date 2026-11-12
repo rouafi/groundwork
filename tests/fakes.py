@@ -7,9 +7,17 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from groundwork.core.domain.errors import NotFoundError
+from groundwork.core.domain.errors import ApprovalError, NotFoundError
 from groundwork.core.domain.facts import Company, Contact, Deal, Product
+from groundwork.core.domain.harmonize import (
+    AgentResult,
+    ApprovalItem,
+    ContextPack,
+    HarmonizedEmail,
+    HarmonizeRequest,
+)
 from groundwork.core.domain.knowhow import Usage
+from groundwork.core.domain.policy import Limits
 from groundwork.core.ports.model import Answer, CitedStatement, Quote, Tier
 
 CALL_USAGE = Usage(input_tokens=10, output_tokens=5)
@@ -131,3 +139,90 @@ class HashEmbedding:
 def _hash_vector(text: str, input_type: str) -> list[float]:
     digest = hashlib.sha256(f"{input_type}:{text}".encode()).digest()
     return [(b - 127.5) / 127.5 for b in digest[:8]]
+
+
+class InMemoryApproval:
+    """ApprovalPort in memory, for pipeline tests and the contract suite."""
+
+    def __init__(self) -> None:
+        self._items: dict[str, ApprovalItem] = {}
+
+    def submit(self, item: ApprovalItem) -> str:
+        existing = self._items.get(item.id)
+        if existing is not None and existing.status != "pending":
+            raise ApprovalError(f"approval {item.id!r} is already {existing.status}")
+        self._items[item.id] = item.model_copy(update={"status": "pending", "reason": None})
+        return item.id
+
+    def list_pending(self) -> tuple[ApprovalItem, ...]:
+        return tuple(i for _, i in sorted(self._items.items()) if i.status == "pending")
+
+    def resolve(self, id: str, approved: bool, reason: str | None = None) -> ApprovalItem:
+        item = self._items.get(id)
+        if item is None:
+            raise NotFoundError("approval", id)
+        if item.status != "pending":
+            raise ApprovalError(f"approval {id!r} is already {item.status}")
+        if not approved and not (reason and reason.strip()):
+            raise ApprovalError(f"rejecting {id!r} needs a reason")
+        resolved = item.model_copy(
+            update={"status": "approved" if approved else "rejected", "reason": reason or None}
+        )
+        self._items[id] = resolved
+        return resolved
+
+
+class RecordingMessaging:
+    """MessagingPort that remembers what it was asked to send."""
+
+    def __init__(self) -> None:
+        self.sent: list[tuple[HarmonizedEmail, str]] = []
+
+    def send(self, email: HarmonizedEmail, to: str) -> None:
+        self.sent.append((email, to))
+
+
+class FakeToolBox:
+    """ToolBox with scripted tools: `results[name]` is the (text, is_error) a call returns."""
+
+    def __init__(
+        self,
+        specs: Sequence[Any],
+        results: dict[str, tuple[str, bool]] | None = None,
+    ) -> None:
+        self._specs = list(specs)
+        self._results = results or {}
+        self.calls: list[tuple[str, dict[str, Any]]] = []
+
+    async def __aenter__(self) -> "FakeToolBox":
+        return self
+
+    async def __aexit__(self, *_: object) -> None:
+        return None
+
+    async def list_tools(self) -> list[Any]:
+        return self._specs
+
+    async def call(self, name: str, arguments: dict[str, Any]) -> tuple[str, bool]:
+        self.calls.append((name, arguments))
+        return self._results.get(name, ("{}", False))
+
+
+class ScriptedAgent:
+    """AgentPort that returns a fixed result, or raises a fixed error, and records its calls."""
+
+    def __init__(self, result: AgentResult | None = None, error: Exception | None = None) -> None:
+        self._result = result
+        self._error = error
+        self.calls: list[dict[str, Any]] = []
+
+    def run(
+        self, *, system: str, context: ContextPack, request: HarmonizeRequest, limits: Limits
+    ) -> AgentResult:
+        self.calls.append(
+            {"system": system, "context": context, "request": request, "limits": limits}
+        )
+        if self._error is not None:
+            raise self._error
+        assert self._result is not None
+        return self._result

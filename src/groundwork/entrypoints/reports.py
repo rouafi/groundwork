@@ -6,8 +6,10 @@ from typing import Any
 
 import yaml
 
+from groundwork.core.domain.harmonize import HarmonizeRequest
 from groundwork.core.domain.knowhow import ExtractionReport
 from groundwork.core.services.golden_checks import GoldenCheck
+from groundwork.core.services.harmonize import HarmonizeOutcome
 
 PROPOSED_FILE = "rules.proposed.yaml"
 REPORT_FILE = "extraction_report.yaml"
@@ -48,3 +50,18 @@ def summary(report: ExtractionReport, checks: Sequence[GoldenCheck]) -> list[str
 
 def _yaml(data: Any) -> str:
     return yaml.safe_dump(data, sort_keys=False, allow_unicode=True, width=100)
+
+
+def outcome_lines(request: HarmonizeRequest, outcome: HarmonizeOutcome, trace: Path) -> list[str]:
+    """What a person needs first from one run: the email, the decision and why, the trace."""
+    email = outcome.email
+    lines = ["Email:", f"  Subject: {email.subject}", ""]
+    lines += [f"  {line}" if line else "" for line in email.body.splitlines()]
+    lines += ["", f"Why: {email.rationale}", f"Decision: {outcome.decision.route.upper()}"]
+    lines += [f"  - {reason}" for reason in outcome.decision.reasons]
+    checks = [f"{c.status} ({c.kind}): {c.claim} -- {c.reason}" for c in outcome.claim_checks]
+    lines += ["Claims:", *[f"  - {c}" for c in checks]] if checks else ["Claims: none found"]
+    if outcome.context.truncated:
+        lines += ["Context:", *[f"  - {t}" for t in outcome.context.truncated]]
+    lines += [f"Steps: {len(outcome.steps)} tool call(s)", f"Trace: {trace}"]
+    return lines

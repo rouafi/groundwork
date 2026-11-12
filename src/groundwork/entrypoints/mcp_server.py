@@ -20,7 +20,7 @@ from mcp.types import ToolAnnotations
 from groundwork.core.domain.claims import ClaimCheck
 from groundwork.core.domain.domain_pack import DomainPack
 from groundwork.core.domain.errors import GroundworkError
-from groundwork.core.domain.facts import Product
+from groundwork.core.domain.facts import ContactContext, Product
 from groundwork.core.domain.knowhow import Rule
 from groundwork.core.domain.search import SearchHit
 from groundwork.core.ports.crm import CrmPort
@@ -28,7 +28,7 @@ from groundwork.core.ports.embedding import EmbeddingPort
 from groundwork.core.ports.model import ModelPort
 from groundwork.core.ports.vector_store import VectorStorePort
 from groundwork.core.services.claims import check_claims as check_claims_service
-from groundwork.core.services.context import ContactContext, contact_context
+from groundwork.core.services.context import contact_context
 from groundwork.core.services.retrieval import search_knowhow as search_knowhow_service
 from groundwork.core.services.rules import applicable_rules
 

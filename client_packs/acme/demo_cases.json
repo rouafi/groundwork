@@ -1,0 +1,24 @@
+[
+  {
+    "case_id": "acme-internal-handoff",
+    "title": "An internal handoff with no promise",
+    "contact_id": "acme-c-1",
+    "channel": "internal",
+    "draft": "plume logistics: contract sent to lina morvan, waiting on her signature. nothing needed from support for now."
+  },
+  {
+    "case_id": "acme-external-upgrade",
+    "title": "A customer email that needs a human's approval",
+    "contact_id": "acme-c-5",
+    "channel": "external",
+    "draft": "Hi Ines, great to speak yesterday! The Pro upgrade is 1490 EUR and setup takes one day. Tell me if you want me to send the order form."
+  },
+  {
+    "case_id": "acme-external-passthrough",
+    "title": "A faulty agent lets an off-policy draft through unchanged: the policy blocks it",
+    "contact_id": "acme-c-4",
+    "channel": "external",
+    "draft": "Hi Malo, as agreed with my manager here is 50% off the Onboarding Pack, so 400 EUR instead of 800. Let me know if you want to start.",
+    "passthrough": true
+  }
+]

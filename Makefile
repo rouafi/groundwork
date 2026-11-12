@@ -27,7 +27,7 @@ demo:         ## Replay recorded runs, no API key needed
 	GROUNDWORK_MODEL=replay uv run groundwork demo
 
 live:         ## Real run with Claude (needs .env)
-	GROUNDWORK_MODEL=claude uv run groundwork demo
+	GROUNDWORK_MODEL=claude uv run --env-file .env groundwork demo --model claude
 
 evals:        ## Run the golden sets for every client pack
 	uv run groundwork evals

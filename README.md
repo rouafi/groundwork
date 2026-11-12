@@ -101,6 +101,17 @@ make live   # runs with ANTHROPIC_API_KEY
 make evals  # runs the golden set for every client pack
 ```
 
+Rewrite a draft for a contact, check it against the CRM, and route it (send, approval or blocked). Every run leaves a trace in `traces/`; external emails wait in a queue until a person approves them:
+
+```bash
+uv run groundwork harmonize --pack acme --contact acme-c-5 --channel external --draft draft.txt
+uv run groundwork approvals list --pack acme
+uv run groundwork approvals show <id> --pack acme      # read the email before deciding
+uv run groundwork approvals approve <id> --pack acme   # records the answer and sends, once
+```
+
+With the default `replay`, only recorded cases run; `GROUNDWORK_MODEL=claude` (and `GROUNDWORK_EMBEDDING=voyage` for passages) runs live. The flow is in [docs/architecture.md](docs/architecture.md), the guarantees in [docs/security.md](docs/security.md).
+
 ---
 
 ## Evals: two levels before anything reaches a customer

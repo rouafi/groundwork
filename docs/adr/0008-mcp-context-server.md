@@ -17,5 +17,6 @@ Agents and people using Claude need the same client context: CRM facts, approved
 - A paraphrase of an allowed feature, a discount or an extra promise is `unknown`, not `false`: the policy engine (PRD-005) must route `unknown` claims to a human, not only block `false` ones.
 - An empty `check_claims` result is not a pass: the model may list nothing, by mistake or because the draft manipulates it. The policy engine must not treat "no `false` claim" alone as clearance for an external email.
 - A feature with no product named is `unknown` even when some product allows it: true of one product is not true of the offer.
+- The claim extraction prompt lists claims about the offer (prices, product names, features, promises such as a discount or a delay), not facts about the contact or their deal: without that, a plain internal handoff yielded a dozen `unknown` claims and could never auto-send.
 - `check_claims` costs one cheap model call per text; with `replay` it answers only for recorded texts.
 - A desktop user sees one pack per configured server; serving two clients means two entries.

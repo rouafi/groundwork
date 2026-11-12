@@ -6,10 +6,13 @@ A search reads every row's score and sorts, so ties are ordered by chunk id as t
 contract demands; this is meant for the small corpora of a client pack.
 """
 
+import os
 import tempfile
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
+
+os.environ.setdefault("LANCEDB_LOG", "error")  # no 'No existing dataset' notice on every start
 
 import lancedb
 from lancedb.index import FTS

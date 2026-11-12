@@ -10,6 +10,7 @@ COPY src ./src
 RUN uv sync --frozen --no-dev
 
 # Run as non-root
-RUN useradd --create-home app
+RUN useradd --create-home app \
+ && mkdir -p /app/var /app/traces && chown app /app/var /app/traces
 USER app
 ENV PATH="/app/.venv/bin:$PATH"

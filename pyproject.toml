@@ -93,3 +93,24 @@ name = "Domain is pure (no ports, no SDKs, no web)"
 type = "forbidden"
 source_modules = ["groundwork.core.domain"]
 forbidden_modules = ["groundwork.core.ports", "anthropic", "mcp", "fastapi"]
+
+[[tool.importlinter.contracts]]
+name = "Only the harmonize and approvals services touch messaging and approval"
+type = "forbidden"
+source_modules = [
+  "groundwork.core.services",
+  "groundwork.core.domain",
+  "groundwork.adapters.agent",
+]
+forbidden_modules = [
+  "groundwork.core.ports.messaging",
+  "groundwork.core.ports.approval",
+  "groundwork.adapters.messaging",
+  "groundwork.adapters.approval",
+]
+ignore_imports = [
+  "groundwork.core.services.harmonize -> groundwork.core.ports.messaging",
+  "groundwork.core.services.harmonize -> groundwork.core.ports.approval",
+  "groundwork.core.services.approvals -> groundwork.core.ports.messaging",
+  "groundwork.core.services.approvals -> groundwork.core.ports.approval",
+]

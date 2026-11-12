@@ -4,3 +4,4 @@ messaging: console
 vector_store: lancedb
 model: replay
 domain: comms
+internal_recipient: handoffs@acme.example

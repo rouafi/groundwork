@@ -1,0 +1,6 @@
+# Beta's deals are six figures: nothing free in writing, and a tighter time limit.
+forbidden_patterns:
+  external:
+    - '(?i)\bfree\s+(year|month|on-site|visit|service|upgrade)'
+limits:
+  timeout_s: 45

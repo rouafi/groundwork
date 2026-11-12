@@ -35,4 +35,4 @@ Coverage is measured on `groundwork.core`.
 ruff (lint incl. bandit security rules, and format), mypy strict, import-linter for architecture rules.
 
 ## Definition of done
-`make check` green, behavior tested, docs and ADR updated, `fde-reviewer` READY with every PRD acceptance criterion met with evidence. See docs/workflow.md.
+`make check` green, behavior tested, every document that describes the change updated in the same PR (the ADR added or amended, the PRD's status and notes, `docs/*.md`, the README, `CLAUDE.md`), `fde-reviewer` READY with every PRD acceptance criterion met with evidence. See docs/workflow.md.

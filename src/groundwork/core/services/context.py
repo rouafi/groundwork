@@ -5,21 +5,8 @@ returned exactly as stored: it is untrusted data, never instructions, and it is
 the agent's prompt, not this service, that must treat it as such.
 """
 
-from pydantic import BaseModel, ConfigDict
-
-from groundwork.core.domain.facts import Company, Contact, Deal, Product
+from groundwork.core.domain.facts import ContactContext
 from groundwork.core.ports.crm import CrmPort
-
-
-class ContactContext(BaseModel):
-    """A contact, their company, their deals and the products of those deals."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    contact: Contact
-    company: Company
-    deals: tuple[Deal, ...]
-    products: tuple[Product, ...]
 
 
 def contact_context(crm: CrmPort, contact_id: str) -> ContactContext:

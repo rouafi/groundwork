@@ -1,0 +1,20 @@
+# Default policies of the comms domain. A client pack's policies.yaml can add patterns,
+# lower limits and turn internal auto-send off; it cannot relax any of this, and it
+# cannot make an external email auto-send (that is not configuration, it is code).
+forbidden_patterns:
+  internal:
+    # a credential pasted into an internal message
+    - '(?i)\b(api[_-]?key|password|passwd|secret|token)\s*[:=]\s*\S+'
+    - '\bsk-[A-Za-z0-9_-]{16,}'
+  external:
+    # a percentage discount in writing
+    - '(?i)\b\d{1,3}\s?%\s?(off|discount|rebate)\b'
+    # an open-ended promise
+    - '(?i)\bunlimited\s+(training|support|sessions|visits)\b'
+limits:
+  max_steps: 8
+  max_tokens: 60000
+  timeout_s: 60
+# Internal auto-send is gated by the evals of the pack (PRD-006); until they exist this
+# default keeps the demo's internal route working.
+auto_send_internal: true

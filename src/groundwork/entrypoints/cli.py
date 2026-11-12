@@ -21,30 +21,37 @@ from groundwork.core.services.indexing import (
     dump_chunks,
     question_problems,
 )
-from groundwork.core.services.integrity import check_integrity
+from groundwork.core.services.integrity import check_integrity, demo_problems
 from groundwork.core.services.packs import (
     CHUNKS_FILE,
     load_chunks,
+    load_demo_cases,
     load_domain_pack,
     load_extraction_golden,
     load_interviews,
     load_pack_config,
+    load_pack_policies,
     load_prompt,
     load_retrieval_questions,
     load_rules,
 )
 from groundwork.core.services.rules_check import rule_problems
+from groundwork.entrypoints.harness_cli import approvals_app, demo_command, harmonize_command
 from groundwork.entrypoints.mcp_server import create_server
 from groundwork.entrypoints.reports import summary, write_run
 from groundwork.entrypoints.wiring import (
     CONTEXT_PROMPT,
     build_crm,
     build_embedding,
+    build_messaging,
     build_model,
     build_server_context,
 )
 
 app = typer.Typer(no_args_is_help=True, help="groundwork: an FDE deployment kit")
+app.command("harmonize")(harmonize_command)
+app.command("demo")(demo_command)
+app.add_typer(approvals_app, name="approvals")
 
 PACKS_DIR = Path("client_packs")
 DOMAINS_DIR = Path("domains")
@@ -73,11 +80,14 @@ def pack_problems(pack_dir: Path, domains_dir: Path) -> list[str]:
         config = load_pack_config(pack_dir)
         domain = load_domain_pack(domains_dir, config.domain)
         crm = build_crm(pack_dir, config)
+        build_messaging(pack_dir, config, Path("var"))
         interviews = {i.id: i for i in load_interviews(pack_dir)}
         rules = load_rules(pack_dir)
         golden = load_extraction_golden(pack_dir)
         chunks = load_chunks(pack_dir)
         questions = load_retrieval_questions(pack_dir)
+        demo_cases = load_demo_cases(pack_dir)
+        load_pack_policies(pack_dir)
     except PackError as exc:
         return [_located(pack_dir, exc.message)]
     problems = [str(issue) for issue in check_integrity(crm, domain)]
@@ -85,6 +95,7 @@ def pack_problems(pack_dir: Path, domains_dir: Path) -> list[str]:
     problems += golden_problems(golden, interviews) if golden else []
     problems += chunk_problems(chunks, interviews)
     problems += question_problems(questions, interviews)
+    problems += demo_problems(demo_cases, crm)
     return [_located(pack_dir, p) for p in problems]
 
 
@@ -214,12 +225,6 @@ def mcp_serve(
         return
     # Binding all interfaces is intended: the server runs inside a container.
     server.run(transport="streamable-http", host="0.0.0.0", port=MCP_HTTP_PORT)  # noqa: S104
-
-
-@app.command("demo")
-def demo() -> None:
-    """Replay recorded runs. Implemented in the harness milestone."""
-    typer.echo("No recorded runs yet: traces/ is empty.")
 
 
 @app.command("evals")
