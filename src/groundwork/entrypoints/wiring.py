@@ -290,4 +290,5 @@ def build_flow(
         search=search,
         internal_recipient=config.internal_recipient,
         write_traces=not isinstance(agent, ReplayAgent),
+        replace_traces=env.get(RECORD_ENV) == "1",
     )

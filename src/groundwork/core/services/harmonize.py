@@ -63,7 +63,8 @@ class HarmonizeFlow:
 
     `internal_recipient` is where an internal email goes (never a customer's address);
     without it an internal email is blocked. `write_traces` is off in replay, so a replay
-    never rewrites what was recorded.
+    never rewrites what was recorded; `replace_traces` is on only when recording, so a live
+    run that does not record never replaces the trace of a case that already has one.
     """
 
     crm: CrmPort
@@ -80,6 +81,7 @@ class HarmonizeFlow:
     budget: int = DEFAULT_BUDGET
     internal_recipient: str | None = None
     write_traces: bool = True
+    replace_traces: bool = True
 
 
 @dataclass(frozen=True)
@@ -171,13 +173,15 @@ def _write_trace(
 ) -> None:
     """Write the trace of a run, unless the flow does not write traces (replay).
 
-    A failed run never replaces a trace that exists: a refused replay or a failed
-    re-recording must not destroy a good recording. An identical file is left untouched.
+    A trace that exists is replaced only by a successful run that records
+    (`replace_traces`): a failed run, a refused replay or a live run that does not record
+    must not destroy a good recording, whose claim checks the live run would not have
+    recorded. An identical file is left untouched.
     """
     if not flow.write_traces:
         return
     path = flow.traces_dir / f"{case_id}.jsonl"
-    if failed and path.is_file():
+    if path.is_file() and (failed or not flow.replace_traces):
         return
     text = dump_trace(events)
     if path.is_file() and path.read_text(encoding="utf-8") == text:

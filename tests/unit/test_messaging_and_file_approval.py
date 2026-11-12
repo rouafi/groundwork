@@ -76,3 +76,16 @@ def test_file_approval_refuses_an_id_that_could_leave_its_directory(
 def test_two_packs_do_not_share_a_queue(tmp_path: Path) -> None:
     FileApproval("acme", tmp_path).submit(_item("case-1"))
     assert FileApproval("beta", tmp_path).list_pending() == ()
+
+
+def test_an_approval_file_that_is_not_valid_names_the_file_and_the_fix(tmp_path: Path) -> None:
+    approval = FileApproval("acme", tmp_path)
+    approval.submit(_item("case-1"))
+    path = tmp_path / "approvals" / "acme" / "case-1.json"
+    data = json.loads(path.read_text())
+    del data["recipient"]
+    path.write_text(json.dumps(data))
+    with pytest.raises(ApprovalError) as error:
+        approval.list_pending()
+    assert str(path) in str(error.value)
+    assert "recipient" in str(error.value) and "harmonize" in str(error.value)

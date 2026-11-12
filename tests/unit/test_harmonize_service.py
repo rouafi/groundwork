@@ -317,3 +317,29 @@ def test_a_flow_that_does_not_write_traces_writes_none(tmp_path: Path) -> None:
     with pytest.raises(AgentLimitError):
         harmonize(_without(failing, write_traces=False), request)
     assert not world.traces.exists()
+
+
+def test_a_live_run_that_does_not_record_keeps_the_existing_trace_and_a_recording_run_replaces_it(
+    tmp_path: Path,
+) -> None:
+    first = World(tmp_path, ScriptedAgent(_result("Insight Pro costs 1490.00 EUR.")), [PRO_OK])
+    request = HarmonizeRequest(contact_id="acme-c-1", channel="external", draft="Hi.")
+    harmonize(first.flow, request)
+    path = first.traces / f"{request.id}.jsonl"
+    recorded = path.read_bytes()
+
+    other = _result("Insight Pro costs 1490.00 EUR, set up in one day.")
+    live = World(tmp_path, ScriptedAgent(other), [PRO_OK])
+    harmonize(_without(live, replace_traces=False), request)
+    assert path.read_bytes() == recorded
+
+    harmonize(_without(live, replace_traces=True), request)
+    assert path.read_bytes() != recorded
+    assert "set up in one day" in path.read_text()
+
+
+def test_a_new_case_is_traced_even_when_the_run_does_not_record(tmp_path: Path) -> None:
+    world = World(tmp_path, ScriptedAgent(_result()), [PRO_OK])
+    request = HarmonizeRequest(contact_id="acme-c-1", channel="external", draft="A new case.")
+    harmonize(_without(world, replace_traces=False), request)
+    assert (world.traces / f"{request.id}.jsonl").is_file()

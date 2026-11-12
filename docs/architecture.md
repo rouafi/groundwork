@@ -42,6 +42,7 @@ messaging: console
 vector_store: lancedb
 model: replay
 domain: comms       # a folder under domains/
+internal_recipient: handoffs@acme.example  # where internal emails go, never a customer
 ```
 
 `entrypoints/wiring.py` is the composition root: the only place that maps a config name to an adapter class. An unknown name fails `validate-packs` with the list of valid names.

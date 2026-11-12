@@ -8,6 +8,8 @@ import os
 import re
 from pathlib import Path
 
+from pydantic import ValidationError
+
 from groundwork.core.domain.errors import ApprovalError, NotFoundError
 from groundwork.core.domain.harmonize import ApprovalItem
 
@@ -56,7 +58,15 @@ class FileApproval:
         return self._load(path) if path.is_file() else None
 
     def _load(self, path: Path) -> ApprovalItem:
-        return ApprovalItem.model_validate_json(path.read_text(encoding="utf-8"))
+        try:
+            return ApprovalItem.model_validate_json(path.read_text(encoding="utf-8"))
+        except ValidationError as exc:
+            problem = "; ".join(
+                f"{'.'.join(str(p) for p in e['loc'])}: {e['msg']}" for e in exc.errors()
+            )
+            raise ApprovalError(
+                f"{path}: not a valid approval ({problem}); queue the email again with harmonize"
+            ) from exc
 
     def _write(self, item: ApprovalItem) -> None:
         path = self._path(item.id)
