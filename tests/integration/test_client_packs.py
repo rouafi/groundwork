@@ -16,13 +16,15 @@ from groundwork.core.services.packs import (
 
 REPO = Path(__file__).resolve().parents[2]
 PACKS = sorted(p for p in (REPO / "client_packs").iterdir() if p.is_dir())
-DATA_SUFFIXES = {".json", ".yaml", ".yml", ".md"}
+DATA_SUFFIXES = {".json", ".jsonl", ".yaml", ".yml", ".md"}
 
 
 def test_client_packs_contain_only_data() -> None:
     files = [p for p in (REPO / "client_packs").rglob("*") if p.is_file()]
     offenders = [str(p.relative_to(REPO)) for p in files if p.suffix not in DATA_SUFFIXES]
-    assert offenders == [], f"client packs are data only (JSON, YAML, Markdown): {offenders}"
+    assert offenders == [], (
+        f"client packs are data only (JSON, JSON Lines, YAML, Markdown): {offenders}"
+    )
 
 
 def test_acme_and_beta_are_shipped() -> None:

@@ -11,7 +11,7 @@
 | Domain packs | `domains/<domain>` | Ontology schema, skills, prompts, eval scorers | data only |
 | Client packs | `client_packs/<client>` | Config, fixtures, interviews, rules, golden set | data only |
 
-The MCP server (`entrypoints/mcp_server.py`, ADR 0008) serves one pack, read-only: four thin tools over `core/services/{context,rules,claims}.py`. `wiring.build_server_context` loads the pack and builds the model only on the first claim check. Connection guide: `docs/mcp.md`.
+The MCP server (`entrypoints/mcp_server.py`, ADR 0008) serves one pack, read-only: five thin tools over `core/services/{context,rules,claims,retrieval}.py`. `wiring.build_server_context` loads the pack and its index into the vector store, and builds the model and the query embedding only on first use. Connection guide: `docs/mcp.md`.
 
 Dependencies point inward. `core` never imports `adapters` or `entrypoints` (import-linter, checked in pre-commit and CI).
 
@@ -21,15 +21,15 @@ Dependencies point inward. `core` never imports `adapters` or `entrypoints` (imp
 | CrmPort | Read contacts, companies, deals, products | fixture (HubSpot-shaped JSON); hubspot planned |
 | MessagingPort | Send an email | console |
 | ApprovalPort | Queue external emails for a human | file |
-| VectorStorePort | Index and search know-how | lancedb |
-| EmbeddingPort | Embed text | voyage |
+| VectorStorePort | Store chunks, vector and keyword search (fused in the core, ADR 0009) | lancedb, in-memory (tests) |
+| EmbeddingPort | Embed documents and queries | voyage, replay |
 | OntologyStorePort | Read and write the graph | file (JSON + networkx) |
 | ModelPort | Single-shot Claude calls (extraction, judge, contextual chunking) | claude, replay |
 | AgentPort | Run the drafting agent with read-only tools | claude (see ADR 0005), replay |
 
 Adapters translate vendor formats into domain types. The core never sees HubSpot JSON or SDK objects.
 
-The `model` key in `config.yaml` selects the adapter family (`claude` or `replay`) for ModelPort, AgentPort and EmbeddingPort. Replay serves recorded runs and never falls back to a live call.
+The `model` key in `config.yaml` selects the adapter family (`claude` or `replay`) for ModelPort and AgentPort; `embedding` (`voyage` or `replay`, default `replay`) selects EmbeddingPort and `vector_store` (`lancedb` or `memory`) the store. Replay serves recorded runs and never falls back to a live call.
 
 ModelPort (`core/ports/model.py`) exposes `complete_structured`, `complete_text` and `cite` (Citations), each on a tier (`extraction` or `cheap`) that the adapter maps to a model id, so the core never names a model. `entrypoints/wiring.py` builds it: `GROUNDWORK_MODEL` overrides the config's `model`, `replay` reads `traces/<pack>/model/`, and `claude` with `GROUNDWORK_RECORD=1` is wrapped in a `RecordingModel` that writes there.
 

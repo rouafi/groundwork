@@ -9,11 +9,13 @@ requires-python = ">=3.12"
 dependencies = [
   "anthropic",
   "fastapi",
+  "lancedb>=0.41.0",
   "mcp>=2",
   "pydantic>=2",
   "pyyaml",
   "typer",
   "uvicorn",
+  "voyageai>=0.6.0",
 ]
 
 [project.scripts]

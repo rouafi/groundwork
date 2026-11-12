@@ -37,8 +37,11 @@ What to expect after a re-recording:
 - Without `--out-dir`, the run writes into the pack, including when it fails (for example a replay miss after a prompt edit): restore the committed outputs with `git checkout client_packs/<client>/` if needed.
 - The cost line is in tokens per stage, not in money.
 
-## Vector search
-- Scope: interview transcripts, process docs, historical emails.
-- Contextual Retrieval: Claude prepends a short context to each chunk before embedding.
-- Hybrid search: embeddings (Voyage) + BM25, stored in LanceDB.
-- Exposed to agents as the MCP tool `search_knowhow`.
+## Vector search (ADR 0009)
+Scope: interview transcripts. CRM facts are never indexed, and `validate-packs` fails an index whose chunk is not a verbatim span of an interview.
+- `groundwork index --pack <client>` chunks each interview (about 200 words, paragraph ends), has the cheap model write a one- or two-sentence context per chunk (Contextual Retrieval), embeds context and chunk, and writes `index/chunks.jsonl`. Running it twice gives the same file.
+- Search is hybrid: vector (Voyage embeddings) and keyword (BM25), fused with Reciprocal Rank Fusion (k = 60) in the core. LanceDB is built from `chunks.jsonl` when the server starts.
+- Exposed to agents as the MCP tool `search_knowhow(query, k=5)` (docs/mcp.md). A hit is the interview text, its interview id and a score.
+- `retrieval.jsonl` holds 10 questions per pack, each with the interview and a verbatim quote a search must find: the input of the retrieval evals (PRD-006).
+
+Embeddings and contexts are recorded under `traces/<client>/embeddings/` and `traces/<client>/model/` and replayed offline, like rule extraction. Replay answers only recorded queries; to record (a few cents, needs `VOYAGE_API_KEY` and `ANTHROPIC_API_KEY`), run `GROUNDWORK_MODEL=claude GROUNDWORK_EMBEDDING=voyage GROUNDWORK_RECORD=1 uv run --env-file .env groundwork index --pack <client>` and commit `index/` and `traces/`. Recordings are keyed by their inputs: after editing an interview or `contextualize.md`, re-run it the same way; new recordings are written next to the old ones, which become unused (`git rm` them for a clean `traces/`).

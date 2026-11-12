@@ -15,19 +15,34 @@ from groundwork.core.services.extraction import (
     extract_rules,
 )
 from groundwork.core.services.golden_checks import check_against_golden, golden_problems
+from groundwork.core.services.indexing import (
+    build_index,
+    chunk_problems,
+    dump_chunks,
+    question_problems,
+)
 from groundwork.core.services.integrity import check_integrity
 from groundwork.core.services.packs import (
+    CHUNKS_FILE,
+    load_chunks,
     load_domain_pack,
     load_extraction_golden,
     load_interviews,
     load_pack_config,
     load_prompt,
+    load_retrieval_questions,
     load_rules,
 )
 from groundwork.core.services.rules_check import rule_problems
 from groundwork.entrypoints.mcp_server import create_server
 from groundwork.entrypoints.reports import summary, write_run
-from groundwork.entrypoints.wiring import build_crm, build_model, build_server_context
+from groundwork.entrypoints.wiring import (
+    CONTEXT_PROMPT,
+    build_crm,
+    build_embedding,
+    build_model,
+    build_server_context,
+)
 
 app = typer.Typer(no_args_is_help=True, help="groundwork: an FDE deployment kit")
 
@@ -61,11 +76,15 @@ def pack_problems(pack_dir: Path, domains_dir: Path) -> list[str]:
         interviews = {i.id: i for i in load_interviews(pack_dir)}
         rules = load_rules(pack_dir)
         golden = load_extraction_golden(pack_dir)
+        chunks = load_chunks(pack_dir)
+        questions = load_retrieval_questions(pack_dir)
     except PackError as exc:
         return [_located(pack_dir, exc.message)]
     problems = [str(issue) for issue in check_integrity(crm, domain)]
     problems += rule_problems(rules, interviews, domain, crm)
     problems += golden_problems(golden, interviews) if golden else []
+    problems += chunk_problems(chunks, interviews)
+    problems += question_problems(questions, interviews)
     return [_located(pack_dir, p) for p in problems]
 
 
@@ -107,6 +126,41 @@ def extract_rules_command(
         typer.echo(line)
     if report.failures:
         raise typer.Exit(code=1)
+
+
+@app.command("index")
+def index_command(
+    pack: Annotated[str, typer.Option(help="Client pack name under the packs directory.")],
+    packs_dir: Path = PACKS_DIR,
+    domains_dir: Path = DOMAINS_DIR,
+    traces_dir: Path = TRACES_DIR,
+    out_dir: Annotated[Path | None, typer.Option(help="Where to write; default: the pack.")] = None,
+) -> None:
+    """Index a pack's interviews for search: chunk, contextualize, embed (never CRM facts)."""
+    pack_dir = packs_dir / pack
+    try:
+        config = load_pack_config(pack_dir)
+        system = load_prompt(domains_dir, config.domain, CONTEXT_PROMPT)
+        interviews = load_interviews(pack_dir)
+        if not interviews:
+            raise PackError(f"{pack_dir}: no interviews to index")
+        model = build_model(pack_dir, config, traces_dir)
+        embedding = build_embedding(pack_dir, config, traces_dir)
+        chunks, usage = build_index(interviews, model, embedding, system)
+        # The pack's retrieval questions are embedded too: with GROUNDWORK_RECORD=1 that
+        # records them, so replay can answer them; in replay it checks they are recorded.
+        embedding.embed([q.question for q in load_retrieval_questions(pack_dir)], "query")
+    except GroundworkError as exc:
+        typer.echo(_located(pack_dir, str(exc)), err=True)
+        raise typer.Exit(code=1) from exc
+    path = (out_dir or pack_dir) / CHUNKS_FILE
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(dump_chunks(chunks), encoding="utf-8")
+    typer.echo(f"wrote {path}")
+    typer.echo(
+        f"{pack}: {len(chunks)} chunk(s) from {len(interviews)} interview(s), "
+        f"{usage.input_tokens} input / {usage.output_tokens} output tokens"
+    )
 
 
 def _concurrency() -> int:
