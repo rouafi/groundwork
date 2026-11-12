@@ -2,9 +2,15 @@ services:
   api:
     build: .
     command: uvicorn groundwork.entrypoints.api:app --host 0.0.0.0 --port 8000
-    ports: ["8000:8000"]
+    ports: ["127.0.0.1:8000:8000"]  # no auth: never publish on the LAN
     env_file: [.env]
-    volumes: ["./client_packs:/app/client_packs:ro", "./traces:/app/traces:ro"]
+    environment:
+      GROUNDWORK_PACK: ${GROUNDWORK_PACK:-acme}
+    volumes:
+      - "./client_packs:/app/client_packs:ro"
+      - "./domains:/app/domains:ro"
+      - "./traces:/app/traces"  # a run writes its trace here
+      - "var:/app/var"  # sent emails and the approval queue
 
   mcp:
     build: .
@@ -22,3 +28,6 @@ services:
     entrypoint: ["groundwork"]
     env_file: [.env]
     volumes: ["./client_packs:/app/client_packs:ro", "./traces:/app/traces:ro"]
+
+volumes:
+  var:
