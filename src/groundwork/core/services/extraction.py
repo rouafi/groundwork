@@ -39,7 +39,10 @@ from groundwork.core.services.consolidation import (
 from groundwork.core.services.grounding import TypedRule, check_candidate
 from groundwork.core.services.rules_check import claim_contradictions
 
-GROUND_INSTRUCTION = "List every rule the expert states in this interview."
+GROUND_INSTRUCTION = (
+    "List the rules the expert states in this interview, "
+    "one rule per situation, grouping the instructions that apply to the same situation."
+)
 STAGES = ("ground", "type", "consolidate", "questions")
 
 
