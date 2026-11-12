@@ -56,3 +56,19 @@ class EmbeddingMissError(ModelError):
             "set GROUNDWORK_EMBEDDING=voyage and VOYAGE_API_KEY; to record a text for replay, "
             "add GROUNDWORK_RECORD=1 and commit traces/."
         )
+
+
+class AgentError(GroundworkError):
+    """The agent could not produce a usable email. Nothing is sent or queued."""
+
+
+class AgentLimitError(AgentError):
+    """The agent run went past a hard limit (steps, tokens or time) and was aborted."""
+
+    def __init__(self, limit: str, detail: str) -> None:
+        self.limit = limit
+        super().__init__(f"agent aborted: {limit} limit exceeded ({detail})")
+
+
+class ApprovalError(GroundworkError):
+    """An approval cannot be submitted or resolved in its current state."""

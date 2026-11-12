@@ -90,3 +90,17 @@ class Decision(_Harmonize):
         if not self.reasons:
             raise ValueError("a decision needs at least one reason")
         return self
+
+
+ApprovalStatus = Literal["pending", "approved", "rejected"]
+
+
+class ApprovalItem(_Harmonize):
+    """An email waiting for a human. `id` is the case id, so a case is queued once."""
+
+    id: Id
+    contact_id: Id
+    email: HarmonizedEmail
+    decision: Decision
+    status: ApprovalStatus = "pending"
+    reason: str | None = None
