@@ -15,7 +15,13 @@ from mcp.server.mcpserver import MCPServer
 
 from groundwork.core.domain.search import Chunk
 from groundwork.core.services.indexing import build_index, dump_chunks
-from groundwork.core.services.packs import CHUNKS_FILE, load_chunks, load_interviews, load_prompt
+from groundwork.core.services.packs import (
+    CHUNKS_FILE,
+    load_chunks,
+    load_interviews,
+    load_prompt,
+    load_retrieval_questions,
+)
 from groundwork.entrypoints.mcp_server import ALLOWED_TOOLS, ServerContext, create_server
 from groundwork.entrypoints.wiring import build_server_context
 from tests.fakes import HashEmbedding, StubModel
@@ -306,3 +312,17 @@ def test_search_knowhow_without_a_key_names_it(
     env = {"GROUNDWORK_MODEL": "replay", "GROUNDWORK_EMBEDDING": "voyage"}
     context = build_server_context(indexed_pack, DOMAINS, indexed_pack.parent / "traces", env)
     assert "VOYAGE_API_KEY" in _error(create_server(context), "search_knowhow", query="emails")
+
+
+@pytest.mark.parametrize("pack", ["acme", "beta"])
+def test_search_knowhow_answers_the_retrieval_questions_in_replay_with_no_environment(
+    pack: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    for name in ("GROUNDWORK_MODEL", "GROUNDWORK_EMBEDDING", "GROUNDWORK_RECORD"):
+        monkeypatch.delenv(name, raising=False)
+    context = build_server_context(PACKS / pack, DOMAINS, ROOT / "traces", env={})
+    server = create_server(context)
+    for item in load_retrieval_questions(PACKS / pack):
+        hits = _result(server, "search_knowhow", query=item.question, k=5)
+        assert hits, item.question
+        assert {h["doc_id"] for h in hits} <= {i.id for i in load_interviews(PACKS / pack)}
