@@ -9,6 +9,7 @@ from pydantic import BaseModel, RootModel, ValidationError
 
 from groundwork.core.domain.domain_pack import DomainPack
 from groundwork.core.domain.errors import PackError
+from groundwork.core.domain.evals import GoldenCase, Thresholds
 from groundwork.core.domain.golden import ExtractionGolden
 from groundwork.core.domain.harmonize import DemoCase
 from groundwork.core.domain.knowhow import Interview, Rule
@@ -24,6 +25,9 @@ EXTRACTION_GOLDEN_FILE = Path("evals") / "extraction_golden.yaml"
 RULES_FILE = "rules.yaml"
 POLICIES_FILE = "policies.yaml"
 DEMO_FILE = "demo_cases.json"
+GOLDEN_FILE = "golden.jsonl"
+THRESHOLDS_FILE = "thresholds.yaml"
+RUBRIC_FILE = "rubric.md"
 CHUNKS_FILE = Path("index") / "chunks.jsonl"
 RETRIEVAL_FILE = "retrieval.jsonl"
 FRONT_MATTER = "---\n"
@@ -78,6 +82,28 @@ def _load_jsonl[M: BaseModel](path: Path, model: type[M]) -> tuple[M, ...]:
         except ValidationError as exc:
             raise PackError(f"{path}:{number}: {_summarize(exc)}") from exc
     return tuple(items)
+
+
+def load_golden(pack_dir: Path) -> tuple[GoldenCase, ...]:
+    """Read `<pack_dir>/golden.jsonl`, one case per line. A pack without it has none."""
+    cases = _load_jsonl(pack_dir / GOLDEN_FILE, GoldenCase)
+    ids = [c.id for c in cases]
+    if len(set(ids)) != len(ids):
+        duplicates = sorted({i for i in ids if ids.count(i) > 1})
+        raise PackError(f"{pack_dir / GOLDEN_FILE}: duplicate case ids {duplicates}")
+    return cases
+
+
+def load_thresholds(pack_dir: Path) -> Thresholds | None:
+    """Read `<pack_dir>/thresholds.yaml`, or None when the pack states none."""
+    path = pack_dir / THRESHOLDS_FILE
+    return _load_yaml_model(path, Thresholds) if path.is_file() else None
+
+
+def load_rubric(pack_dir: Path) -> str | None:
+    """Read `<pack_dir>/rubric.md`, the tone rubric of the judge, or None."""
+    path = pack_dir / RUBRIC_FILE
+    return path.read_text(encoding="utf-8") if path.is_file() else None
 
 
 def load_demo_cases(pack_dir: Path) -> tuple[DemoCase, ...]:

@@ -21,19 +21,26 @@ from groundwork.core.services.indexing import (
     dump_chunks,
     question_problems,
 )
-from groundwork.core.services.integrity import check_integrity, demo_problems
+from groundwork.core.services.integrity import (
+    check_integrity,
+    demo_problems,
+    golden_case_problems,
+)
 from groundwork.core.services.packs import (
     CHUNKS_FILE,
     load_chunks,
     load_demo_cases,
     load_domain_pack,
     load_extraction_golden,
+    load_golden,
     load_interviews,
     load_pack_config,
     load_pack_policies,
     load_prompt,
     load_retrieval_questions,
+    load_rubric,
     load_rules,
+    load_thresholds,
 )
 from groundwork.core.services.rules_check import rule_problems
 from groundwork.entrypoints.harness_cli import approvals_app, demo_command, harmonize_command
@@ -87,6 +94,9 @@ def pack_problems(pack_dir: Path, domains_dir: Path) -> list[str]:
         chunks = load_chunks(pack_dir)
         questions = load_retrieval_questions(pack_dir)
         demo_cases = load_demo_cases(pack_dir)
+        golden_cases = load_golden(pack_dir)
+        thresholds = load_thresholds(pack_dir)
+        rubric = load_rubric(pack_dir)
         load_pack_policies(pack_dir)
     except PackError as exc:
         return [_located(pack_dir, exc.message)]
@@ -96,6 +106,7 @@ def pack_problems(pack_dir: Path, domains_dir: Path) -> list[str]:
     problems += chunk_problems(chunks, interviews)
     problems += question_problems(questions, interviews)
     problems += demo_problems(demo_cases, crm)
+    problems += golden_case_problems(golden_cases, crm, thresholds is not None, rubric is not None)
     return [_located(pack_dir, p) for p in problems]
 
 
