@@ -9,8 +9,15 @@ from pydantic import BaseModel
 
 from groundwork.core.domain.errors import ApprovalError, NotFoundError
 from groundwork.core.domain.facts import Company, Contact, Deal, Product
-from groundwork.core.domain.harmonize import ApprovalItem, HarmonizedEmail
+from groundwork.core.domain.harmonize import (
+    AgentResult,
+    ApprovalItem,
+    ContextPack,
+    HarmonizedEmail,
+    HarmonizeRequest,
+)
 from groundwork.core.domain.knowhow import Usage
+from groundwork.core.domain.policy import Limits
 from groundwork.core.ports.model import Answer, CitedStatement, Quote, Tier
 
 CALL_USAGE = Usage(input_tokens=10, output_tokens=5)
@@ -199,3 +206,23 @@ class FakeToolBox:
     async def call(self, name: str, arguments: dict[str, Any]) -> tuple[str, bool]:
         self.calls.append((name, arguments))
         return self._results.get(name, ("{}", False))
+
+
+class ScriptedAgent:
+    """AgentPort that returns a fixed result, or raises a fixed error, and records its calls."""
+
+    def __init__(self, result: AgentResult | None = None, error: Exception | None = None) -> None:
+        self._result = result
+        self._error = error
+        self.calls: list[dict[str, Any]] = []
+
+    def run(
+        self, *, system: str, context: ContextPack, request: HarmonizeRequest, limits: Limits
+    ) -> AgentResult:
+        self.calls.append(
+            {"system": system, "context": context, "request": request, "limits": limits}
+        )
+        if self._error is not None:
+            raise self._error
+        assert self._result is not None
+        return self._result
