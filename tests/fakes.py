@@ -173,3 +173,29 @@ class RecordingMessaging:
 
     def send(self, email: HarmonizedEmail, contact: Contact) -> None:
         self.sent.append((email, contact))
+
+
+class FakeToolBox:
+    """ToolBox with scripted tools: `results[name]` is the (text, is_error) a call returns."""
+
+    def __init__(
+        self,
+        specs: Sequence[Any],
+        results: dict[str, tuple[str, bool]] | None = None,
+    ) -> None:
+        self._specs = list(specs)
+        self._results = results or {}
+        self.calls: list[tuple[str, dict[str, Any]]] = []
+
+    async def __aenter__(self) -> "FakeToolBox":
+        return self
+
+    async def __aexit__(self, *_: object) -> None:
+        return None
+
+    async def list_tools(self) -> list[Any]:
+        return self._specs
+
+    async def call(self, name: str, arguments: dict[str, Any]) -> tuple[str, bool]:
+        self.calls.append((name, arguments))
+        return self._results.get(name, ("{}", False))

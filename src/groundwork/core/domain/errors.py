@@ -76,3 +76,25 @@ class ApprovalError(GroundworkError):
 
 class MessagingError(GroundworkError):
     """An email could not be delivered."""
+
+
+class TraceMissError(AgentError):
+    """Replay mode has no recorded trace for this case. Never falls back to a live agent."""
+
+    def __init__(self, case_id: str, path: str) -> None:
+        self.case_id = case_id
+        super().__init__(
+            f"no recorded trace for case {case_id} (expected {path}). "
+            "Record it with GROUNDWORK_MODEL=claude, then commit traces/."
+        )
+
+
+class TraceStaleError(AgentError):
+    """A recorded trace no longer matches what is asked: re-record it, do not replay it."""
+
+    def __init__(self, case_id: str, what: str) -> None:
+        self.case_id = case_id
+        super().__init__(
+            f"recorded trace of case {case_id} no longer matches the {what}: "
+            "re-record it with GROUNDWORK_MODEL=claude, then commit traces/."
+        )
