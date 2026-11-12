@@ -5,7 +5,7 @@ Status: todo | Branch: `feat/evals` | Depends on: 005
 Decide, with numbers, whether an agent may write for a given client. Evals gate go-live and produce the proof that goes in the README.
 
 ## Why
-It is the Juno protocol (expert review, then production validation) made reproducible: automated first, human second, same suite for every client with client-specific thresholds.
+It is the validation protocol from deploying AI for manufacturers (expert review, then production validation) made reproducible: automated first, human second, same suite for every client with client-specific thresholds.
 
 ## Read first
 CLAUDE.md, docs/evals.md, docs/security.md, PRD-005.

@@ -5,7 +5,7 @@ Status: done | Branch: `feat/knowhow-ontology` | Depends on: 001
 Turn expert interviews into approved rules that carry provenance, through a grounded extraction workflow. Every rule is anchored to a verbatim span returned by the API, checked against the CRM facts, and approved by a human. The workflow also reports what the experts disagree on and what they never covered. After this PR each pack has a `rules.yaml` produced by a real recorded run and reviewed by a human.
 
 ## Why
-This is the Juno pattern made reusable: tacit know-how captured through LLM-assisted interviews, then validated by experts before it influences anything. At a client, the hard part is not the extraction. It is knowing that every rule really comes from an expert, spotting where experts contradict each other or the CRM, and knowing what to ask in the next interview.
+This is the pattern from deploying AI for manufacturers, made reusable: tacit know-how captured through LLM-assisted interviews, then validated by experts before it influences anything. At a client, the hard part is not the extraction. It is knowing that every rule really comes from an expert, spotting where experts contradict each other or the CRM, and knowing what to ask in the next interview.
 
 ## Read first
 CLAUDE.md, docs/knowledge.md, docs/security.md, docs/architecture.md, docs/adr/0002-ontology-for-facts-vectors-for-know-how.md, docs/adr/0004-side-effects-outside-the-model.md.
