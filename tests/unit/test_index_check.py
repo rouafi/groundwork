@@ -48,9 +48,8 @@ def test_line_breaks_do_not_matter_when_matching_the_interview() -> None:
 
 
 def test_a_chunk_from_an_unknown_interview_is_a_problem() -> None:
-    (problem,) = chunk_problems([_chunk(doc_id="acme-i-9")], INTERVIEWS)
-    assert "acme-i-1-c-001" in problem
-    assert "unknown interview 'acme-i-9'" in problem
+    problems = chunk_problems([_chunk(doc_id="acme-i-9")], INTERVIEWS)
+    assert any("acme-i-1-c-001" in p and "unknown interview 'acme-i-9'" in p for p in problems)
 
 
 def test_a_chunk_whose_text_is_not_in_its_interview_is_a_problem() -> None:
@@ -67,6 +66,16 @@ def test_duplicate_ids_missing_embeddings_and_mixed_sizes_are_problems() -> None
     assert any("duplicate id" in p for p in problems)
     assert any("c-002: no embedding" in p for p in problems)
     assert any("different sizes" in p for p in problems)
+
+
+def test_an_interview_added_after_the_index_was_built_is_a_problem() -> None:
+    more = {**INTERVIEWS, "acme-i-2": Interview(id="acme-i-2", role="r", text="New interview.")}
+    (problem,) = chunk_problems([_chunk()], more)
+    assert problem == "index: interview acme-i-2 has no chunk, run `groundwork index`"
+
+
+def test_a_pack_with_no_index_has_nothing_to_be_stale() -> None:
+    assert chunk_problems([], INTERVIEWS) == []
 
 
 def test_the_dump_is_one_sorted_line_per_chunk_and_idempotent() -> None:

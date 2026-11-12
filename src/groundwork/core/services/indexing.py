@@ -82,6 +82,13 @@ def chunk_problems(chunks: Sequence[Chunk], interviews: dict[str, Interview]) ->
             problems.append(f"chunk {chunk.id}: unknown interview {chunk.doc_id!r}")
         elif " ".join(chunk.text.split()) not in " ".join(interview.text.split()):
             problems.append(f"chunk {chunk.id}: text is not in interview {chunk.doc_id}")
+    if chunks:
+        indexed = {c.doc_id for c in chunks}
+        problems += [
+            f"index: interview {i} has no chunk, run `groundwork index`"
+            for i in sorted(interviews)
+            if i not in indexed
+        ]
     return problems
 
 
