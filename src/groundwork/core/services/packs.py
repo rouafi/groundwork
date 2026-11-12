@@ -11,6 +11,7 @@ from groundwork.core.domain.errors import PackError
 from groundwork.core.domain.golden import ExtractionGolden
 from groundwork.core.domain.knowhow import Interview, Rule
 from groundwork.core.domain.pack import PackConfig
+from groundwork.core.domain.policy import Policies, PolicyOverrides
 from groundwork.core.domain.search import Chunk, RetrievalQuestion
 
 DOMAIN_FILE = "domain.yaml"
@@ -19,6 +20,7 @@ PROMPTS_DIR = "prompts"
 INTERVIEWS_DIR = "interviews"
 EXTRACTION_GOLDEN_FILE = Path("evals") / "extraction_golden.yaml"
 RULES_FILE = "rules.yaml"
+POLICIES_FILE = "policies.yaml"
 CHUNKS_FILE = Path("index") / "chunks.jsonl"
 RETRIEVAL_FILE = "retrieval.jsonl"
 FRONT_MATTER = "---\n"
@@ -73,6 +75,18 @@ def _load_jsonl[M: BaseModel](path: Path, model: type[M]) -> tuple[M, ...]:
         except ValidationError as exc:
             raise PackError(f"{path}:{number}: {_summarize(exc)}") from exc
     return tuple(items)
+
+
+def load_domain_policies(domains_dir: Path, domain: str) -> Policies:
+    """Read `<domains_dir>/<domain>/policies.yaml`, the domain defaults. Missing means core only."""
+    path = domains_dir / domain / POLICIES_FILE
+    return _load_yaml_model(path, Policies) if path.is_file() else Policies()
+
+
+def load_pack_policies(pack_dir: Path) -> PolicyOverrides | None:
+    """Read `<pack_dir>/policies.yaml`, the client's additions, or None when it has none."""
+    path = pack_dir / POLICIES_FILE
+    return _load_yaml_model(path, PolicyOverrides) if path.is_file() else None
 
 
 def load_extraction_golden(pack_dir: Path) -> ExtractionGolden | None:
