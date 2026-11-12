@@ -1,0 +1,6 @@
+# beta: synthetic client, industrial maintenance services sold to large accounts.
+crm: fixture
+messaging: console
+vector_store: lancedb
+model: replay
+domain: comms

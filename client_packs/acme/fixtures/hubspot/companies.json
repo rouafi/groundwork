@@ -1,0 +1,5 @@
+[
+  {"id": "acme-co-1", "properties": {"name": "Plume Logistics", "segment": "smb", "country": "FR"}},
+  {"id": "acme-co-2", "properties": {"name": "Verrier Ateliers", "segment": "mid-market", "country": "BE"}},
+  {"id": "acme-co-3", "properties": {"name": "Halden Foods", "segment": "smb", "country": "FR"}}
+]

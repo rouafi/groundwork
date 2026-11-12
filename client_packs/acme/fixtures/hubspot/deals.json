@@ -1,0 +1,8 @@
+[
+  {"id": "acme-d-1", "properties": {"dealname": "Plume Logistics - Insight Pro", "dealstage": "contractsent", "amount": "2290.00", "product_ids": "acme-p-2;acme-p-4"}, "associations": {"contacts": {"results": [{"id": "acme-c-1", "type": "deal_to_contact"}]}}},
+  {"id": "acme-d-2", "properties": {"dealname": "Plume Logistics - API pilot", "dealstage": "qualifiedtobuy", "amount": "1490.00", "product_ids": "acme-p-2"}, "associations": {"contacts": {"results": [{"id": "acme-c-2", "type": "deal_to_contact"}]}}},
+  {"id": "acme-d-3", "properties": {"dealname": "Verrier Ateliers - Enterprise", "dealstage": "decisionmakerboughtin", "amount": "4900.00", "product_ids": "acme-p-3"}, "associations": {"contacts": {"results": [{"id": "acme-c-3", "type": "deal_to_contact"}]}}},
+  {"id": "acme-d-4", "properties": {"dealname": "Verrier Ateliers - Training", "dealstage": "appointmentscheduled", "amount": "800.00", "product_ids": "acme-p-4"}, "associations": {"contacts": {"results": [{"id": "acme-c-4", "type": "deal_to_contact"}]}}},
+  {"id": "acme-d-5", "properties": {"dealname": "Halden Foods - Starter", "dealstage": "closedwon", "amount": "490.00", "product_ids": "acme-p-1"}, "associations": {"contacts": {"results": [{"id": "acme-c-5", "type": "deal_to_contact"}]}}},
+  {"id": "acme-d-6", "properties": {"dealname": "Halden Foods - Upgrade to Pro", "dealstage": "presentationscheduled", "amount": "1490.00", "product_ids": "acme-p-2"}, "associations": {"contacts": {"results": [{"id": "acme-c-5", "type": "deal_to_contact"}]}}}
+]

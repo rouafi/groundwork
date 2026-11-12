@@ -1,0 +1,5 @@
+[
+  {"id": "d_1", "properties": {"dealname": "Basic for Sample Works", "dealstage": "closedwon", "amount": "100.00", "product_ids": "p_1"}, "associations": {"contacts": {"results": [{"id": "c_1", "type": "deal_to_contact"}]}}},
+  {"id": "d_2", "properties": {"dealname": "Pro upgrade", "dealstage": "negotiation", "amount": "501.00", "product_ids": "p_2;p_1"}, "associations": {"contacts": {"results": [{"id": "c_1", "type": "deal_to_contact"}]}}},
+  {"id": "d_3", "properties": {"dealname": "Pro for Sample Group", "dealstage": "appointmentscheduled", "amount": "250.50", "product_ids": "p_2"}, "associations": {"contacts": {"results": [{"id": "c_2", "type": "deal_to_contact"}]}}}
+]

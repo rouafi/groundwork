@@ -1,0 +1,6 @@
+[
+  {"id": "acme-p-1", "properties": {"name": "Insight Starter", "description": "Dashboards for up to 10 users.", "price": "490.00", "currency": "EUR", "allowed_claims": "Setup in one day;Up to 10 users"}},
+  {"id": "acme-p-2", "properties": {"name": "Insight Pro", "description": "Dashboards, alerts and API access for up to 50 users.", "price": "1490.00", "currency": "EUR", "allowed_claims": "Setup in one day;Up to 50 users;Full API access"}},
+  {"id": "acme-p-3", "properties": {"name": "Insight Enterprise", "description": "Unlimited users, SSO and a 99.9% uptime SLA.", "price": "4900.00", "currency": "EUR", "allowed_claims": "Unlimited users;Single sign-on;99.9% uptime SLA"}},
+  {"id": "acme-p-4", "properties": {"name": "Onboarding Pack", "description": "Two training sessions for the customer's team.", "price": "800.00", "currency": "EUR", "allowed_claims": "Two training sessions"}}
+]

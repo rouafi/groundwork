@@ -1,0 +1,5 @@
+[
+  {"id": "beta-co-1", "properties": {"name": "Kestrel Energy Works", "segment": "enterprise", "country": "DE"}},
+  {"id": "beta-co-2", "properties": {"name": "Orvane Chemicals", "segment": "enterprise", "country": "NL"}},
+  {"id": "beta-co-3", "properties": {"name": "Talbridge Packaging", "segment": "mid-market", "country": "GB"}}
+]

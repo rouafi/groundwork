@@ -1,0 +1,6 @@
+[
+  {"id": "beta-p-1", "properties": {"name": "Predictive Maintenance Annual", "description": "Sensor monitoring and failure prediction for one plant.", "price": "120000.00", "currency": "USD", "allowed_claims": "24/7 monitoring;Failure alerts within 15 minutes"}},
+  {"id": "beta-p-2", "properties": {"name": "On-site Audit", "description": "Five-day reliability audit by two engineers.", "price": "18500.00", "currency": "USD", "allowed_claims": "Report delivered within 10 business days"}},
+  {"id": "beta-p-3", "properties": {"name": "Spare Parts Program", "description": "Guaranteed stock of critical spare parts.", "price": "45000.00", "currency": "USD", "allowed_claims": "Next-day delivery in the EU"}},
+  {"id": "beta-p-4", "properties": {"name": "Technician Training", "description": "Three-day certification course for up to 12 technicians.", "price": "9600.00", "currency": "USD", "allowed_claims": "Certification included;Up to 12 technicians"}}
+]
