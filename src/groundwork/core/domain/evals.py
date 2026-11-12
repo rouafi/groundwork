@@ -70,3 +70,39 @@ class Thresholds(_Eval):
     traceability_min: Fraction = 1.0
     retrieval_recall_at_5_min: Fraction = 0.8
     judge_agreement_min: Fraction = 0.8
+
+
+class FactScore(_Eval):
+    """Fact accuracy of one email: false claims, and `must_contain` strings it lacks."""
+
+    false_claims: int = Field(ge=0)
+    missing: tuple[str, ...] = ()
+
+    @property
+    def passed(self) -> bool:
+        return self.false_claims == 0 and not self.missing
+
+
+class TraceabilityScore(_Eval):
+    """Whether what an email cites exists: unknown node ids, and cited rules that do not apply."""
+
+    cited: tuple[str, ...] = ()
+    unknown: tuple[str, ...] = ()
+    inapplicable: tuple[str, ...] = ()
+
+    @property
+    def passed(self) -> bool:
+        return not self.unknown and not self.inapplicable
+
+
+class RetrievalScore(_Eval):
+    """recall@k over a pack's retrieval questions: how many found their passage."""
+
+    k: int = Field(ge=1)
+    found: int = Field(ge=0)
+    total: int = Field(ge=0)
+    missed: tuple[str, ...] = ()
+
+    @property
+    def recall(self) -> float:
+        return self.found / self.total if self.total else 0.0
