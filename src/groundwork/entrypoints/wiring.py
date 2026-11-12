@@ -30,6 +30,7 @@ from groundwork.core.ports.model import ModelPort
 from groundwork.core.ports.vector_store import VectorStorePort
 from groundwork.core.services.packs import (
     CONFIG_FILE,
+    load_chunks,
     load_domain_pack,
     load_pack_config,
     load_prompt,
@@ -152,8 +153,9 @@ def build_server_context(
 ) -> ServerContext:
     """Everything the MCP server of one pack reads. Raises `PackError` on a bad pack.
 
-    The model is built on the first claim check only, so the three fact tools work
-    with no API key; a missing key is a `ModelError` that `check_claims` reports.
+    The model and the query embedding are built on first use only, so the fact tools
+    work with no API key; a missing key is a `ModelError` the tool reports. The pack's
+    index, if it has one, is loaded into the vector store here.
     """
     config = load_pack_config(pack_dir)
     domain = load_domain_pack(domains_dir, config.domain)
@@ -163,6 +165,15 @@ def build_server_context(
     def model() -> ModelPort:
         return build_model(pack_dir, config, traces_dir, env)
 
+    @functools.cache
+    def embedding() -> EmbeddingPort:
+        return build_embedding(pack_dir, config, traces_dir, env)
+
+    chunks = load_chunks(pack_dir)
+    store = build_store(pack_dir, config)
+    if chunks:
+        store.upsert(chunks)
+
     return ServerContext(
         pack=pack_dir.name,
         domain=domain,
@@ -170,4 +181,7 @@ def build_server_context(
         rules=load_rules(pack_dir),
         claims_prompt=claims_prompt,
         model=model,
+        store=store,
+        embedding=embedding,
+        indexed_chunks=len(chunks),
     )
