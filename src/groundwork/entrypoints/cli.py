@@ -95,7 +95,7 @@ def extract_rules_command(
     except PackError as exc:
         typer.echo(_located(pack_dir, exc.message), err=True)
         raise typer.Exit(code=1) from exc
-    concurrency = int(os.environ.get(CONCURRENCY_ENV, "4"))
+    concurrency = _concurrency()
     report = extract_rules(workflow, interviews, max_concurrency=concurrency)
     by_id = {i.id: i for i in interviews}
     checks = check_against_golden(report, golden, by_id) if golden else ()
@@ -105,6 +105,14 @@ def extract_rules_command(
         typer.echo(line)
     if report.failures:
         raise typer.Exit(code=1)
+
+
+def _concurrency() -> int:
+    value = os.environ.get(CONCURRENCY_ENV, "4")
+    if not value.isdigit() or int(value) < 1:
+        typer.echo(f"{CONCURRENCY_ENV} must be a positive integer, got {value!r}", err=True)
+        raise typer.Exit(code=1)
+    return int(value)
 
 
 def _pack_dirs(packs_dir: Path) -> list[Path]:

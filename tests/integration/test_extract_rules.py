@@ -134,6 +134,16 @@ def test_an_unknown_model_adapter_is_rejected(
     assert "unknown model adapter 'gpt' (valid: claude, replay)" in result.output
 
 
+@pytest.mark.parametrize("value", ["x", "0"])
+def test_a_bad_concurrency_value_is_explained(
+    traces: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, value: str
+) -> None:
+    monkeypatch.setenv("GROUNDWORK_MAX_CONCURRENCY", value)
+    result = _extract(traces, tmp_path / "out")
+    assert result.exit_code == 1
+    assert "GROUNDWORK_MAX_CONCURRENCY must be a positive integer" in result.output
+
+
 def test_an_invalid_pack_is_reported(tmp_path: Path) -> None:
     packs = tmp_path / "client_packs"
     shutil.copytree(REPO / "client_packs" / "acme", packs / "acme")
