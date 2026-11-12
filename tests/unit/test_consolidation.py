@@ -60,6 +60,18 @@ def test_conflicts_are_flagged_with_renumbered_ids_and_rules_kept() -> None:
     assert conflict.reason == "discounts"
 
 
+def test_rule_ids_in_a_conflict_reason_follow_the_renumbering() -> None:
+    reason = "acme-r-002 forbids what r-004 allows, unlike acme-r-999"
+    result, _ = _consolidate(
+        {
+            "duplicates": [{"rule_ids": ["acme-r-001", "acme-r-002"], "reason": "same"}],
+            "conflicts": [{"rule_ids": ["acme-r-002", "acme-r-004"], "reason": reason}],
+        }
+    )
+    (conflict,) = result.conflicts
+    assert conflict.reason == "acme-r-001 forbids what r-003 allows, unlike acme-r-999"
+
+
 def test_references_to_unknown_or_single_rules_are_ignored() -> None:
     result, _ = _consolidate(
         {

@@ -10,6 +10,7 @@
 - Follow-up questions for the next interview are drafted by the cheap model.
 """
 
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -65,7 +66,8 @@ def consolidate(pack: str, rules: Sequence[Rule], model: ModelPort, system: str)
     groups = _valid_groups(answer.value.duplicates, known, exclusive=True)
     merged, merged_into = _merge(rules, groups)
     renumbered, new_id = _renumber(pack, merged)
-    conflicts = _conflicts(answer.value.conflicts, known, merged_into, new_id)
+    renamed = {i: new_id[merged_into.get(i, i)] for i in known}
+    conflicts = _conflicts(pack, answer.value.conflicts, known, renamed)
     usage = StageUsage(stage="consolidate", calls=1, usage=answer.usage)
     return Consolidated(rules=renumbered, conflicts=conflicts, usage=usage)
 
@@ -143,14 +145,30 @@ def _renumber(pack: str, rules: Sequence[Rule]) -> tuple[tuple[Rule, ...], dict[
 
 
 def _conflicts(
-    groups: Sequence[_Group], known: set[str], merged_into: dict[str, str], new_id: dict[str, str]
+    pack: str, groups: Sequence[_Group], known: set[str], renamed: dict[str, str]
 ) -> tuple[Conflict, ...]:
     conflicts = []
     for group in _valid_groups(groups, known, exclusive=False):
-        ids = sorted({new_id[merged_into.get(i, i)] for i in group.rule_ids})
+        ids = sorted({renamed[i] for i in group.rule_ids})
         if len(ids) >= 2:
-            conflicts.append(Conflict(rule_ids=tuple(ids), reason=group.reason))
+            reason = _rename_ids(pack, group.reason, renamed)
+            conflicts.append(Conflict(rule_ids=tuple(ids), reason=reason))
     return tuple(conflicts)
+
+
+def _rename_ids(pack: str, text: str, renamed: dict[str, str]) -> str:
+    """Rewrite the rule ids the model wrote in a reason, full or short ('r-004'), so the
+    reason names the rules a reviewer sees. Unknown ids are left as they are."""
+
+    def rename(match: re.Match[str]) -> str:
+        old = f"{pack}-{match.group('short')}"
+        new = renamed.get(old)
+        if new is None:
+            return match.group(0)
+        return new if match.group("pack") else new.removeprefix(f"{pack}-")
+
+    pattern = rf"\b(?P<pack>{re.escape(pack)}-)?(?P<short>r-\d{{3}})\b"
+    return re.sub(pattern, rename, text)
 
 
 def _contacts_by_audience(crm: CrmPort) -> dict[tuple[str, str], int]:
