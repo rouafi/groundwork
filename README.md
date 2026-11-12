@@ -13,7 +13,7 @@ Most AI deployments restart from scratch at every client: business facts live in
 
 This kit separates what never changes (the **core**), what is reusable per business domain (**domain packs**), and what is specific to each client (**client packs**). An FDE team ships a new client by filling a client pack through a 5-day playbook, not by writing new code.
 
-> Demo use case: **email harmonization** on top of HubSpot. Same core, two clients, same draft, two different compliant emails.
+> Demo use case: **email harmonization** on top of a CRM (HubSpot, Salesforce, Pipedrive...). Same core, two clients, same draft, two different compliant emails.
 
 ---
 
@@ -51,7 +51,7 @@ graph LR
   Contact -->|segment, persona| Rule
 ```
 
-- **Facts** come from the client's systems (HubSpot here). They are the source of truth for names, prices, deal stages.
+- **Facts** come from the client's systems (a CRM such as HubSpot or Salesforce, an ERP, a billing tool...). They are the source of truth for names, prices, deal stages.
 - **Know-how** is extracted from expert interviews by Claude, reviewed by a human, and stored with its **provenance** (interview, quote) and **scope** (internal/external, segment, persona).
 - **The bridge** (Product, Segment, Persona) lets the agent ask: *"what can I say to this contact, and how?"*
 
@@ -70,7 +70,7 @@ graph LR
   Check -->|false claim| Block[Blocked]
 ```
 
-- **Headless:** CLI, HTTP API, HubSpot webhook. No UI.
+- **Headless:** CLI, HTTP API, webhooks from the client's SaaS (e.g. a CRM event). No UI.
 - **Context sharing:** the same MCP server feeds the headless agent and Claude Desktop. Sales asks the ontology in Claude; the agent uses the exact same context.
 - **Traceable:** every output cites the ontology nodes it used.
 
@@ -82,7 +82,7 @@ Every external system (CRM, email, vector store, model) sits behind a port. Each
 
 ```yaml
 # client_packs/acme/config.yaml
-crm: fixture        # HubSpot-shaped fixtures; a live hubspot adapter is planned
+crm: fixture        # CRM-shaped fixtures; live adapters (e.g. HubSpot, Salesforce) plug in here
 messaging: console
 vector_store: lancedb
 model: claude       # or: replay (used by make demo)
@@ -135,7 +135,7 @@ Interview script and discovery canvas: [`playbook/`](playbook/).
 ```
 src/groundwork/
   core/          domain, ports, services (harness, context, policies, evals)
-  adapters/      HubSpot, LanceDB, Voyage, Claude, replay...
+  adapters/      CRM, vector store, embeddings, model, replay...
   entrypoints/   CLI, HTTP API, MCP server
 domains/comms/   ontology schema, skills, eval scorers
 client_packs/    acme/, beta/: config, fixtures, interviews, rules, golden set
