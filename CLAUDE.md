@@ -36,6 +36,7 @@ An FDE deployment kit: a reusable core, domain packs and client packs, demonstra
 | Secrets, data, LLM guardrails, side effects | docs/security.md |
 | Commits, branches, PRs, tests, definition of done | docs/conventions.md |
 | Client onboarding, packs, discovery | docs/playbook.md |
+| The MCP server, Claude Desktop connection | docs/mcp.md |
 | Building a feature | the matching PRD in docs/prd/ (read the index first) |
 | The verification loop | docs/workflow.md |
 | Why something is the way it is | docs/adr/ |

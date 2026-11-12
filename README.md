@@ -139,7 +139,7 @@ src/groundwork/
   entrypoints/   CLI, HTTP API, MCP server
 domains/comms/   ontology schema, skills, eval scorers
 client_packs/    acme/, beta/: config, fixtures, interviews, rules, golden set
-docs/            architecture, knowledge, evals, security, conventions, playbook, ADRs
+docs/            architecture, knowledge, MCP guide, evals, security, conventions, playbook, ADRs
 tests/           unit, contracts, integration
 ```
 
@@ -149,7 +149,7 @@ All data in this repo is synthetic.
 
 ## Development
 
-`make setup` then `make check`. Rules for humans and for Claude Code: [`CLAUDE.md`](CLAUDE.md) and [`docs/conventions.md`](docs/conventions.md).
+`make setup` then `make check`. To use a client's context from Claude Desktop, follow [`docs/mcp.md`](docs/mcp.md). Rules for humans and for Claude Code: [`CLAUDE.md`](CLAUDE.md) and [`docs/conventions.md`](docs/conventions.md).
 
 ---
 

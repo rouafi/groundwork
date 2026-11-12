@@ -66,6 +66,9 @@ Unit: services and claim verification. Integration: server round trip. Security:
 - `check_claims` extracts claims on the server with the cheap model (the text as a document), then decides in code. The calling agent is never trusted to list its own claims (ADR 0008).
 - A price is `verified` only when amount and currency both match; a price with no currency, no readable amount or no known product is `unknown`. `$` reads as USD.
 - A product name must equal a catalog name (case and spacing ignored), so a nickname such as "the Pro plan" is `false` if the model reports it as a product name; the prompt asks for names as written.
+- A feature with no product named is `unknown`, and the reason lists the products that allow it; the PRD's catalog-wide lookup would have verified a promise true of another product.
+- With `GROUNDWORK_MODEL=claude` and no key, `check_claims` returns an error naming `ANTHROPIC_API_KEY`; API failures become `ModelError` in the Claude adapter.
+- The `mcp` service is published on `127.0.0.1` only, since the server has no authentication.
 - Features reuse the extraction workflow's word containment (`matching_allowed_claim`): a paraphrase stays `unknown`. No step makes a semantic judgment; the PRD-002 note said otherwise and is corrected.
 - `get_rules` rejects a segment or persona outside the domain vocabulary, so a typo does not silently drop the specific rules.
 - Unknown ids, replay misses and vocabulary errors come back as tool errors naming the cause. The `ping` tool is removed.
