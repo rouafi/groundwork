@@ -33,6 +33,7 @@ from groundwork.core.domain.search import SearchHit
 from groundwork.core.ports.agent import AgentPort
 from groundwork.core.ports.crm import CrmPort
 from groundwork.core.ports.embedding import EmbeddingPort
+from groundwork.core.ports.messaging import MessagingPort
 from groundwork.core.ports.model import ModelPort
 from groundwork.core.ports.vector_store import VectorStorePort
 from groundwork.core.services.harmonize import HarmonizeFlow
@@ -68,6 +69,9 @@ CRM_ADAPTERS: Mapping[str, Callable[[Path], CrmPort]] = MappingProxyType(
     {"fixture": lambda pack_dir: FixtureCrm(pack_dir / FIXTURES_SUBDIR)}
 )
 MODEL_ADAPTERS = ("claude", "replay")
+MESSAGING_ADAPTERS: Mapping[str, Callable[[str, Path], MessagingPort]] = MappingProxyType(
+    {"console": lambda pack, var_dir: ConsoleMessaging(pack, var_dir)}
+)
 EMBEDDING_ADAPTERS = ("replay", "voyage")
 STORE_ADAPTERS: Mapping[str, Callable[[], VectorStorePort]] = MappingProxyType(
     {"lancedb": LanceDbStore, "memory": InMemoryVectorStore}
@@ -202,6 +206,18 @@ def build_server_context(
     )
 
 
+def build_messaging(pack_dir: Path, config: PackConfig, var_dir: Path) -> MessagingPort:
+    """Build the messaging adapter the pack selects with `messaging:` in its config."""
+    factory = MESSAGING_ADAPTERS.get(config.messaging)
+    if factory is None:
+        valid = ", ".join(sorted(MESSAGING_ADAPTERS))
+        raise PackError(
+            f"{pack_dir / CONFIG_FILE}: unknown messaging adapter {config.messaging!r} "
+            f"(valid: {valid})"
+        )
+    return factory(pack_dir.name, var_dir)
+
+
 def build_agent(
     pack_dir: Path,
     config: PackConfig,
@@ -265,7 +281,7 @@ def build_flow(
         rules=server.rules,
         agent=agent,
         model=server.model(),
-        messaging=ConsoleMessaging(pack_dir.name, var_dir),
+        messaging=build_messaging(pack_dir, config, var_dir),
         approval=FileApproval(pack_dir.name, var_dir),
         policies=policies,
         system=load_prompt(domains_dir, config.domain, HARMONIZE_PROMPT),

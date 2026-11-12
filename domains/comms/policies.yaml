@@ -7,9 +7,9 @@ forbidden_patterns:
     - '(?i)\b(api[_-]?key|password|passwd|secret|token)\s*[:=]\s*\S+'
     - '\bsk-[A-Za-z0-9_-]{16,}'
   external:
-    # a percentage discount in writing (acme-r-003, beta-r-005)
+    # a percentage discount in writing
     - '(?i)\b\d{1,3}\s?%\s?(off|discount|rebate)\b'
-    # an open-ended promise (acme-r-022)
+    # an open-ended promise
     - '(?i)\bunlimited\s+(training|support|sessions|visits)\b'
 limits:
   max_steps: 8

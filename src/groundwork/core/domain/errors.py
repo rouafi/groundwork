@@ -85,7 +85,8 @@ class TraceMissError(AgentError):
         self.case_id = case_id
         super().__init__(
             f"no recorded trace for case {case_id} (expected {path}). "
-            "Record it with GROUNDWORK_MODEL=claude, then commit traces/."
+            "Record it with GROUNDWORK_MODEL=claude GROUNDWORK_RECORD=1 "
+            "(run with uv run --env-file .env), then commit traces/."
         )
 
 
@@ -96,5 +97,6 @@ class TraceStaleError(AgentError):
         self.case_id = case_id
         super().__init__(
             f"recorded trace of case {case_id} no longer matches the {what}: "
-            "re-record it with GROUNDWORK_MODEL=claude, then commit traces/."
+            "re-record it with GROUNDWORK_MODEL=claude GROUNDWORK_RECORD=1 "
+            "(run with uv run --env-file .env), then commit traces/."
         )

@@ -73,9 +73,27 @@ def approvals_list(
     """List the emails waiting for approval."""
     pending = FileApproval(pack, var_dir).list_pending()
     for item in pending:
-        typer.echo(f'{item.id}  to {item.contact_id}  "{item.email.subject}"')
-        typer.echo(f"    {item.decision.reasons[0]}")
+        typer.echo(f'{item.id}  to {item.recipient}  "{item.email.subject}"')
+        for reason in item.decision.reasons:
+            typer.echo(f"    - {reason}")
     typer.echo(f"{len(pending)} pending")
+
+
+@approvals_app.command("show")
+def approvals_show(
+    id: Annotated[str, typer.Argument(help="Approval id (the case id).")],
+    pack: Annotated[str, typer.Option(help="Client pack name.")],
+    var_dir: Path = VAR_DIR,
+) -> None:
+    """Show a pending email in full, with why it waits: read it before you decide."""
+    item = next((i for i in FileApproval(pack, var_dir).list_pending() if i.id == id), None)
+    if item is None:
+        raise _fail(f"approval {id!r} is not pending (see: approvals list)")
+    typer.echo(f"To: {item.recipient}\nSubject: {item.email.subject}\n\n{item.email.body}\n")
+    typer.echo(f"Why it was written this way: {item.email.rationale}")
+    typer.echo("Why it waits for you:")
+    for reason in item.decision.reasons:
+        typer.echo(f"  - {reason}")
 
 
 @approvals_app.command("approve")

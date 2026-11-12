@@ -43,6 +43,7 @@ from groundwork.entrypoints.wiring import (
     CONTEXT_PROMPT,
     build_crm,
     build_embedding,
+    build_messaging,
     build_model,
     build_server_context,
 )
@@ -79,6 +80,7 @@ def pack_problems(pack_dir: Path, domains_dir: Path) -> list[str]:
         config = load_pack_config(pack_dir)
         domain = load_domain_pack(domains_dir, config.domain)
         crm = build_crm(pack_dir, config)
+        build_messaging(pack_dir, config, Path("var"))
         interviews = {i.id: i for i in load_interviews(pack_dir)}
         rules = load_rules(pack_dir)
         golden = load_extraction_golden(pack_dir)

@@ -32,3 +32,18 @@ def test_missing_key_is_rejected(key: str) -> None:
 def test_domain_must_be_a_folder_slug(domain: str) -> None:
     with pytest.raises(ValidationError):
         PackConfig.model_validate({**VALID, "domain": domain})
+
+
+def test_the_internal_recipient_is_optional_and_must_be_an_address() -> None:
+    base = {
+        "crm": "fixture",
+        "messaging": "console",
+        "vector_store": "lancedb",
+        "model": "replay",
+        "domain": "comms",
+    }
+    assert PackConfig.model_validate(base).internal_recipient is None
+    ok = PackConfig.model_validate({**base, "internal_recipient": "handoffs@acme.example"})
+    assert ok.internal_recipient == "handoffs@acme.example"
+    with pytest.raises(ValidationError):
+        PackConfig.model_validate({**base, "internal_recipient": "not an address"})

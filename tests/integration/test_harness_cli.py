@@ -154,6 +154,12 @@ def test_harmonize_queues_an_external_email_and_approving_sends_it_once(
 
     listing = runner.invoke(app, ["approvals", "list", *var])
     assert "external-ok" in listing.output and "1 pending" in listing.output
+    assert "    - " in listing.output  # every reason is listed, not only the first
+    shown = runner.invoke(app, ["approvals", "show", "external-ok", *var])
+    assert shown.exit_code == 0, shown.output
+    assert "To: " in shown.output and "Subject: Your quote" in shown.output
+    assert "Insight Pro costs 1490.00 EUR." in shown.output
+    assert "Why it waits for you:" in shown.output and "never sent automatically" in shown.output
     assert not (world["var"] / "outbox").exists()
 
     sent = runner.invoke(app, ["approvals", "approve", "external-ok", *var])
@@ -234,3 +240,23 @@ def test_validate_packs_checks_demo_cases_and_policies(world: dict[str, Path]) -
     bad_policy = runner.invoke(app, validate)
     assert bad_policy.exit_code == 1
     assert "policies.yaml" in bad_policy.output and "auto_send_external" in bad_policy.output
+
+
+def test_showing_an_approval_that_is_not_pending_is_an_error(world: dict[str, Path]) -> None:
+    result = runner.invoke(
+        app, ["approvals", "show", "nope", "--pack", "acme", "--var-dir", str(world["var"])]
+    )
+    assert result.exit_code == 1 and "is not pending" in result.output
+
+
+def test_validate_packs_rejects_a_messaging_adapter_that_does_not_exist(
+    world: dict[str, Path],
+) -> None:
+    config = world["packs"] / "acme" / "config.yaml"
+    config.write_text(config.read_text().replace("messaging: console", "messaging: smtp"))
+    result = runner.invoke(
+        app,
+        ["validate-packs", "--packs-dir", str(world["packs"]), "--domains-dir", str(DOMAINS)],
+    )
+    assert result.exit_code == 1
+    assert "unknown messaging adapter 'smtp' (valid: console)" in result.output

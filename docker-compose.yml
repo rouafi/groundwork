@@ -27,7 +27,11 @@ services:
     profiles: [tools]
     entrypoint: ["groundwork"]
     env_file: [.env]
-    volumes: ["./client_packs:/app/client_packs:ro", "./traces:/app/traces:ro"]
+    volumes:
+      - "./client_packs:/app/client_packs:ro"
+      - "./domains:/app/domains:ro"
+      - "./traces:/app/traces"
+      - "var:/app/var"  # the same queue as the api service: docker compose run cli approvals list ...
 
 volumes:
   var:
