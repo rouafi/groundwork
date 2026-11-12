@@ -259,10 +259,11 @@ def build_flow(
         def search(query: str) -> tuple[SearchHit, ...]:
             return search_knowhow(query, server.store, server.embedding(), PASSAGES)
 
+    agent = build_agent(pack_dir, config, traces_dir, server, env)
     return HarmonizeFlow(
         crm=server.crm,
         rules=server.rules,
-        agent=build_agent(pack_dir, config, traces_dir, server, env),
+        agent=agent,
         model=server.model(),
         messaging=ConsoleMessaging(pack_dir.name, var_dir),
         approval=FileApproval(pack_dir.name, var_dir),
@@ -271,4 +272,6 @@ def build_flow(
         claims_prompt=server.claims_prompt,
         traces_dir=traces_dir / pack_dir.name,
         search=search,
+        internal_recipient=config.internal_recipient,
+        write_traces=not isinstance(agent, ReplayAgent),
     )

@@ -70,6 +70,7 @@ class World:
             system="harmonize prompt",
             claims_prompt="claims prompt",
             traces_dir=self.traces,
+            internal_recipient="handoffs@acme.example",
             **flow,
         )
 
@@ -88,8 +89,9 @@ def test_a_valid_internal_email_is_sent(tmp_path: Path) -> None:
     world = World(tmp_path, ScriptedAgent(_result()), [PRO_OK])
     _, outcome = world.run("internal")
     assert outcome.decision.route == "auto_send"
-    ((email, contact),) = world.messaging.sent
-    assert email == outcome.email and contact.id == "acme-c-1"
+    ((email, to),) = world.messaging.sent
+    assert email == outcome.email
+    assert to == "handoffs@acme.example"  # the pack's internal address, never the customer's
     assert world.approval.list_pending() == ()
 
 
@@ -252,3 +254,66 @@ def test_a_policy_can_turn_internal_auto_send_off(tmp_path: Path) -> None:
 
 def test_the_limits_are_the_core_ceilings_by_default() -> None:
     assert Limits().max_steps == 8 and Limits().timeout_s == 60
+
+
+def _without(world: "World", **changes: Any) -> HarmonizeFlow:
+    return HarmonizeFlow(**{**world.flow.__dict__, **changes})
+
+
+def test_an_internal_email_never_goes_to_the_customers_address(tmp_path: Path) -> None:
+    world = World(tmp_path, ScriptedAgent(_result()), [PRO_OK])
+    _, outcome = world.run("internal")
+    customer = outcome.context.contact_context.contact.email
+    ((_, to),) = world.messaging.sent
+    assert to != customer and to == "handoffs@acme.example"
+
+
+def test_an_approved_external_email_is_addressed_to_the_contact_and_an_internal_one_to_the_pack(
+    tmp_path: Path,
+) -> None:
+    world = World(tmp_path, ScriptedAgent(_result()), [PRO_OK])
+    _, external = world.run("external")
+    (item,) = world.approval.list_pending()
+    assert item.recipient == external.context.contact_context.contact.email
+
+    internal_world = World(tmp_path / "other", ScriptedAgent(_result("SSO is included.")), [SSO])
+    internal_world.run("internal")
+    (queued,) = internal_world.approval.list_pending()
+    assert queued.recipient == "handoffs@acme.example"
+
+
+def test_an_internal_email_with_no_internal_address_is_blocked_and_says_how_to_fix_it(
+    tmp_path: Path,
+) -> None:
+    world = World(tmp_path, ScriptedAgent(_result()), [PRO_OK])
+    flow = _without(world, internal_recipient=None)
+    request = HarmonizeRequest(contact_id="acme-c-1", channel="internal", draft="Hi.")
+    outcome = harmonize(flow, request)
+    assert outcome.decision.route == "blocked"
+    assert "internal_recipient in config.yaml" in outcome.decision.reasons[0]
+    assert world.messaging.sent == [] and world.approval.list_pending() == ()
+    assert world.trace(request)[-1]["route"] == "blocked"
+
+
+def test_a_failed_run_never_replaces_an_existing_trace(tmp_path: Path) -> None:
+    good = World(tmp_path, ScriptedAgent(_result()), [PRO_OK])
+    request, _ = good.run("external")
+    path = good.traces / f"{request.id}.jsonl"
+    recorded = path.read_bytes()
+
+    failing = World(tmp_path, ScriptedAgent(error=AgentLimitError("time", "60 s")), [PRO_OK])
+    with pytest.raises(AgentLimitError):
+        harmonize(failing.flow, request)
+    assert path.read_bytes() == recorded
+
+
+def test_a_flow_that_does_not_write_traces_writes_none(tmp_path: Path) -> None:
+    world = World(tmp_path, ScriptedAgent(_result()), [PRO_OK])
+    request = HarmonizeRequest(contact_id="acme-c-1", channel="external", draft="Hi.")
+    harmonize(_without(world, write_traces=False), request)
+    assert not world.traces.exists()
+
+    failing = World(tmp_path, ScriptedAgent(error=AgentLimitError("time", "60 s")), [PRO_OK])
+    with pytest.raises(AgentLimitError):
+        harmonize(_without(failing, write_traces=False), request)
+    assert not world.traces.exists()

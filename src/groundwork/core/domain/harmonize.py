@@ -10,7 +10,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from groundwork.core.domain.facts import ContactContext, Id
+from groundwork.core.domain.facts import ContactContext, Email, Id
 from groundwork.core.domain.knowhow import Rule, Usage
 from groundwork.core.domain.search import SearchHit
 
@@ -96,10 +96,15 @@ ApprovalStatus = Literal["pending", "approved", "rejected"]
 
 
 class ApprovalItem(_Harmonize):
-    """An email waiting for a human. `id` is the case id, so a case is queued once."""
+    """An email waiting for a human. `id` is the case id, so a case is queued once.
+
+    `recipient` is where it goes once approved, fixed when it is queued: the contact's
+    address for an external email, the pack's internal address for an internal one.
+    """
 
     id: Id
     contact_id: Id
+    recipient: Email
     email: HarmonizedEmail
     decision: Decision
     status: ApprovalStatus = "pending"

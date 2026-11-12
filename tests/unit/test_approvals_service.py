@@ -1,28 +1,18 @@
 import pytest
 
 from groundwork.core.domain.errors import ApprovalError, MessagingError, NotFoundError
-from groundwork.core.domain.facts import Contact
 from groundwork.core.domain.harmonize import ApprovalItem, Decision, HarmonizedEmail
 from groundwork.core.services.approvals import approve, reject
-from tests.fakes import InMemoryApproval, InMemoryCrm, RecordingMessaging
+from tests.fakes import InMemoryApproval, RecordingMessaging
 
-CONTACT = Contact(
-    id="acme-c-1", first_name="Ana", last_name="Silva", email="ana.silva@example.com",
-    company_id="acme-co-1", persona="economic-buyer",
-)  # fmt: skip
 EMAIL = HarmonizedEmail(subject="Quote", body="Pro costs 1490.00 EUR.", rationale="r")
-
-
-class _Crm(InMemoryCrm):
-    def __init__(self) -> None:
-        super().__init__(contacts=[CONTACT])
 
 
 def _queued() -> InMemoryApproval:
     approval = InMemoryApproval()
     approval.submit(
         ApprovalItem(
-            id="case-1", contact_id="acme-c-1", email=EMAIL,
+            id="case-1", contact_id="acme-c-1", recipient="ana.silva@example.com", email=EMAIL,
             decision=Decision(route="approval", reasons=("external",)),
         )
     )  # fmt: skip
@@ -31,24 +21,24 @@ def _queued() -> InMemoryApproval:
 
 def test_approving_records_the_answer_then_sends_the_email_to_the_contact() -> None:
     approval, messaging = _queued(), RecordingMessaging()
-    item = approve("case-1", approval, messaging, _Crm())
+    item = approve("case-1", approval, messaging)
     assert item.status == "approved"
-    assert messaging.sent == [(EMAIL, CONTACT)]
+    assert messaging.sent == [(EMAIL, "ana.silva@example.com")]
     assert approval.list_pending() == ()
 
 
 def test_an_item_cannot_be_approved_twice_so_it_is_never_sent_twice() -> None:
     approval, messaging = _queued(), RecordingMessaging()
-    approve("case-1", approval, messaging, _Crm())
+    approve("case-1", approval, messaging)
     with pytest.raises(ApprovalError, match="already approved"):
-        approve("case-1", approval, messaging, _Crm())
+        approve("case-1", approval, messaging)
     assert len(messaging.sent) == 1
 
 
 def test_approving_an_unknown_item_sends_nothing() -> None:
     messaging = RecordingMessaging()
     with pytest.raises(NotFoundError, match="case-404"):
-        approve("case-404", _queued(), messaging, _Crm())
+        approve("case-404", _queued(), messaging)
     assert messaging.sent == []
 
 
@@ -65,12 +55,12 @@ def test_a_rejection_without_a_reason_is_refused() -> None:
 
 
 class _Failing:
-    def send(self, email: HarmonizedEmail, contact: Contact) -> None:
+    def send(self, email: HarmonizedEmail, to: str) -> None:
         raise MessagingError("outbox is full")
 
 
 def test_a_delivery_failure_says_the_approval_is_recorded_and_the_email_was_not_sent() -> None:
     approval = _queued()
     with pytest.raises(MessagingError, match="recorded but the email was not sent: outbox is full"):
-        approve("case-1", approval, _Failing(), _Crm())
+        approve("case-1", approval, _Failing())
     assert approval.list_pending() == ()

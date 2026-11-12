@@ -86,7 +86,7 @@ def world(tmp_path: Path) -> dict[str, Path]:
         )
         case = DemoCase.model_validate(item)
         agent: Any = PassthroughAgent() if case.passthrough else ScriptedAgent(result)
-        flow = dataclasses.replace(base, agent=agent, model=recording)
+        flow = dataclasses.replace(base, agent=agent, model=recording, write_traces=True)
         if case.passthrough:
             flow = dataclasses.replace(flow, search=None)
         harmonize(flow, case.request)
@@ -116,6 +116,7 @@ def test_the_demo_replays_the_traces_and_shows_the_three_routes(world: dict[str,
         assert decision in result.output
     assert "acme: 4 case(s): 1 approval, 1 auto_send, 2 blocked" in result.output
     assert "Subject: (draft, unchanged)" in result.output
+    assert "false (price):" in result.output and "-- " in result.output
     assert "Draft:\n  Hi Ana, Pro is 990 EUR." in result.output
     assert "false claim" in result.output
 
@@ -155,17 +156,13 @@ def test_harmonize_queues_an_external_email_and_approving_sends_it_once(
     assert "external-ok" in listing.output and "1 pending" in listing.output
     assert not (world["var"] / "outbox").exists()
 
-    sent = runner.invoke(
-        app, ["approvals", "approve", "external-ok", *var, "--packs-dir", str(world["packs"])]
-    )
+    sent = runner.invoke(app, ["approvals", "approve", "external-ok", *var])
     assert sent.exit_code == 0, sent.output
     outbox = (world["var"] / "outbox" / "acme.jsonl").read_text().splitlines()
     assert len(outbox) == 1 and json.loads(outbox[0])["subject"] == "Your quote"
     assert "0 pending" in runner.invoke(app, ["approvals", "list", *var]).output
 
-    again = runner.invoke(
-        app, ["approvals", "approve", "external-ok", *var, "--packs-dir", str(world["packs"])]
-    )
+    again = runner.invoke(app, ["approvals", "approve", "external-ok", *var])
     assert again.exit_code == 1 and "already approved" in again.output
     assert len((world["var"] / "outbox" / "acme.jsonl").read_text().splitlines()) == 1
 
@@ -173,7 +170,8 @@ def test_harmonize_queues_an_external_email_and_approving_sends_it_once(
 def test_an_internal_email_is_sent_at_once(world: dict[str, Path], tmp_path: Path) -> None:
     result = _harmonize(world, CASES[0]["draft"], "internal-ok", tmp_path, "internal")
     assert result.exit_code == 0 and "Decision: AUTO_SEND" in result.output
-    assert (world["var"] / "outbox" / "acme.jsonl").is_file()
+    (line,) = (world["var"] / "outbox" / "acme.jsonl").read_text().splitlines()
+    assert json.loads(line)["to"] == "handoffs@acme.example"  # not the customer's address
 
 
 def test_a_blocked_email_goes_nowhere(world: dict[str, Path], tmp_path: Path) -> None:

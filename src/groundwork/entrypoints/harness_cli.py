@@ -16,13 +16,12 @@ from groundwork.core.domain.errors import GroundworkError, PackError
 from groundwork.core.domain.harmonize import HarmonizeRequest, MessageChannel
 from groundwork.core.services.approvals import approve, reject
 from groundwork.core.services.harmonize import harmonize
-from groundwork.core.services.packs import load_demo_cases, load_pack_config
+from groundwork.core.services.packs import load_demo_cases
 from groundwork.entrypoints.reports import outcome_lines
 from groundwork.entrypoints.wiring import (
     EMBEDDING_ENV,
     MODEL_ENV,
     RECORD_ENV,
-    build_crm,
     build_flow,
 )
 
@@ -83,14 +82,11 @@ def approvals_list(
 def approvals_approve(
     id: Annotated[str, typer.Argument(help="Approval id (the case id).")],
     pack: Annotated[str, typer.Option(help="Client pack name.")],
-    packs_dir: Path = PACKS_DIR,
     var_dir: Path = VAR_DIR,
 ) -> None:
-    """Approve an email and send it. An email can be approved once."""
-    pack_dir = packs_dir / pack
+    """Approve an email and send it to the recipient fixed when it was queued. Once only."""
     try:
-        crm = build_crm(pack_dir, load_pack_config(pack_dir))
-        item = approve(id, FileApproval(pack, var_dir), ConsoleMessaging(pack, var_dir), crm)
+        item = approve(id, FileApproval(pack, var_dir), ConsoleMessaging(pack, var_dir))
     except GroundworkError as exc:
         raise _fail(str(exc)) from exc
     typer.echo(f"approved and sent: {item.id}")

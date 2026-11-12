@@ -63,3 +63,8 @@ CRM fixtures live in `client_packs/<client>/fixtures/hubspot/` in HubSpot CRM v3
 `policies.yaml` per domain (`domains/<domain>/`) and per client pack can only add forbidden patterns, lower limits and turn internal auto-send off: any other key, or a limit above its ceiling, fails `validate-packs` naming the file. Merge order: core invariants, then domain defaults, then client.
 
 Replay: with `model: replay` the agent is a `ReplayAgent` that serves the recorded trace of the case and refuses it (`TraceStaleError`) if the request, the system prompt or the context pack changed. Only the agent's work is replayed: the claim checks (recorded model calls) and the policy run live, so a changed policy changes the decision. `GROUNDWORK_MODEL=claude GROUNDWORK_RECORD=1 groundwork demo --model claude --record` records a pack's demo cases (a few dollars; needs both API keys).
+
+## Adding things
+- New adapter: implement the port, add it to the `ADAPTERS` of `tests/contracts/test_<port>_contract.py` and pass that suite, register its name in `entrypoints/wiring.py`, reference it in a pack config.
+- New client: run the playbook (docs/playbook.md); it produces the pack files.
+- New domain: add `domains/<domain>` with schema, skills and scorers; no core change expected.

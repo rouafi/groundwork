@@ -59,7 +59,7 @@ def outcome_lines(request: HarmonizeRequest, outcome: HarmonizeOutcome, trace: P
     lines += [f"  {line}" if line else "" for line in email.body.splitlines()]
     lines += ["", f"Why: {email.rationale}", f"Decision: {outcome.decision.route.upper()}"]
     lines += [f"  - {reason}" for reason in outcome.decision.reasons]
-    checks = [f"{c.status}: {c.claim}" for c in outcome.claim_checks]
+    checks = [f"{c.status} ({c.kind}): {c.claim} -- {c.reason}" for c in outcome.claim_checks]
     lines += ["Claims:", *[f"  - {c}" for c in checks]] if checks else ["Claims: none found"]
     if outcome.context.truncated:
         lines += ["Context:", *[f"  - {t}" for t in outcome.context.truncated]]

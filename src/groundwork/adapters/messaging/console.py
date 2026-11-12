@@ -9,7 +9,6 @@ from collections.abc import Callable
 from pathlib import Path
 
 from groundwork.core.domain.errors import MessagingError
-from groundwork.core.domain.facts import Contact
 from groundwork.core.domain.harmonize import HarmonizedEmail
 
 OUTBOX_DIR = "outbox"
@@ -26,11 +25,10 @@ class ConsoleMessaging:
     def outbox(self) -> Path:
         return self._path
 
-    def send(self, email: HarmonizedEmail, contact: Contact) -> None:
+    def send(self, email: HarmonizedEmail, to: str) -> None:
         line = json.dumps(
             {
-                "to": contact.email,
-                "contact_id": contact.id,
+                "to": to,
                 "subject": email.subject,
                 "body": email.body,
             },
@@ -43,4 +41,4 @@ class ConsoleMessaging:
                 outbox.write(line + "\n")
         except OSError as exc:
             raise MessagingError(f"cannot write the outbox {self._path}: {exc}") from exc
-        self._echo(f"To: {contact.email}\nSubject: {email.subject}\n\n{email.body}\n")
+        self._echo(f"To: {to}\nSubject: {email.subject}\n\n{email.body}\n")

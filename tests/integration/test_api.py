@@ -39,6 +39,7 @@ def _flow(tmp_path: Path, agent: ScriptedAgent, messaging: RecordingMessaging) -
         system="harmonize prompt",
         claims_prompt="claims prompt",
         traces_dir=tmp_path / "traces",
+        internal_recipient="handoffs@acme.example",
     )
 
 

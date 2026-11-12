@@ -19,7 +19,6 @@ from pathlib import Path
 
 from groundwork.core.domain.claims import ClaimCheck
 from groundwork.core.domain.errors import EmbeddingMissError, GroundworkError
-from groundwork.core.domain.facts import Contact
 from groundwork.core.domain.harmonize import (
     AgentStep,
     ApprovalItem,
@@ -52,10 +51,20 @@ from groundwork.core.services.context import contact_context
 from groundwork.core.services.context_pack import DEFAULT_BUDGET, build_context_pack
 from groundwork.core.services.policy import decide
 
+NO_INTERNAL_RECIPIENT = (
+    "no internal recipient is configured for this pack (internal_recipient in config.yaml): "
+    "an internal email is never sent to a customer's address"
+)
+
 
 @dataclass(frozen=True)
 class HarmonizeFlow:
-    """Everything one pack's flow needs. `search` finds passages for a query, or is None."""
+    """Everything one pack's flow needs. `search` finds passages for a query, or is None.
+
+    `internal_recipient` is where an internal email goes (never a customer's address);
+    without it an internal email is blocked. `write_traces` is off in replay, so a replay
+    never rewrites what was recorded.
+    """
 
     crm: CrmPort
     rules: tuple[Rule, ...]
@@ -69,6 +78,8 @@ class HarmonizeFlow:
     traces_dir: Path
     search: Callable[[str], Sequence[SearchHit]] | None = None
     budget: int = DEFAULT_BUDGET
+    internal_recipient: str | None = None
+    write_traces: bool = True
 
 
 @dataclass(frozen=True)
@@ -102,11 +113,15 @@ def harmonize(flow: HarmonizeFlow, request: HarmonizeRequest) -> HarmonizeOutcom
         decision = decide(result.email, checks, request.channel, flow.policies)
     except GroundworkError as exc:
         events.append(error_event(str(exc)))
-        _write_trace(flow.traces_dir, request.id, events)
+        _write_trace(flow, request.id, events, failed=True)
         raise
+    recipient = contact.contact.email if request.channel == "external" else flow.internal_recipient
+    if recipient is None and decision.route != "blocked":
+        decision = Decision(route="blocked", reasons=(NO_INTERNAL_RECIPIENT,))
     events.append(decision_event(decision))
-    _write_trace(flow.traces_dir, request.id, events)
-    _act(flow, request, result.email, decision, contact.contact)
+    _write_trace(flow, request.id, events)
+    if recipient is not None:
+        _act(flow, request, result.email, decision, recipient)
     return HarmonizeOutcome(
         email=result.email,
         decision=decision,
@@ -135,23 +150,37 @@ def _act(
     request: HarmonizeRequest,
     email: HarmonizedEmail,
     decision: Decision,
-    contact: Contact,
+    recipient: str,
 ) -> None:
     if decision.route == "auto_send":
-        flow.messaging.send(email, contact)
+        flow.messaging.send(email, recipient)
     elif decision.route == "approval":
         flow.approval.submit(
             ApprovalItem(
-                id=request.id, contact_id=request.contact_id, email=email, decision=decision
+                id=request.id,
+                contact_id=request.contact_id,
+                recipient=recipient,
+                email=email,
+                decision=decision,
             )
         )
 
 
-def _write_trace(directory: Path, case_id: str, events: list[TraceEvent]) -> None:
-    """Write the trace, leaving an identical existing file untouched."""
-    path = directory / f"{case_id}.jsonl"
+def _write_trace(
+    flow: HarmonizeFlow, case_id: str, events: list[TraceEvent], failed: bool = False
+) -> None:
+    """Write the trace of a run, unless the flow does not write traces (replay).
+
+    A failed run never replaces a trace that exists: a refused replay or a failed
+    re-recording must not destroy a good recording. An identical file is left untouched.
+    """
+    if not flow.write_traces:
+        return
+    path = flow.traces_dir / f"{case_id}.jsonl"
+    if failed and path.is_file():
+        return
     text = dump_trace(events)
     if path.is_file() and path.read_text(encoding="utf-8") == text:
         return
-    directory.mkdir(parents=True, exist_ok=True)
+    flow.traces_dir.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")

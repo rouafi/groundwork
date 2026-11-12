@@ -176,10 +176,10 @@ class RecordingMessaging:
     """MessagingPort that remembers what it was asked to send."""
 
     def __init__(self) -> None:
-        self.sent: list[tuple[HarmonizedEmail, Contact]] = []
+        self.sent: list[tuple[HarmonizedEmail, str]] = []
 
-    def send(self, email: HarmonizedEmail, contact: Contact) -> None:
-        self.sent.append((email, contact))
+    def send(self, email: HarmonizedEmail, to: str) -> None:
+        self.sent.append((email, to))
 
 
 class FakeToolBox:

@@ -9,6 +9,7 @@ def _item(**fields: object) -> ApprovalItem:
     data = {
         "id": "case-1",
         "contact_id": "acme-c-1",
+        "recipient": "ana.silva@example.com",
         "email": HarmonizedEmail(subject="s", body="b", rationale="r"),
         "decision": Decision(route="approval", reasons=("external",)),
         **fields,

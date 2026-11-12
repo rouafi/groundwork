@@ -29,6 +29,7 @@ def _item(id: str = "case-1", subject: str = "Your question") -> ApprovalItem:
     return ApprovalItem(
         id=id,
         contact_id="acme-c-1",
+        recipient="ana.silva@example.com",
         email=HarmonizedEmail(subject=subject, body="Body.", rationale="Why."),
         decision=Decision(route="approval", reasons=("external emails need a human",)),
     )
