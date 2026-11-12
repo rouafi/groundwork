@@ -14,6 +14,29 @@ class NotFoundError(GroundworkError):
         super().__init__(f"{kind} {id!r} not found")
 
 
+class ModelError(GroundworkError):
+    """A model call could not produce a usable answer."""
+
+
+class ReplayMissError(ModelError):
+    """Replay mode has no recording for this call. Never falls back to a live call."""
+
+    def __init__(self, key: str, path: str) -> None:
+        self.key = key
+        super().__init__(
+            f"no recording for model call {key} (expected {path}). "
+            "Record it with GROUNDWORK_MODEL=claude GROUNDWORK_RECORD=1, then commit traces/."
+        )
+
+
+class ModelRefusalError(ModelError):
+    """The model declined the request."""
+
+    def __init__(self, category: str | None) -> None:
+        self.category = category
+        super().__init__(f"model refused the request (category: {category or 'unspecified'})")
+
+
 class PackError(GroundworkError):
     """A client or domain pack is invalid: config, fixtures or references."""
 
