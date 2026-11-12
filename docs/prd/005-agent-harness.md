@@ -1,5 +1,5 @@
 # PRD-005: Agent harness, policies and traces
-Status: todo | Branch: `feat/agent-harness` | Depends on: 001, 002, 003
+Status: done | Branch: `feat/agent-harness` | Depends on: 001, 002, 003
 
 ## Goal
 Run the full email harmonization flow: context pack, agent drafts, claims are checked, a deterministic policy routes the result, everything is traced and replayable.
@@ -71,3 +71,18 @@ Unit: context assembly and truncation, policy matrix, policy merge, invariants. 
 
 ## Risks and open questions
 Recorded traces require one live run per pack. If no API key is available, stop and ask. The SDK spike may change the adapter, never the port or the policy engine.
+
+## Implementation notes
+- Step 0 spike: the Claude Agent SDK bundles a 324 MB CLI and runs the model out of our sight, so `ClaudeAgent` is a hand-written tool-use loop on the Messages API behind the same port ([ADR 0005](../adr/0005-agent-runtime.md)). Its only tools are the pack's own MCP server, in memory, and it refuses to start if one is not on the allowlist or not read-only.
+- `AgentPort.run` takes `limits` (`Limits`: steps, tokens, seconds) in addition to `system`, `context` and `request`; without it the agent could not be aborted (criterion 4). The final answer is constrained to the `HarmonizedEmail` schema by the API's structured output, which works together with tools.
+- Policy: the domain defaults are `domains/comms/policies.yaml`; a pack's `policies.yaml` can add patterns, lower limits and turn internal auto-send off. An unknown key, a limit above its ceiling or an invalid regex is a `PackError` naming the file. The PRD cites a tone override of `beta` in the merge tests: tone is a rule (`beta-r-009`), not a policy, so the merge is tested with stricter `beta` policies instead.
+- An unknown claim goes to a human on any channel, not only external (ADR 0008). Internal auto-send stays a policy; the evals of PRD-006 are meant to gate it.
+- Traces gain an `error` event for a run that fails (an aborted run leaves a trace and sends nothing). `ReplayAgent` also refuses a trace whose system prompt or context pack changed, and one whose steps exceed the current limits.
+- Passages come from `search_knowhow` with the draft as the query. If the draft's embedding is not recorded (replay), the pack has no passages and says so in `truncated`: passages are an enrichment, never a reason to fail the run.
+- Context estimate: `len(text) / 4` over each item's full JSON, which counts rule provenance the prompt does not send, so it is conservative.
+- `ContactContext` moved to `core/domain/facts.py` so `ContextPack` can hold it.
+- Demo: three cases per pack in `demo_cases.json`. A real model never reached the `blocked` route in the attempts made: Sonnet 5.5 ignored a discount planted in the contact's notes even when its prompt said to follow the notes, and Sonnet 5.5 and Haiku 5.5 both removed an off-policy discount from a draft even when told to keep every offer and given no rules in the context (they still cited the pack's rules, which their read-only tools can look up). The third case of each pack therefore sets `passthrough: true`: the draft goes through unchanged, as a faulty or compromised agent would let it, and the real claim check and the real policy block it. The demo sends to a temporary folder and leaves no queue behind; `--case` runs one case.
+- The claim extraction prompt now lists claims about the offer only (not facts about the contact or the deal); before, a plain internal handoff produced a dozen `unknown` claims and could never auto-send.
+- Invariant 7 is an import-linter contract: only `core/services/harmonize` and `core/services/approvals` import the messaging and approval ports, and `adapters/agent` imports neither those ports nor their adapters.
+- `docker-compose.yml`: the `api` service is published on `127.0.0.1` only (no authentication), mounts the domains, a writable `traces/` and a `var` volume, and the image creates both folders for the non-root user. Not built here: Docker was not available.
+- `CLAUDE.md` still lists the Claude Agent SDK in its stack line; it is not used (ADR 0005).
