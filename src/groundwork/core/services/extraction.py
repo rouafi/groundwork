@@ -19,10 +19,11 @@ from pydantic import BaseModel, ConfigDict
 
 from groundwork.core.domain.domain_pack import DomainPack
 from groundwork.core.domain.knowhow import (
+    CoverageGap,
     Dropped,
     ExtractionReport,
+    Failure,
     Interview,
-    InterviewFailure,
     Rule,
     StageUsage,
     Usage,
@@ -30,6 +31,7 @@ from groundwork.core.domain.knowhow import (
 from groundwork.core.ports.crm import CrmPort
 from groundwork.core.ports.model import CitedStatement, ModelPort
 from groundwork.core.services.consolidation import (
+    Consolidated,
     consolidate,
     coverage_gaps,
     follow_up_questions,
@@ -106,16 +108,9 @@ def extract_rules(
         outcomes = list(pool.map(_isolated(lambda i: extract_interview(workflow, i)), ordered))
     extractions = [o for o in outcomes if isinstance(o, Extraction)]
     numbered = number_rules(workflow.pack, [r for e in extractions for r in e.rules])
-    consolidated = consolidate(
-        workflow.pack,
-        numbered,
-        workflow.model,
-        render(workflow.prompts.consolidate, workflow.domain),
-    )
+    consolidated, failures = _consolidate(workflow, numbered)
     gaps = coverage_gaps(consolidated.rules, workflow.domain, workflow.crm)
-    questions, questions_usage = follow_up_questions(
-        gaps, workflow.model, render(workflow.prompts.questions, workflow.domain)
-    )
+    questions, questions_usage, question_failures = _questions(workflow, gaps, consolidated.rules)
     pack_usage = {u.stage: u for u in (consolidated.usage, questions_usage) if u is not None}
     return ExtractionReport(
         pack=workflow.pack,
@@ -125,9 +120,39 @@ def extract_rules(
         contradictions=claim_contradictions(consolidated.rules, workflow.crm),
         gaps=gaps,
         questions=questions,
-        failures=tuple(o for o in outcomes if isinstance(o, InterviewFailure)),
+        failures=(
+            *(o for o in outcomes if isinstance(o, Failure)),
+            *failures,
+            *question_failures,
+        ),
         usage=sum_usage([*(e.usage for e in extractions), pack_usage]),
     )
+
+
+def _consolidate(
+    workflow: Workflow, rules: Sequence[Rule]
+) -> tuple[Consolidated, tuple[Failure, ...]]:
+    """Consolidate the pack; on failure keep the rules as they are and report it."""
+    system = render(workflow.prompts.consolidate, workflow.domain)
+    try:
+        return consolidate(workflow.pack, rules, workflow.model, system), ()
+    except Exception as exc:  # reported in the report and by the CLI exit code
+        unchanged = Consolidated(rules=tuple(rules), conflicts=(), usage=None)
+        return unchanged, (Failure(where="consolidate", error=_describe(exc)),)
+
+
+def _questions(
+    workflow: Workflow, gaps: Sequence[CoverageGap], rules: Sequence[Rule]
+) -> tuple[tuple[str, ...], StageUsage | None, tuple[Failure, ...]]:
+    """Follow-up questions, only when rules exist to compare the gaps with."""
+    if not rules:
+        return (), None, ()
+    system = render(workflow.prompts.questions, workflow.domain)
+    try:
+        questions, usage = follow_up_questions(gaps, workflow.model, system)
+    except Exception as exc:  # reported in the report and by the CLI exit code
+        return (), None, (Failure(where="questions", error=_describe(exc)),)
+    return questions, usage, ()
 
 
 def extract_interview(workflow: Workflow, interview: Interview) -> Extraction:
@@ -225,13 +250,17 @@ def _typing_request(crm: CrmPort, statements: Sequence[CitedStatement]) -> str:
 
 def _isolated(
     step: Callable[[Interview], Extraction],
-) -> Callable[[Interview], Extraction | InterviewFailure]:
+) -> Callable[[Interview], Extraction | Failure]:
     """Run one interview; turn any error into a reported failure so the others continue."""
 
-    def run(interview: Interview) -> Extraction | InterviewFailure:
+    def run(interview: Interview) -> Extraction | Failure:
         try:
             return step(interview)
         except Exception as exc:  # reported in the report and by the CLI exit code
-            return InterviewFailure(interview_id=interview.id, error=f"{type(exc).__name__}: {exc}")
+            return Failure(where=interview.id, error=_describe(exc))
 
     return run
+
+
+def _describe(exc: Exception) -> str:
+    return f"{type(exc).__name__}: {exc}"

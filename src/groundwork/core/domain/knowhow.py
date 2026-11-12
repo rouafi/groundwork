@@ -136,10 +136,10 @@ class CoverageGap(_Know):
     contacts: int = Field(ge=0)
 
 
-class InterviewFailure(_Know):
-    """An interview the workflow could not process. The others still are."""
+class Failure(_Know):
+    """A part of the run that failed: an interview id or a pack-level stage. The rest still ran."""
 
-    interview_id: Id
+    where: Text
     error: Text
 
 
@@ -153,5 +153,5 @@ class ExtractionReport(_Know):
     contradictions: tuple[ClaimContradiction, ...] = ()
     gaps: tuple[CoverageGap, ...] = ()
     questions: tuple[str, ...] = ()
-    failures: tuple[InterviewFailure, ...] = ()
+    failures: tuple[Failure, ...] = ()
     usage: tuple[StageUsage, ...] = ()

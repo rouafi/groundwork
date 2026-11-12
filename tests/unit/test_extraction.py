@@ -114,7 +114,7 @@ def test_a_failing_interview_is_reported_and_the_others_still_run() -> None:
         return sentences(kwargs["document"])
 
     report = extract_rules(_workflow(StubModel(structured=_typing, cite=cite)), INTERVIEWS)
-    assert [f.interview_id for f in report.failures] == ["acme-i-1"]
+    assert [f.where for f in report.failures] == ["acme-i-1"]
     assert "RuntimeError: model unavailable" in report.failures[0].error
     assert [r.provenance[0].interview_id for r in report.rules] == ["acme-i-2", "acme-i-2"]
 
@@ -151,3 +151,53 @@ def test_shipped_prompts_load_and_render() -> None:
 def test_missing_prompt_is_a_pack_error(tmp_path: Path) -> None:
     with pytest.raises(PackError, match="prompt not found"):
         load_prompt(tmp_path, "comms", "ground_rules")
+
+
+def test_a_failing_pack_stage_is_reported_and_rules_are_kept() -> None:
+    def structured(**kwargs: Any) -> dict[str, Any]:
+        if kwargs["schema"].__name__ == "Consolidation":
+            raise RuntimeError("consolidation down")
+        return _typing(**kwargs)
+
+    report = extract_rules(_workflow(StubModel(structured=structured)), INTERVIEWS)
+    assert len(report.rules) == 4
+    assert [(f.where, f.error) for f in report.failures] == [
+        ("consolidate", "RuntimeError: consolidation down")
+    ]
+
+
+def test_questions_are_asked_for_gaps_and_their_failure_is_reported() -> None:
+    from groundwork.core.domain.facts import Company, Contact
+
+    crm = InMemoryCrm(
+        companies=[Company(id="co-1", name="A", segment="smb", country="FR")],
+        contacts=[
+            Contact(
+                id="c-1",
+                first_name="a",
+                last_name="b",
+                email="a@example.com",
+                company_id="co-1",
+                persona="end-user",
+            )
+        ],
+        products=CRM.get_products(CRM.list_product_ids()),
+    )
+
+    def structured(**kwargs: Any) -> dict[str, Any]:
+        if kwargs["schema"].__name__ == "Questions":
+            raise RuntimeError("questions down")
+        return _typing(**kwargs)
+
+    workflow = Workflow(
+        pack="acme", domain=DOMAIN, crm=crm, model=StubModel(structured=structured), prompts=PROMPTS
+    )
+    report = extract_rules(workflow, INTERVIEWS)
+    assert [g.segment for g in report.gaps] == ["smb"]
+    assert [f.where for f in report.failures] == ["questions"]
+
+
+def test_no_rules_means_no_questions() -> None:
+    model = StubModel(cite=lambda **_: ())
+    report = extract_rules(_workflow(model), INTERVIEWS)
+    assert report.questions == () and all(c[0] == "cite" for c in model.calls)

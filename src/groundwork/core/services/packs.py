@@ -4,12 +4,12 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, RootModel, ValidationError
 
 from groundwork.core.domain.domain_pack import DomainPack
 from groundwork.core.domain.errors import PackError
 from groundwork.core.domain.golden import ExtractionGolden
-from groundwork.core.domain.knowhow import Interview
+from groundwork.core.domain.knowhow import Interview, Rule
 from groundwork.core.domain.pack import PackConfig
 
 DOMAIN_FILE = "domain.yaml"
@@ -17,7 +17,12 @@ CONFIG_FILE = "config.yaml"
 PROMPTS_DIR = "prompts"
 INTERVIEWS_DIR = "interviews"
 EXTRACTION_GOLDEN_FILE = Path("evals") / "extraction_golden.yaml"
+RULES_FILE = "rules.yaml"
 FRONT_MATTER = "---\n"
+
+
+class _Rules(RootModel[tuple[Rule, ...]]):
+    """Schema of `rules.yaml`: a list of rules."""
 
 
 def load_pack_config(pack_dir: Path) -> PackConfig:
@@ -35,6 +40,14 @@ def load_interviews(pack_dir: Path) -> tuple[Interview, ...]:
     if not folder.is_dir():
         return ()
     return tuple(_load_interview(path) for path in sorted(folder.glob("*.md")))
+
+
+def load_rules(pack_dir: Path) -> tuple[Rule, ...]:
+    """Read `<pack_dir>/rules.yaml`, a list of rules. A pack without it has no rules yet."""
+    path = pack_dir / RULES_FILE
+    if not path.is_file():
+        return ()
+    return _load_yaml_model(path, _Rules).root
 
 
 def load_extraction_golden(pack_dir: Path) -> ExtractionGolden | None:
