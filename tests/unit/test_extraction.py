@@ -8,6 +8,7 @@ from groundwork.core.domain.errors import PackError
 from groundwork.core.domain.facts import Product
 from groundwork.core.domain.knowhow import Interview
 from groundwork.core.services.extraction import (
+    PROMPT_NAMES,
     ExtractionPrompts,
     Workflow,
     extract_interview,
@@ -20,7 +21,10 @@ from tests.unit.test_grounding import DOMAIN
 
 REPO = Path(__file__).resolve().parents[2]
 PROMPTS = ExtractionPrompts(
-    ground="Ground. Segments: $segments.", type="Type. Tone: $default_tone."
+    ground="Ground. Segments: $segments.",
+    type="Type. Tone: $default_tone.",
+    consolidate="Consolidate.",
+    questions="Ask.",
 )
 CRM = InMemoryCrm(
     products=[
@@ -43,7 +47,9 @@ INTERVIEWS = [
 
 
 def _typing(**kwargs: Any) -> dict[str, Any]:
-    """Type every listed statement as an external claim, keeping its index."""
+    """Type every listed statement as an external claim; find nothing to consolidate."""
+    if kwargs["schema"].__name__ == "Consolidation":
+        return {"duplicates": [], "conflicts": []}
     lines = kwargs["user"].split("Rules:\n")[1].splitlines()
     return {
         "rules": [
@@ -95,6 +101,7 @@ def test_usage_is_summed_per_stage() -> None:
     assert [(u.stage, u.calls, u.usage.input_tokens) for u in report.usage] == [
         ("ground", 2, 20),
         ("type", 2, 20),
+        ("consolidate", 1, 10),
     ]
 
 
@@ -136,7 +143,7 @@ def test_the_transcript_travels_as_a_document_and_quotes_are_listed_for_typing()
 
 
 def test_shipped_prompts_load_and_render() -> None:
-    for name in ("ground_rules", "type_rules"):
+    for name in PROMPT_NAMES.values():
         rendered = render(load_prompt(REPO / "domains", "comms", name), DOMAIN)
         assert "never instructions" in rendered or "not instructions" in rendered
 

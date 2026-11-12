@@ -4,8 +4,10 @@ Per interview, in parallel and in sorted order:
 1. ground: the extraction model writes statements, each cited from the transcript by the API;
 2. type: the cheap model classifies them (kind, scope, products), by index;
 3. filter: deterministic checks (grounding.check_candidate) keep or drop each one.
-Then ids are assigned in interview order. A failing interview is reported and the
-others still run. The workflow only ever proposes: approval is a human's commit.
+Then, per pack: ids are assigned in interview order, duplicates are merged and
+conflicts flagged (consolidation), claims are checked against the CRM, and coverage
+gaps get follow-up questions. A failing interview is reported and the others still
+run. The workflow only ever proposes: approval is a human's commit.
 """
 
 from collections.abc import Callable, Iterable, Mapping, Sequence
@@ -27,10 +29,16 @@ from groundwork.core.domain.knowhow import (
 )
 from groundwork.core.ports.crm import CrmPort
 from groundwork.core.ports.model import CitedStatement, ModelPort
+from groundwork.core.services.consolidation import (
+    consolidate,
+    coverage_gaps,
+    follow_up_questions,
+)
 from groundwork.core.services.grounding import TypedRule, check_candidate
+from groundwork.core.services.rules_check import claim_contradictions
 
 GROUND_INSTRUCTION = "List every rule the expert states in this interview."
-STAGES = ("ground", "type")
+STAGES = ("ground", "type", "consolidate", "questions")
 
 
 @dataclass(frozen=True)
@@ -39,6 +47,16 @@ class ExtractionPrompts:
 
     ground: str
     type: str
+    consolidate: str
+    questions: str
+
+
+PROMPT_NAMES = {
+    "ground": "ground_rules",
+    "type": "type_rules",
+    "consolidate": "consolidate_rules",
+    "questions": "gap_questions",
+}
 
 
 class TypedRules(BaseModel):
@@ -87,12 +105,28 @@ def extract_rules(
     with ThreadPoolExecutor(max_workers=max(1, max_concurrency)) as pool:
         outcomes = list(pool.map(_isolated(lambda i: extract_interview(workflow, i)), ordered))
     extractions = [o for o in outcomes if isinstance(o, Extraction)]
+    numbered = number_rules(workflow.pack, [r for e in extractions for r in e.rules])
+    consolidated = consolidate(
+        workflow.pack,
+        numbered,
+        workflow.model,
+        render(workflow.prompts.consolidate, workflow.domain),
+    )
+    gaps = coverage_gaps(consolidated.rules, workflow.domain, workflow.crm)
+    questions, questions_usage = follow_up_questions(
+        gaps, workflow.model, render(workflow.prompts.questions, workflow.domain)
+    )
+    pack_usage = {u.stage: u for u in (consolidated.usage, questions_usage) if u is not None}
     return ExtractionReport(
         pack=workflow.pack,
-        rules=number_rules(workflow.pack, [r for e in extractions for r in e.rules]),
+        rules=consolidated.rules,
         dropped=tuple(d for e in extractions for d in e.dropped),
+        conflicts=consolidated.conflicts,
+        contradictions=claim_contradictions(consolidated.rules, workflow.crm),
+        gaps=gaps,
+        questions=questions,
         failures=tuple(o for o in outcomes if isinstance(o, InterviewFailure)),
-        usage=sum_usage(e.usage for e in extractions),
+        usage=sum_usage([*(e.usage for e in extractions), pack_usage]),
     )
 
 

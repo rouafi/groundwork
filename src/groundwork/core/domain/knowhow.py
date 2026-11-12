@@ -129,9 +129,8 @@ class ClaimContradiction(_Know):
 
 
 class CoverageGap(_Know):
-    """A (channel, segment, persona) cell with no rule, and how many CRM contacts it affects."""
+    """An audience (segment, persona) no specific rule addresses, and the CRM contacts in it."""
 
-    channel: str
     segment: str
     persona: str
     contacts: int = Field(ge=0)
