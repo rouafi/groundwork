@@ -147,6 +147,9 @@ def index_command(
         model = build_model(pack_dir, config, traces_dir)
         embedding = build_embedding(pack_dir, config, traces_dir)
         chunks, usage = build_index(interviews, model, embedding, system)
+        # The pack's retrieval questions are embedded too: with GROUNDWORK_RECORD=1 that
+        # records them, so replay can answer them; in replay it checks they are recorded.
+        embedding.embed([q.question for q in load_retrieval_questions(pack_dir)], "query")
     except GroundworkError as exc:
         typer.echo(_located(pack_dir, str(exc)), err=True)
         raise typer.Exit(code=1) from exc

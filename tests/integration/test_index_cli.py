@@ -11,7 +11,13 @@ from groundwork.adapters.embedding.voyage import VOYAGE_MODEL
 from groundwork.adapters.model.recording import DEFAULT_SPECS, Recordings
 from groundwork.adapters.model.replay import RecordingModel
 from groundwork.core.services.indexing import build_index
-from groundwork.core.services.packs import CHUNKS_FILE, load_chunks, load_interviews, load_prompt
+from groundwork.core.services.packs import (
+    CHUNKS_FILE,
+    load_chunks,
+    load_interviews,
+    load_prompt,
+    load_retrieval_questions,
+)
 from groundwork.entrypoints.cli import app
 from tests.fakes import HashEmbedding, StubModel
 
@@ -49,6 +55,7 @@ def traces(tmp_path: Path, packs: Path) -> Path:
     )
     system = load_prompt(DOMAINS, "comms", "contextualize")
     build_index(load_interviews(packs / "acme"), model, embedding, system)
+    embedding.embed([q.question for q in load_retrieval_questions(packs / "acme")], "query")
     return root
 
 
@@ -115,3 +122,12 @@ def test_validate_packs_accepts_a_fresh_index_and_names_a_stale_chunk(
     result = runner.invoke(app, validate)
     assert result.exit_code == 1
     assert "acme-i-1-c-001: text is not in interview acme-i-1" in result.output
+
+
+def test_index_also_needs_the_retrieval_questions_recorded(packs: Path, traces: Path) -> None:
+    for recording in (traces / "acme" / "embeddings").glob("*.json"):
+        if '"input_type": "query"' in recording.read_text():
+            recording.unlink()
+    result = _index(packs, traces)
+    assert result.exit_code == 1
+    assert "no recording for embedding" in result.output
