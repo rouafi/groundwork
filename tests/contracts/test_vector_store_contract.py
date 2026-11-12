@@ -8,12 +8,14 @@ from pathlib import Path
 
 import pytest
 
+from groundwork.adapters.vector.lance import LanceDbStore
 from groundwork.adapters.vector.memory import InMemoryVectorStore
 from groundwork.core.domain.search import Chunk
 from groundwork.core.ports.vector_store import VectorStorePort
 
 ADAPTERS: dict[str, Callable[[Path], VectorStorePort]] = {
     "memory": lambda _: InMemoryVectorStore(),
+    "lancedb": lambda tmp_path: LanceDbStore(tmp_path / "lance"),
 }
 
 
