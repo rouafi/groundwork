@@ -43,3 +43,14 @@ class PackError(GroundworkError):
     def __init__(self, message: str) -> None:
         self.message = message
         super().__init__(message)
+
+
+class EmbeddingMissError(ModelError):
+    """Replay mode has no recorded vector for this text. Never falls back to a live call."""
+
+    def __init__(self, key: str, path: str) -> None:
+        self.key = key
+        super().__init__(
+            f"no recording for embedding {key} (expected {path}). "
+            "Record it with GROUNDWORK_EMBEDDING=voyage GROUNDWORK_RECORD=1, then commit traces/."
+        )

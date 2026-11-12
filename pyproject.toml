@@ -15,6 +15,7 @@ dependencies = [
   "pyyaml",
   "typer",
   "uvicorn",
+  "voyageai>=0.6.0",
 ]
 
 [project.scripts]

@@ -1,5 +1,6 @@
 """Test doubles for the ports of the core. Not adapters: they live with the tests."""
 
+import hashlib
 import re
 from collections.abc import Callable, Iterable, Sequence
 from typing import Any
@@ -114,3 +115,19 @@ def _get[T](items: dict[str, T], kind: str, id: str) -> T:
         return items[id]
     except KeyError:
         raise NotFoundError(kind, id) from None
+
+
+class HashEmbedding:
+    """Deterministic EmbeddingPort: eight values derived from a hash of the text and type."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[tuple[str, ...], str]] = []
+
+    def embed(self, texts: Sequence[str], input_type: str) -> list[list[float]]:
+        self.calls.append((tuple(texts), input_type))
+        return [_hash_vector(t, input_type) for t in texts]
+
+
+def _hash_vector(text: str, input_type: str) -> list[float]:
+    digest = hashlib.sha256(f"{input_type}:{text}".encode()).digest()
+    return [(b - 127.5) / 127.5 for b in digest[:8]]
