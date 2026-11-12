@@ -12,6 +12,8 @@ Contract (tests/contracts/test_vector_store_contract.py, run against every adapt
   nothing when none does.
 - A hit carries the chunk's `text`, not its context.
 - Searching an empty store returns no hits.
+- Bad input raises `ValueError`: a chunk with no embedding, embeddings of
+  different sizes, `k` below 1.
 """
 
 from collections.abc import Sequence
