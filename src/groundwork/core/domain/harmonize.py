@@ -107,13 +107,18 @@ class ApprovalItem(_Harmonize):
 
 
 class DemoCase(_Harmonize):
-    """A case a pack shows in its demo: one request with a case id and a title."""
+    """A case a pack shows in its demo: one request with a case id and a title.
+
+    `prompt` names the agent's system prompt in the domain's `prompts/`. The default is the
+    real one; a case may name a naive prompt to show the policy blocking an agent that obeys.
+    """
 
     case_id: Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")]
     title: Text
     contact_id: Id
     channel: MessageChannel
     draft: Text
+    prompt: Annotated[str, Field(pattern=r"^[a-z][a-z0-9_]*$")] = "harmonize"
 
     @property
     def request(self) -> HarmonizeRequest:

@@ -1,0 +1,6 @@
+# Acme tightens the comms defaults: no guarantees in writing, and a shorter agent run.
+forbidden_patterns:
+  external:
+    - '(?i)\bguarantee[ds]?\b'
+limits:
+  max_steps: 6

@@ -1,5 +1,6 @@
 """Commands of the harmonization harness: harmonize, approvals, demo."""
 
+import dataclasses
 import os
 import tempfile
 from collections import Counter
@@ -14,7 +15,7 @@ from groundwork.core.domain.errors import GroundworkError, PackError
 from groundwork.core.domain.harmonize import HarmonizeRequest, MessageChannel
 from groundwork.core.services.approvals import approve, reject
 from groundwork.core.services.harmonize import harmonize
-from groundwork.core.services.packs import load_demo_cases, load_pack_config
+from groundwork.core.services.packs import load_demo_cases, load_pack_config, load_prompt
 from groundwork.entrypoints.reports import outcome_lines
 from groundwork.entrypoints.wiring import (
     EMBEDDING_ENV,
@@ -139,6 +140,7 @@ def demo_command(
 
 def _run_pack(pack_dir: Path, domains_dir: Path, traces_dir: Path, var_dir: Path) -> None:
     try:
+        config = load_pack_config(pack_dir)
         cases = load_demo_cases(pack_dir)
         if not cases:
             raise PackError(f"{pack_dir}: no demo cases (demo_cases.json)")
@@ -148,7 +150,8 @@ def _run_pack(pack_dir: Path, domains_dir: Path, traces_dir: Path, var_dir: Path
             typer.echo(f"\n== {pack_dir.name} / {case.case_id}: {case.title} ({case.channel}) ==")
             typer.echo("Draft:")
             typer.echo(f"  {case.draft}")
-            outcome = harmonize(flow, case.request)
+            system = load_prompt(domains_dir, config.domain, case.prompt)
+            outcome = harmonize(dataclasses.replace(flow, system=system), case.request)
             routes[outcome.decision.route] += 1
             path = flow.traces_dir / f"{case.case_id}.jsonl"
             for line in outcome_lines(case.request, outcome, path):

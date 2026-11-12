@@ -87,8 +87,10 @@ def load_demo_cases(pack_dir: Path) -> tuple[DemoCase, ...]:
         return ()
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(raw, list):
+            raise PackError(f"{path}: not a JSON list of demo cases")
         cases = tuple(DemoCase.model_validate(item) for item in raw)
-    except (json.JSONDecodeError, TypeError) as exc:
+    except json.JSONDecodeError as exc:
         raise PackError(f"{path}: not a JSON list of demo cases ({exc})") from exc
     except ValidationError as exc:
         raise PackError(f"{path}: {_summarize(exc)}") from exc
