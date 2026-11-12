@@ -28,8 +28,11 @@ class Scope(_Know):
     segments: tuple[str, ...] = ()
     personas: tuple[str, ...] = ()
 
-    def applies_to(self, channel: str, segment: str, persona: str) -> bool:
-        """True when a message on `channel` to this segment and persona falls under the rule."""
+    def applies_to(self, channel: str, segment: str | None, persona: str | None) -> bool:
+        """True when a message on `channel` to this segment and persona falls under the rule.
+
+        An unknown segment or persona (None) only matches a rule that does not constrain it.
+        """
         return (
             self.channel in ("any", channel)
             and (not self.segments or segment in self.segments)

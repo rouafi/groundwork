@@ -4,7 +4,7 @@ import pytest
 
 from groundwork.adapters.model.claude import ClaudeModel
 from groundwork.adapters.model.replay import RecordingModel, ReplayModel
-from groundwork.core.domain.errors import PackError
+from groundwork.core.domain.errors import ModelError, PackError
 from groundwork.core.domain.pack import PackConfig
 from groundwork.entrypoints.wiring import build_model
 
@@ -32,3 +32,12 @@ def test_recording_wraps_the_live_model(tmp_path: Path, monkeypatch: pytest.Monk
 def test_an_unknown_model_is_a_pack_error(tmp_path: Path) -> None:
     with pytest.raises(PackError, match="unknown model adapter 'gpt'"):
         build_model(PACK, CONFIG.model_copy(update={"model": "gpt"}), tmp_path, env={})
+
+
+def test_a_live_model_without_credentials_names_the_missing_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+    with pytest.raises(ModelError, match=r"ANTHROPIC_API_KEY.*\.env"):
+        build_model(PACK, CONFIG, tmp_path, env={"GROUNDWORK_MODEL": "claude"})

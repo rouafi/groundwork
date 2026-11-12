@@ -8,10 +8,13 @@ services:
 
   mcp:
     build: .
-    command: groundwork mcp-serve
-    ports: ["8001:8001"]
+    command: groundwork mcp-serve --pack ${GROUNDWORK_PACK:-acme} --transport streamable-http
+    ports: ["127.0.0.1:8001:8001"]  # no auth: never publish on the LAN
     env_file: [.env]
-    volumes: ["./client_packs:/app/client_packs:ro"]
+    volumes:
+      - "./client_packs:/app/client_packs:ro"
+      - "./domains:/app/domains:ro"
+      - "./traces:/app/traces:ro"
 
   cli:
     build: .

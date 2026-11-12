@@ -5,11 +5,13 @@
 |---|---|---|---|
 | Domain | `src/groundwork/core/domain` | Contact, Deal, Product, Rule, EmailDraft... | nothing |
 | Ports | `src/groundwork/core/ports` | Interfaces to the outside world | domain |
-| Services | `src/groundwork/core/services` | Pack loading, integrity check, rule extraction workflow; later harness, context assembly, policies, evals runner | domain, ports |
+| Services | `src/groundwork/core/services` | Pack loading, integrity check, rule extraction workflow, context assembly, rule applicability, claim checks; later harness, policies, evals runner | domain, ports |
 | Adapters (driven) | `src/groundwork/adapters` | HubSpot, LanceDB, Voyage, Claude, replay, file approval | ports, vendor SDKs |
 | Entrypoints (driving) | `src/groundwork/entrypoints` | CLI, HTTP API, MCP server; wire adapters into services | everything |
 | Domain packs | `domains/<domain>` | Ontology schema, skills, prompts, eval scorers | data only |
 | Client packs | `client_packs/<client>` | Config, fixtures, interviews, rules, golden set | data only |
+
+The MCP server (`entrypoints/mcp_server.py`, ADR 0008) serves one pack, read-only: four thin tools over `core/services/{context,rules,claims}.py`. `wiring.build_server_context` loads the pack and builds the model only on the first claim check. Connection guide: `docs/mcp.md`.
 
 Dependencies point inward. `core` never imports `adapters` or `entrypoints` (import-linter, checked in pre-commit and CI).
 

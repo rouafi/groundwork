@@ -8,12 +8,15 @@
 - Untrusted text always travels as a document block, cached with `cache_control`.
 - A refusal raises `ModelRefusalError`; on tiers that allow it, the server-side
   fallback re-runs a declined request and `Answer.model` names the model that answered.
-- Credentials come from the environment through the SDK. Nothing here logs them.
+- API failures (bad key, network, rate limit) raise `ModelError` with the SDK's message,
+  so callers report the cause. Credentials come from the environment through the SDK;
+  nothing here logs them.
 """
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any
 
+import anthropic
 from pydantic import BaseModel, ValidationError
 
 from groundwork.adapters.model.recording import ModelSpec
@@ -41,7 +44,7 @@ class ClaudeModel:
         params = self._params(tier, system, _content(user, document, citations=False))
         for attempt in (1, 2):
             try:
-                message = self._client.beta.messages.parse(**params, output_format=schema)
+                message = _call(self._client.beta.messages.parse, **params, output_format=schema)
             except ValidationError as exc:
                 if attempt == 2:
                     raise ModelError(f"answer did not match {schema.__name__}: {exc}") from exc
@@ -57,7 +60,7 @@ class ClaudeModel:
         self, *, tier: Tier, system: str, user: str, document: str | None = None
     ) -> Answer[str]:
         params = self._params(tier, system, _content(user, document, citations=False))
-        message = self._client.beta.messages.create(**params)
+        message = _call(self._client.beta.messages.create, **params)
         _check_stop(message)
         text = "".join(block.text for block in message.content if block.type == "text")
         return Answer(value=text.strip(), usage=_usage(message), model=message.model)
@@ -67,7 +70,7 @@ class ClaudeModel:
     ) -> Answer[tuple[CitedStatement, ...]]:
         user = f"{instruction}\nWrite one statement per line, each line starting with '- '."
         params = self._params(tier, system, _content(user, document, citations=True))
-        message = self._client.beta.messages.create(**params)
+        message = _call(self._client.beta.messages.create, **params)
         _check_stop(message)
         return Answer(
             value=_statements(message.content), usage=_usage(message), model=message.model
@@ -85,6 +88,13 @@ class ClaudeModel:
         if tier in FALLBACK_TIERS:
             params |= {"betas": [FALLBACK_BETA], "fallbacks": "default"}
         return params
+
+
+def _call(method: Callable[..., Any], **params: Any) -> Any:
+    try:
+        return method(**params)
+    except anthropic.APIError as exc:
+        raise ModelError(f"Claude API call failed: {exc}") from exc
 
 
 def _content(user: str, document: str | None, *, citations: bool) -> list[dict[str, Any]]:
