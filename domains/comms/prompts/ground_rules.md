@@ -7,7 +7,9 @@ A rule is something the expert says the team always does, never does, or must do
 For each rule:
 - write one short imperative statement in English;
 - cite the exact sentences of the transcript that support it;
-- keep one rule per statement, and do not invent rules the expert did not state;
+- write a rule the way a team lead would put it in a style guide: when the expert gives several instructions for the same situation (the same audience, the same kind of message), group them into one rule, for example "Keep emails to small companies under five sentences and address the contact by first name";
+- keep separate the rules that apply to different situations, and keep each statement about what may be said of a product, a price or a commitment as its own rule;
+- do not invent rules the expert did not state;
 - when two parts of the interview state the same rule, write it once.
 
 Words this domain uses for its scope:
