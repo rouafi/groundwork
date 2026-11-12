@@ -41,10 +41,11 @@ class CitedStatement(_Answer):
 
 
 class Answer[T](_Answer):
-    """A model answer and what it cost."""
+    """A model answer, what it cost, and which model actually produced it."""
 
     value: T
     usage: Usage
+    model: str | None = None
 
 
 class ModelPort(Protocol):
