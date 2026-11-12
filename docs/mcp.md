@@ -26,7 +26,7 @@ uv run groundwork mcp-serve --pack acme --transport stdio
 ## Connect Claude Desktop
 Checked against [Connect to local MCP servers](https://modelcontextprotocol.io/docs/develop/connect-local-servers) on 2026-11-12.
 
-1. Copy `.env.example` to `.env` at the repo root. The command below reads it and does not start without it. For `check_claims`, set `GROUNDWORK_MODEL=claude` and `ANTHROPIC_API_KEY` there.
+1. Copy `.env.example` to `.env` at the repo root. The command below reads it and does not start without it. For `check_claims`, set `GROUNDWORK_MODEL=claude` and `ANTHROPIC_API_KEY` there. For `search_knowhow` on any question, set `GROUNDWORK_EMBEDDING=voyage` and `VOYAGE_API_KEY`: in the default replay mode only the recorded questions of the pack's `retrieval.jsonl` are answered.
 2. Find the absolute path of `uv` with `which uv` (macOS) or `where uv` (Windows), and the absolute path of this repo. Desktop apps do not inherit your shell's PATH, so use the absolute path for the command.
 3. In Claude Desktop, open the Claude menu, then **Settings…**, the **Developer** tab, then **Edit Config**. It opens `claude_desktop_config.json`:
    - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -49,7 +49,7 @@ Checked against [Connect to local MCP servers](https://modelcontextprotocol.io/d
    `--directory` makes the repo the working directory, so the server finds `client_packs/`, `domains/` and `traces/`; the documented config has no working-directory key. `--env-file .env` reads the repo's `.env`, so the API key stays out of the Desktop config.
 5. Quit Claude Desktop completely and start it again. The five tools are listed under the tools menu of a new conversation.
 
-The three fact tools work with no API key. `check_claims` calls a model: with `GROUNDWORK_MODEL=claude` and no key, it answers with an error naming `ANTHROPIC_API_KEY`. With the default `replay`, it answers a "no recording" error for any new text: it cannot be shown live without a key.
+The three fact tools work with no API key. `check_claims` calls a model: with `GROUNDWORK_MODEL=claude` and no key, it answers with an error naming `ANTHROPIC_API_KEY`. With the default `replay`, it answers a "no recording" error for any new text: it cannot be shown live without a key. `search_knowhow` behaves the same way: with the default `replay` embedding it answers only the pack's recorded retrieval questions, and any other question gets a "no recording for embedding" error that names `GROUNDWORK_EMBEDDING=voyage` and `VOYAGE_API_KEY`.
 
 For another client, add a second entry with `--pack beta` and another name.
 

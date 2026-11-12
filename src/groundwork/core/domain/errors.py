@@ -51,6 +51,8 @@ class EmbeddingMissError(ModelError):
     def __init__(self, key: str, path: str) -> None:
         self.key = key
         super().__init__(
-            f"no recording for embedding {key} (expected {path}). "
-            "Record it with GROUNDWORK_EMBEDDING=voyage GROUNDWORK_RECORD=1, then commit traces/."
+            f"no recording for embedding {key} (expected {path}). Replay answers only "
+            "recorded texts, such as the pack's retrieval questions. To search any query, "
+            "set GROUNDWORK_EMBEDDING=voyage and VOYAGE_API_KEY; to record a text for replay, "
+            "add GROUNDWORK_RECORD=1 and commit traces/."
         )

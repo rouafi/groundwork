@@ -57,13 +57,15 @@ def test_voyage_refuses_a_response_with_a_missing_vector() -> None:
         VoyageEmbedding(FakeVoyageClient(short=True)).embed(["a", "b"], "document")
 
 
-def test_a_replay_miss_names_the_key_and_how_to_record(tmp_path: Path) -> None:
+def test_a_replay_miss_names_the_key_and_both_ways_out(tmp_path: Path) -> None:
     replay = ReplayEmbedding(EmbeddingRecordings(tmp_path), "m")
     key = embedding_key("m", "query", "hello")
     with pytest.raises(EmbeddingMissError) as miss:
         replay.embed(["hello"], "query")
     assert key in str(miss.value)
-    assert "GROUNDWORK_EMBEDDING=voyage GROUNDWORK_RECORD=1" in str(miss.value)
+    assert "retrieval questions" in str(miss.value)
+    assert "GROUNDWORK_EMBEDDING=voyage and VOYAGE_API_KEY" in str(miss.value)
+    assert "GROUNDWORK_RECORD=1" in str(miss.value)
 
 
 def test_the_key_depends_on_model_type_and_text() -> None:

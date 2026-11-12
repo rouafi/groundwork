@@ -17,5 +17,5 @@ Rules capture what experts decided; the passages behind them hold the nuance (wh
 - In replay, `search_knowhow` answers only queries whose embedding was recorded (the retrieval questions of the pack); any other query is an error naming the missing recording. With `GROUNDWORK_EMBEDDING=voyage` and a key it answers anything.
 - Editing an interview invalidates its chunks and recordings: re-run `groundwork index`, then commit `index/` and `traces/`.
 - A search reads every row's score to order ties by chunk id; fine for the few hundred chunks of a pack, to revisit for a corpus of thousands.
-- The synthetic packs have 6 to 9 chunks each, so retrieval metrics on them show the method, not production quality.
+- The synthetic packs have 6 chunks each, so retrieval metrics on them show the method, not production quality.
 - Rerankers, incremental indexing and indexing CRM facts or emails stay out of scope.
