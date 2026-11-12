@@ -11,7 +11,7 @@ from collections.abc import Sequence
 
 from groundwork.core.domain.errors import ModelError
 from groundwork.core.domain.knowhow import Interview, Usage
-from groundwork.core.domain.search import Chunk
+from groundwork.core.domain.search import Chunk, RetrievalQuestion
 from groundwork.core.ports.embedding import EmbeddingPort
 from groundwork.core.ports.model import ModelPort
 from groundwork.core.services.chunking import chunk_interview
@@ -82,4 +82,19 @@ def chunk_problems(chunks: Sequence[Chunk], interviews: dict[str, Interview]) ->
             problems.append(f"chunk {chunk.id}: unknown interview {chunk.doc_id!r}")
         elif " ".join(chunk.text.split()) not in " ".join(interview.text.split()):
             problems.append(f"chunk {chunk.id}: text is not in interview {chunk.doc_id}")
+    return problems
+
+
+def question_problems(
+    questions: Sequence[RetrievalQuestion], interviews: dict[str, Interview]
+) -> list[str]:
+    """Every retrieval question whose expected passage is not really in its interview."""
+    problems: list[str] = []
+    for number, item in enumerate(questions, start=1):
+        where = f"retrieval question {number}"
+        interview = interviews.get(item.expected_doc_id)
+        if interview is None:
+            problems.append(f"{where}: unknown interview {item.expected_doc_id!r}")
+        elif " ".join(item.expected_quote.split()) not in " ".join(interview.text.split()):
+            problems.append(f"{where}: expected quote is not in interview {item.expected_doc_id}")
     return problems

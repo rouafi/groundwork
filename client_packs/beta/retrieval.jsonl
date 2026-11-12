@@ -1,0 +1,10 @@
+{"question": "How formal are emails to large industrial groups?", "expected_doc_id": "beta-i-1", "expected_quote": "Enterprise customers get formal emails."}
+{"question": "What response time can we put in writing for Predictive Maintenance?", "expected_doc_id": "beta-i-1", "expected_quote": "we promise failure alerts within 15 minutes"}
+{"question": "Where do prices go when we write to a big customer?", "expected_doc_id": "beta-i-1", "expected_quote": "Prices go in a formal quote document, attached, with a reference number"}
+{"question": "How often do we chase a large account?", "expected_doc_id": "beta-i-1", "expected_quote": "One follow-up after five business days, then a call."}
+{"question": "How do we write to the mid-sized plant managers?", "expected_doc_id": "beta-i-2", "expected_quote": "With mid-sized customers we write casually and directly."}
+{"question": "Who must be in copy when an email raises a technical question?", "expected_doc_id": "beta-i-2", "expected_quote": "Every email that touches a technical question goes to the assigned technician lead in copy."}
+{"question": "What do we say when our technician was late?", "expected_doc_id": "beta-i-2", "expected_quote": "If our technician was late, say it, apologize once, and give the new time."}
+{"question": "How fast do we deliver the report of an On-site Audit?", "expected_doc_id": "beta-i-3", "expected_quote": "the report is delivered within 10 business days after the visit"}
+{"question": "How many people fit in one Technician Training session?", "expected_doc_id": "beta-i-3", "expected_quote": "Technician Training includes certification, up to twelve technicians per session."}
+{"question": "May we mention a safety finding before the audit report is final?", "expected_doc_id": "beta-i-3", "expected_quote": "nothing about safety goes in an email until the report is reviewed."}

@@ -15,7 +15,12 @@ from groundwork.core.services.extraction import (
     extract_rules,
 )
 from groundwork.core.services.golden_checks import check_against_golden, golden_problems
-from groundwork.core.services.indexing import build_index, chunk_problems, dump_chunks
+from groundwork.core.services.indexing import (
+    build_index,
+    chunk_problems,
+    dump_chunks,
+    question_problems,
+)
 from groundwork.core.services.integrity import check_integrity
 from groundwork.core.services.packs import (
     CHUNKS_FILE,
@@ -25,6 +30,7 @@ from groundwork.core.services.packs import (
     load_interviews,
     load_pack_config,
     load_prompt,
+    load_retrieval_questions,
     load_rules,
 )
 from groundwork.core.services.rules_check import rule_problems
@@ -71,12 +77,14 @@ def pack_problems(pack_dir: Path, domains_dir: Path) -> list[str]:
         rules = load_rules(pack_dir)
         golden = load_extraction_golden(pack_dir)
         chunks = load_chunks(pack_dir)
+        questions = load_retrieval_questions(pack_dir)
     except PackError as exc:
         return [_located(pack_dir, exc.message)]
     problems = [str(issue) for issue in check_integrity(crm, domain)]
     problems += rule_problems(rules, interviews, domain, crm)
     problems += golden_problems(golden, interviews) if golden else []
     problems += chunk_problems(chunks, interviews)
+    problems += question_problems(questions, interviews)
     return [_located(pack_dir, p) for p in problems]
 
 

@@ -4,9 +4,15 @@ import pytest
 
 from groundwork.core.domain.errors import PackError
 from groundwork.core.domain.knowhow import Interview
-from groundwork.core.domain.search import Chunk
-from groundwork.core.services.indexing import chunk_problems, dump_chunks
-from groundwork.core.services.packs import CHUNKS_FILE, load_chunks
+from groundwork.core.domain.search import Chunk, RetrievalQuestion
+from groundwork.core.services.chunking import chunk_interview
+from groundwork.core.services.indexing import chunk_problems, dump_chunks, question_problems
+from groundwork.core.services.packs import (
+    CHUNKS_FILE,
+    load_chunks,
+    load_interviews,
+    load_retrieval_questions,
+)
 
 INTERVIEWS = {
     "acme-i-1": Interview(
@@ -90,3 +96,46 @@ def test_a_bad_line_names_the_file_and_the_line(tmp_path: Path) -> None:
     path.write_text(dump_chunks([_chunk()]) + '{"id": "x"}\n', encoding="utf-8")
     with pytest.raises(PackError, match=r"chunks\.jsonl:2"):
         load_chunks(tmp_path)
+
+
+def _question(**fields: object) -> RetrievalQuestion:
+    data = {
+        "question": "How do we quote prices?",
+        "expected_doc_id": "acme-i-1",
+        "expected_quote": "We quote the catalog price exactly.",
+        **fields,
+    }
+    return RetrievalQuestion.model_validate(data)
+
+
+def test_a_question_whose_quote_is_in_its_interview_is_fine() -> None:
+    assert question_problems([_question()], INTERVIEWS) == []
+
+
+def test_a_question_names_its_number_when_the_interview_is_unknown() -> None:
+    (problem,) = question_problems([_question(), _question(expected_doc_id="acme-i-9")], INTERVIEWS)
+    assert problem == "retrieval question 2: unknown interview 'acme-i-9'"
+
+
+def test_a_question_whose_quote_is_not_in_the_interview_is_a_problem() -> None:
+    (problem,) = question_problems([_question(expected_quote="We never quote.")], INTERVIEWS)
+    assert problem == "retrieval question 1: expected quote is not in interview acme-i-1"
+
+
+PACKS = Path(__file__).resolve().parents[2] / "client_packs"
+
+
+@pytest.mark.parametrize("pack", ["acme", "beta"])
+def test_the_shipped_questions_are_ten_and_each_quote_is_in_exactly_one_chunk(pack: str) -> None:
+    interviews = {i.id: i for i in load_interviews(PACKS / pack)}
+    questions = load_retrieval_questions(PACKS / pack)
+    assert len(questions) == 10
+    assert question_problems(questions, interviews) == []
+    for item in questions:
+        chunks = chunk_interview(interviews[item.expected_doc_id])
+        holding = [
+            c.id
+            for c in chunks
+            if " ".join(item.expected_quote.split()) in " ".join(c.text.split())
+        ]
+        assert len(holding) == 1, (item.question, holding)

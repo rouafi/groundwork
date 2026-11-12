@@ -1,0 +1,10 @@
+{"question": "Why do we keep discounts out of emails?", "expected_doc_id": "acme-i-1", "expected_quote": "An email gets forwarded to finance and suddenly the discount is the new price."}
+{"question": "How long should an email to a small company be?", "expected_doc_id": "acme-i-1", "expected_quote": "We use first names, and we stop after five sentences."}
+{"question": "How fast must we answer a customer?", "expected_doc_id": "acme-i-2", "expected_quote": "I reply to every customer email within one business day"}
+{"question": "What should I lead with when I write to the person who signs the contract?", "expected_doc_id": "acme-i-2", "expected_quote": "I lead with cost of ownership and the time their team saves, not with features."}
+{"question": "How do I write about an outage?", "expected_doc_id": "acme-i-2", "expected_quote": "Say what happened, what it affected, and when the next update comes."}
+{"question": "When should I log what I promised a customer?", "expected_doc_id": "acme-i-2", "expected_quote": "I log every promise I make in the CRM on the same day."}
+{"question": "Can I give a customer a date for a roadmap feature?", "expected_doc_id": "acme-i-3", "expected_quote": "we never promise dates for features on the roadmap"}
+{"question": "What do I send to the technical evaluators testing the integration?", "expected_doc_id": "acme-i-3", "expected_quote": "we link the exact page of the API documentation and give real field names."}
+{"question": "How do we write to colleagues inside the company?", "expected_doc_id": "acme-i-3", "expected_quote": "we write bullet points and skip the formalities."}
+{"question": "What does the welcome email say about training?", "expected_doc_id": "acme-i-3", "expected_quote": "The Onboarding Pack includes two training sessions"}

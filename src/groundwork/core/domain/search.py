@@ -53,3 +53,15 @@ class SearchHit(_Search):
     doc_id: Id
     text: Text
     score: float
+
+
+class RetrievalQuestion(_Search):
+    """A question a pack's index must answer: the interview and the passage it should find.
+
+    `expected_quote` is verbatim in `expected_doc_id`, so a retrieval eval can check a hit
+    by text, whatever the chunk boundaries are.
+    """
+
+    question: Text
+    expected_doc_id: Id
+    expected_quote: Text
