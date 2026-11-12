@@ -72,3 +72,7 @@ class AgentLimitError(AgentError):
 
 class ApprovalError(GroundworkError):
     """An approval cannot be submitted or resolved in its current state."""
+
+
+class MessagingError(GroundworkError):
+    """An email could not be delivered."""
