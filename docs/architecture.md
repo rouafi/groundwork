@@ -5,7 +5,7 @@
 |---|---|---|---|
 | Domain | `src/groundwork/core/domain` | Contact, Deal, Product, Rule, EmailDraft... | nothing |
 | Ports | `src/groundwork/core/ports` | Interfaces to the outside world | domain |
-| Services | `src/groundwork/core/services` | Pack loading, integrity check; later harness, context assembly, policies, evals runner | domain, ports |
+| Services | `src/groundwork/core/services` | Pack loading, integrity check, rule extraction workflow; later harness, context assembly, policies, evals runner | domain, ports |
 | Adapters (driven) | `src/groundwork/adapters` | HubSpot, LanceDB, Voyage, Claude, replay, file approval | ports, vendor SDKs |
 | Entrypoints (driving) | `src/groundwork/entrypoints` | CLI, HTTP API, MCP server; wire adapters into services | everything |
 | Domain packs | `domains/<domain>` | Ontology schema, skills, prompts, eval scorers | data only |
@@ -29,6 +29,8 @@ Adapters translate vendor formats into domain types. The core never sees HubSpot
 
 The `model` key in `config.yaml` selects the adapter family (`claude` or `replay`) for ModelPort, AgentPort and EmbeddingPort. Replay serves recorded runs and never falls back to a live call.
 
+ModelPort (`core/ports/model.py`) exposes `complete_structured`, `complete_text` and `cite` (Citations), each on a tier (`extraction` or `cheap`) that the adapter maps to a model id, so the core never names a model. `entrypoints/wiring.py` builds it: `GROUNDWORK_MODEL` overrides the config's `model`, `replay` reads `traces/<pack>/model/`, and `claude` with `GROUNDWORK_RECORD=1` is wrapped in a `RecordingModel` that writes there.
+
 ## Configuration
 Each client pack selects its adapters and its domain in `client_packs/<client>/config.yaml`. Changing a SaaS is one adapter plus one line of config. Precedence: client > domain > core, through config only.
 
@@ -43,7 +45,7 @@ domain: comms       # a folder under domains/
 `entrypoints/wiring.py` is the composition root: the only place that maps a config name to an adapter class. An unknown name fails `validate-packs` with the list of valid names.
 
 ## Pack validation
-`groundwork validate-packs` runs in pre-commit and CI. For every folder in `client_packs/` it checks the config schema, that the domain exists, that the CRM fixtures load, and `check_integrity` (`core/services/integrity.py`): dangling references (deal to contact, contact to company, deal to products) and segments or personas outside the domain vocabulary. The check goes through `CrmPort` only, so it will run unchanged against a live CRM from a manual command (CI never calls a real CRM). Each problem is printed with its pack, kind and id, for example `client_packs/acme: deal acme-d-3 references missing contact acme-c-99`.
+`groundwork validate-packs` runs in pre-commit and CI. For every folder in `client_packs/` it checks the config schema, that the domain exists, that the CRM fixtures load, and `check_integrity` (`core/services/integrity.py`): dangling references (deal to contact, contact to company, deal to products) and segments or personas outside the domain vocabulary. The check goes through `CrmPort` only, so it will run unchanged against a live CRM from a manual command (CI never calls a real CRM). Each problem is printed with its pack, kind and id, for example `client_packs/acme: deal acme-d-3 references missing contact acme-c-99`. It also loads the interviews and checks `rules.yaml` and the extraction golden data (see docs/knowledge.md).
 
 CRM fixtures live in `client_packs/<client>/fixtures/hubspot/` in HubSpot CRM v3 shape; the mapping and its simplifications are documented in `adapters/crm/hubspot_mapping.py`.
 

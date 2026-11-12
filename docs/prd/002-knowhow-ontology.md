@@ -1,5 +1,5 @@
 # PRD-002: Know-how ontology and rule extraction
-Status: todo | Branch: `feat/knowhow-ontology` | Depends on: 001
+Status: done | Branch: `feat/knowhow-ontology` | Depends on: 001
 
 ## Goal
 Turn expert interviews into approved rules that carry provenance, through a grounded extraction workflow. Every rule is anchored to a verbatim span returned by the API, checked against the CRM facts, and approved by a human. The workflow also reports what the experts disagree on and what they never covered. After this PR each pack has a `rules.yaml` produced by a real recorded run and reviewed by a human.
@@ -187,3 +187,16 @@ This PR validates its schema and checks the deterministic metrics on the recorde
 - **Consolidation (duplicates, conflicts, coverage gaps), the cross-ontology check and extraction golden data added.**
 - **The `beta` override targets `mid-market`, since beta has no `smb` company.**
 - **Precision added:** model selection precedence, the recording key fields, one recording per logical call, and an injected trace directory.
+
+## Implementation notes (deviations from the design above)
+- **Grounding writes one rule per situation, not one statement per practice.** The first real run split single guidelines into several rules (36 for acme against about 10 in the golden data), which triples the review. The ground prompt and instruction now group the instructions that apply to the same situation, and treat what an expert says they tell customers as a promise. Three recording rounds were needed; the final runs propose 23 rules per pack.
+- **The port returns `Answer[T](value, usage, model)`** so the report can sum the cost per stage and the recording stores the model that answered. Structured output uses `client.beta.messages.parse(output_format=...)`; the extraction tier sends the server-side refusal fallback (`fallbacks: "default"`, beta `server-side-fallback-2026-07-01`). Haiku 5.5 has no fallback, so the cheap tier does not send it.
+- **Recording is a `RecordingModel` wrapper** around any `ModelPort`, enabled by `GROUNDWORK_RECORD=1` in wiring, not a mode of `ClaudeModel`. The recording holds `request`, `answer`, `usage` and `model`; the key is the file name only, because gitleaks reads a hash stored under `"key"` as a leaked API key.
+- **The filter also drops** a statement the typing stage did not return (`not typed`) and a `claim_text` on a non-claim rule.
+- **Coverage gaps are `(segment, persona, contacts)`, without channel**, and only a rule with a segment or a persona covers a gap: a general rule does not say how to adapt to one audience. Questions use `complete_structured` with a `Questions` schema and are skipped when no rule exists. On both synthetic packs the approved scopes cover every audience with contacts, so the recorded reports have no gaps; AC6 is met by unit tests on hand-built cases.
+- **The report is `ExtractionReport(pack, rules, dropped, conflicts, contradictions, gaps, questions, failures, usage)`.** `Failure(where, error)` covers interviews and the pack stages (consolidate, questions), which are isolated too.
+- **Conflict reasons are rewritten with the final rule ids**, since the model writes them before duplicates are merged and rules renumbered.
+- **The claim check matches by word containment, not equality:** an allowed claim must appear, as whole words, in the rule's `claim_text`. It never lets an unlisted promise through, but it flags paraphrases of allowed claims ("Setup for Starter and Pro takes one day" for "Setup in one day"). In the recorded runs 5 of 7 contradictions are such false positives; the reviewer left those rules out. A semantic check belongs to `check_claims` (PRD-003).
+- **Golden checks run in the CLI** after each extraction (grounding, injection, conflicts, contradictions) and in `test_recorded_runs`.
+- **Live tests are opt-in** (`pytest -m live`) so a bare `pytest` never calls the API.
+- **14 recorded calls** for both packs (3 ground, 3 type and 1 consolidate per pack), about 6 cents per pack.
