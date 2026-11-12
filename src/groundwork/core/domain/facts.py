@@ -60,3 +60,12 @@ class Deal(_Fact):
     stage: str
     amount: Money
     product_ids: tuple[Id, ...]
+
+
+class ContactContext(_Fact):
+    """A contact, their company, their deals and the products of those deals."""
+
+    contact: Contact
+    company: Company
+    deals: tuple[Deal, ...]
+    products: tuple[Product, ...]
