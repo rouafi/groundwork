@@ -182,3 +182,14 @@ def test_check_claims_returns_verdicts_from_the_facts() -> None:
 def test_check_claims_without_a_recording_explains_the_miss(tmp_path: Path) -> None:
     message = _error(create_server(_context(traces=tmp_path)), "check_claims", text="draft")
     assert "replay" in message.casefold() or "recording" in message.casefold()
+
+
+def test_check_claims_without_a_key_names_it(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+    context = build_server_context(
+        PACKS / "acme", DOMAINS, ROOT / "traces", {"GROUNDWORK_MODEL": "claude"}
+    )
+    server = create_server(context)
+    assert _result(server, "get_product_facts", product_ids=["acme-p-1"])
+    assert "ANTHROPIC_API_KEY" in _error(server, "check_claims", text="draft")

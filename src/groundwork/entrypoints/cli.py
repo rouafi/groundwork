@@ -7,7 +7,7 @@ from typing import Annotated
 
 import typer
 
-from groundwork.core.domain.errors import PackError
+from groundwork.core.domain.errors import GroundworkError, PackError
 from groundwork.core.services.extraction import (
     PROMPT_NAMES,
     ExtractionPrompts,
@@ -94,8 +94,8 @@ def extract_rules_command(
         )
         interviews = load_interviews(pack_dir)
         golden = load_extraction_golden(pack_dir)
-    except PackError as exc:
-        typer.echo(_located(pack_dir, exc.message), err=True)
+    except GroundworkError as exc:
+        typer.echo(_located(pack_dir, str(exc)), err=True)
         raise typer.Exit(code=1) from exc
     concurrency = _concurrency()
     report = extract_rules(workflow, interviews, max_concurrency=concurrency)

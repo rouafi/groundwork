@@ -4,6 +4,8 @@ import logging
 from types import SimpleNamespace
 from typing import Any
 
+import anthropic
+import httpx
 import pytest
 from pydantic import BaseModel, ValidationError
 
@@ -12,6 +14,7 @@ from groundwork.adapters.model.recording import DEFAULT_SPECS
 from groundwork.core.domain.errors import ModelError, ModelRefusalError
 from groundwork.core.ports.model import Quote
 
+REQUEST = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
 DOC = "We keep emails short. We never put a discount in writing."
 
 
@@ -175,3 +178,21 @@ def test_nothing_is_logged(
     _model(messages).complete_text(tier="cheap", system="s", user="u")
     assert "sk-ant" not in caplog.text
     assert all("key" not in name for name in messages.calls[0])
+
+
+@pytest.mark.parametrize(
+    ("error", "shown"),
+    [
+        (anthropic.APIConnectionError(request=REQUEST), "Connection error"),
+        (
+            anthropic.AuthenticationError(
+                "invalid x-api-key", response=httpx.Response(401, request=REQUEST), body=None
+            ),
+            "invalid x-api-key",
+        ),
+    ],
+)
+def test_api_failures_become_model_errors_naming_the_cause(error: Exception, shown: str) -> None:
+    model = _model(FakeMessages(parse=[error]))
+    with pytest.raises(ModelError, match=shown):
+        model.complete_structured(tier="cheap", system="s", user="u", schema=Label)

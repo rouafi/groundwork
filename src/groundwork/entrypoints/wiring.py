@@ -14,7 +14,7 @@ from groundwork.adapters.crm.fixture import FixtureCrm
 from groundwork.adapters.model.claude import ClaudeModel
 from groundwork.adapters.model.recording import Recordings, specs_from_env
 from groundwork.adapters.model.replay import RecordingModel, ReplayModel
-from groundwork.core.domain.errors import GroundworkError, ModelError, PackError
+from groundwork.core.domain.errors import ModelError, PackError
 from groundwork.core.domain.pack import PackConfig
 from groundwork.core.ports.crm import CrmPort
 from groundwork.core.ports.model import ModelPort
@@ -31,6 +31,7 @@ FIXTURES_SUBDIR = Path("fixtures") / "hubspot"
 MODEL_TRACES_SUBDIR = "model"
 MODEL_ENV = "GROUNDWORK_MODEL"
 RECORD_ENV = "GROUNDWORK_RECORD"
+CREDENTIAL_ENVS = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
 CLAIMS_PROMPT = "extract_claims"
 
 CRM_ADAPTERS: Mapping[str, Callable[[Path], CrmPort]] = MappingProxyType(
@@ -67,6 +68,11 @@ def build_model(
     if name == "replay":
         return ReplayModel(recordings, specs)
     if name == "claude":
+        if not any(env.get(k) or os.environ.get(k) for k in CREDENTIAL_ENVS):
+            raise ModelError(
+                f"{MODEL_ENV}=claude needs ANTHROPIC_API_KEY: set it in .env "
+                "and run with uv run --env-file .env"
+            )
         import anthropic  # imported here so replay runs never load the SDK client
 
         model: ModelPort = ClaudeModel(anthropic.Anthropic(), specs)
@@ -84,7 +90,7 @@ def build_server_context(
     """Everything the MCP server of one pack reads. Raises `PackError` on a bad pack.
 
     The model is built on the first claim check only, so the three fact tools work
-    with no API key, and a missing key is reported by that tool, not at start.
+    with no API key; a missing key is a `ModelError` that `check_claims` reports.
     """
     config = load_pack_config(pack_dir)
     domain = load_domain_pack(domains_dir, config.domain)
@@ -92,12 +98,7 @@ def build_server_context(
 
     @functools.cache
     def model() -> ModelPort:
-        try:
-            return build_model(pack_dir, config, traces_dir, env)
-        except GroundworkError:
-            raise
-        except Exception as exc:  # the SDK client refuses to start, e.g. no API key
-            raise ModelError(f"check_claims cannot build its model: {exc}") from exc
+        return build_model(pack_dir, config, traces_dir, env)
 
     return ServerContext(
         pack=pack_dir.name,
