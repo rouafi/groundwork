@@ -1,0 +1,37 @@
+pack: acme
+dropped: []
+conflicts:
+- rule_ids:
+  - acme-r-003
+  - acme-r-013
+  reason: r-003 forbids putting any discount in writing in customer emails for all audiences, while r-013
+    requires putting the ten percent renewal discount directly in the renewal email for mid-market.
+contradictions:
+- rule_id: acme-r-006
+  product_id: acme-p-1
+  claim_text: Setup for Starter and Pro takes one day.
+- rule_id: acme-r-006
+  product_id: acme-p-2
+  claim_text: Setup for Starter and Pro takes one day.
+- rule_id: acme-r-014
+  product_id: acme-p-2
+  claim_text: Single sign-on is included in Insight Pro.
+gaps: []
+questions: []
+failures: []
+usage:
+- stage: ground
+  calls: 3
+  usage:
+    input_tokens: 8076
+    output_tokens: 2711
+- stage: type
+  calls: 3
+  usage:
+    input_tokens: 6329
+    output_tokens: 2413
+- stage: consolidate
+  calls: 1
+  usage:
+    input_tokens: 2726
+    output_tokens: 281
