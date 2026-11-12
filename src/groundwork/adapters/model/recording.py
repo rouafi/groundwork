@@ -79,10 +79,12 @@ class Recordings:
         return record
 
     def save(self, payload: Mapping[str, Any], answer: Any, usage: Usage, model: str | None) -> str:
-        """Write one call: inputs, final answer, usage and the model that answered."""
+        """Write one call: inputs, final answer, usage and the model that answered.
+
+        The key is the file name, not a field: a hash under "key" reads as a leaked API key
+        to secret scanners."""
         key = call_key(payload)
         record = {
-            "key": key,
             "request": dict(payload),
             "answer": answer,
             "usage": usage.model_dump(),

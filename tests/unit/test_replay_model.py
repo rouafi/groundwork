@@ -77,7 +77,9 @@ def test_recording_holds_inputs_answer_and_usage_only(tmp_path: Path) -> None:
     (path,) = tmp_path.glob("*.json")
     text = path.read_text()
     assert text.endswith("\n")
-    assert set(recordings.read(path.stem)) == {"key", "request", "answer", "usage", "model"}
+    # The key is the file name only: a hash stored under "key" reads as a leaked API key
+    # to secret scanners (gitleaks generic-api-key).
+    assert set(recordings.read(path.stem)) == {"request", "answer", "usage", "model"}
     assert "api_key" not in text.lower()
 
 
