@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 from typer.testing import CliRunner, Result
 
+from groundwork.adapters.agent.passthrough import PassthroughAgent
 from groundwork.adapters.model.recording import DEFAULT_SPECS, Recordings
 from groundwork.adapters.model.replay import RecordingModel
 from groundwork.core.domain.harmonize import AgentResult, AgentStep, DemoCase, HarmonizedEmail
@@ -29,11 +30,14 @@ CASES = [
      "channel": "external", "draft": "Hi Ana, Pro is 1490 EUR."},
     {"case_id": "external-wrong", "title": "A wrong price", "contact_id": "acme-c-1",
      "channel": "external", "draft": "Hi Ana, Pro is 990 EUR."},
+    {"case_id": "external-passthrough", "title": "A faulty agent", "contact_id": "acme-c-1",
+     "channel": "external", "passthrough": True, "draft": "Hi Ana, Pro is 990 EUR, 50% off."},
 ]  # fmt: skip
 BODIES = {
     "internal-ok": "Insight Pro costs 1490.00 EUR.",
     "external-ok": "Insight Pro costs 1490.00 EUR.",
     "external-wrong": "Insight Pro costs 990 EUR.",
+    "external-passthrough": "unused: the passthrough agent writes the draft itself",
 }
 
 
@@ -80,8 +84,12 @@ def world(tmp_path: Path) -> dict[str, Path]:
         recording = RecordingModel(
             StubModel(structured=_claims), Recordings(traces / "acme" / "model"), DEFAULT_SPECS
         )
-        flow = dataclasses.replace(base, agent=ScriptedAgent(result), model=recording)
-        harmonize(flow, DemoCase.model_validate(item).request)
+        case = DemoCase.model_validate(item)
+        agent: Any = PassthroughAgent() if case.passthrough else ScriptedAgent(result)
+        flow = dataclasses.replace(base, agent=agent, model=recording)
+        if case.passthrough:
+            flow = dataclasses.replace(flow, search=None)
+        harmonize(flow, case.request)
     shutil.rmtree(var, ignore_errors=True)
     return {"packs": packs, "traces": traces, "var": var}
 
@@ -106,7 +114,8 @@ def test_the_demo_replays_the_traces_and_shows_the_three_routes(world: dict[str,
     assert result.exit_code == 0, result.output
     for decision in ("Decision: AUTO_SEND", "Decision: APPROVAL", "Decision: BLOCKED"):
         assert decision in result.output
-    assert "acme: 3 case(s): 1 approval, 1 auto_send, 1 blocked" in result.output
+    assert "acme: 4 case(s): 1 approval, 1 auto_send, 2 blocked" in result.output
+    assert "Subject: (draft, unchanged)" in result.output
     assert "Draft:\n  Hi Ana, Pro is 990 EUR." in result.output
     assert "false claim" in result.output
 

@@ -9,13 +9,14 @@ from typing import Annotated
 
 import typer
 
+from groundwork.adapters.agent.passthrough import PassthroughAgent
 from groundwork.adapters.approval.file import FileApproval
 from groundwork.adapters.messaging.console import ConsoleMessaging
 from groundwork.core.domain.errors import GroundworkError, PackError
 from groundwork.core.domain.harmonize import HarmonizeRequest, MessageChannel
 from groundwork.core.services.approvals import approve, reject
 from groundwork.core.services.harmonize import harmonize
-from groundwork.core.services.packs import load_demo_cases, load_pack_config, load_prompt
+from groundwork.core.services.packs import load_demo_cases, load_pack_config
 from groundwork.entrypoints.reports import outcome_lines
 from groundwork.entrypoints.wiring import (
     EMBEDDING_ENV,
@@ -112,6 +113,7 @@ def approvals_reject(
 
 def demo_command(
     pack: Annotated[list[str] | None, typer.Option(help="Pack(s) to run; default: all.")] = None,
+    case: Annotated[list[str] | None, typer.Option(help="Case id(s) to run; default: all.")] = None,
     model: Annotated[str | None, typer.Option(help="claude runs live; default: replay.")] = None,
     record: Annotated[bool, typer.Option(help="Record model calls and embeddings.")] = False,
     packs_dir: Path = PACKS_DIR,
@@ -135,23 +137,30 @@ def demo_command(
         raise _fail(f"no pack with demo cases under {packs_dir}")
     with tempfile.TemporaryDirectory(prefix="groundwork-demo-") as scratch:
         for name in names:
-            _run_pack(packs_dir / name, domains_dir, traces_dir, Path(scratch))
+            _run_pack(packs_dir / name, domains_dir, traces_dir, Path(scratch), case)
 
 
-def _run_pack(pack_dir: Path, domains_dir: Path, traces_dir: Path, var_dir: Path) -> None:
+def _run_pack(
+    pack_dir: Path, domains_dir: Path, traces_dir: Path, var_dir: Path, only: list[str] | None
+) -> None:
     try:
-        config = load_pack_config(pack_dir)
         cases = load_demo_cases(pack_dir)
         if not cases:
             raise PackError(f"{pack_dir}: no demo cases (demo_cases.json)")
+        if only:
+            cases = tuple(c for c in cases if c.case_id in only)
+            if not cases:
+                raise PackError(f"{pack_dir}: none of the cases {only} exists")
         flow = build_flow(pack_dir, domains_dir, traces_dir, var_dir)
         routes: Counter[str] = Counter()
         for case in cases:
             typer.echo(f"\n== {pack_dir.name} / {case.case_id}: {case.title} ({case.channel}) ==")
             typer.echo("Draft:")
             typer.echo(f"  {case.draft}")
-            system = load_prompt(domains_dir, config.domain, case.prompt)
-            outcome = harmonize(dataclasses.replace(flow, system=system), case.request)
+            run = flow
+            if case.passthrough:
+                run = dataclasses.replace(flow, agent=PassthroughAgent(), search=None)
+            outcome = harmonize(run, case.request)
             routes[outcome.decision.route] += 1
             path = flow.traces_dir / f"{case.case_id}.jsonl"
             for line in outcome_lines(case.request, outcome, path):

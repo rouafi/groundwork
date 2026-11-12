@@ -109,8 +109,8 @@ class ApprovalItem(_Harmonize):
 class DemoCase(_Harmonize):
     """A case a pack shows in its demo: one request with a case id and a title.
 
-    `prompt` names the agent's system prompt in the domain's `prompts/`. The default is the
-    real one; a case may name a naive prompt to show the policy blocking an agent that obeys.
+    With `passthrough` the draft goes through unchanged, as if the agent were faulty or
+    compromised, to show the claim check and the policy catching what the agent would not.
     """
 
     case_id: Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")]
@@ -118,7 +118,7 @@ class DemoCase(_Harmonize):
     contact_id: Id
     channel: MessageChannel
     draft: Text
-    prompt: Annotated[str, Field(pattern=r"^[a-z][a-z0-9_]*$")] = "harmonize"
+    passthrough: bool = False
 
     @property
     def request(self) -> HarmonizeRequest:

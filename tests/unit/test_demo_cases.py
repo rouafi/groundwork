@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from groundwork.core.domain.errors import PackError
-from groundwork.core.services.packs import DEMO_FILE, load_demo_cases, load_prompt
+from groundwork.core.services.packs import DEMO_FILE, load_demo_cases
 
 ROOT = Path(__file__).resolve().parents[2]
 CASE = {
@@ -30,7 +30,7 @@ def test_a_case_is_a_request_named_after_its_case_id_with_the_real_prompt_by_def
     tmp_path: Path,
 ) -> None:
     (case,) = load_demo_cases(_pack(tmp_path, [CASE]))
-    assert case.prompt == "harmonize"
+    assert case.passthrough is False
     assert case.request.id == "demo-1"
     assert (case.request.contact_id, case.request.channel, case.request.draft) == (
         "acme-c-1", "external", "Hi.",
@@ -57,10 +57,9 @@ def test_a_bad_demo_file_names_the_file_and_the_problem(
 
 
 @pytest.mark.parametrize("pack", ["acme", "beta"])
-def test_the_shipped_demo_has_three_cases_with_both_channels_and_real_prompts(pack: str) -> None:
+def test_the_shipped_demo_has_three_cases_with_both_channels_and_one_passthrough(pack: str) -> None:
     cases = load_demo_cases(ROOT / "client_packs" / pack)
     assert len(cases) == 3
     assert {c.channel for c in cases} == {"internal", "external"}
-    for case in cases:
-        assert load_prompt(ROOT / "domains", "comms", case.prompt)
-    assert [c.prompt for c in cases].count("harmonize_naive") == 1
+    passthrough = [c for c in cases if c.passthrough]
+    assert len(passthrough) == 1 and passthrough[0].channel == "external"

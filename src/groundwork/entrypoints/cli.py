@@ -1,7 +1,6 @@
 """Command line entrypoint."""
 
 import os
-from collections.abc import Sequence
 from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
@@ -9,7 +8,6 @@ from typing import Annotated
 import typer
 
 from groundwork.core.domain.errors import GroundworkError, PackError
-from groundwork.core.domain.harmonize import DemoCase
 from groundwork.core.services.extraction import (
     PROMPT_NAMES,
     ExtractionPrompts,
@@ -96,20 +94,7 @@ def pack_problems(pack_dir: Path, domains_dir: Path) -> list[str]:
     problems += chunk_problems(chunks, interviews)
     problems += question_problems(questions, interviews)
     problems += demo_problems(demo_cases, crm)
-    problems += _prompt_problems(demo_cases, domains_dir, config.domain)
     return [_located(pack_dir, p) for p in problems]
-
-
-def _prompt_problems(cases: Sequence[DemoCase], domains_dir: Path, domain: str) -> list[str]:
-    problems = []
-    for case in cases:
-        try:
-            load_prompt(domains_dir, domain, case.prompt)
-        except PackError:
-            problems.append(
-                f"demo case {case.case_id}: prompt {case.prompt!r} not found in {domain}"
-            )
-    return problems
 
 
 @app.command("extract-rules")
