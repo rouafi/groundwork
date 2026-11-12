@@ -105,12 +105,19 @@ def _allowed(claim_text: str, product_id: str, crm: CrmPort) -> bool:
         (product,) = crm.get_products([product_id])
     except NotFoundError:
         return False
-    wanted = f" {_key(claim_text)} "
-    return any(f" {_key(allowed)} " in wanted for allowed in product.allowed_claims)
+    return matching_allowed_claim(claim_text, product.allowed_claims) is not None
+
+
+def matching_allowed_claim(text: str, allowed_claims: Sequence[str]) -> str | None:
+    """The first allowed claim whose words appear, in order, inside `text`, or None.
+
+    Lowercase words only, so 'The pack includes two training sessions.' contains 'Two
+    training sessions'. Containment is a deterministic floor, not a semantic check:
+    a paraphrase does not match, and an extra promise next to a match is not seen.
+    """
+    wanted = f" {_key(text)} "
+    return next((a for a in allowed_claims if f" {_key(a)} " in wanted), None)
 
 
 def _key(text: str) -> str:
-    """Lowercase words only, so 'The pack includes two training sessions.' contains 'Two
-    training sessions'. Containment is a deterministic floor, not a semantic check:
-    judging whether a sentence adds an unlisted promise is check_claims (PRD-003)."""
     return " ".join(re.findall(r"[a-z0-9%.]+(?<!\.)", normalize(text).casefold()))

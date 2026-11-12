@@ -18,7 +18,7 @@ def test_a_claim_check_is_frozen_and_rejects_unknown_fields() -> None:
         reason="49 EUR is the catalog price",
     )
     with pytest.raises(ValidationError):
-        check.status = "false"  # type: ignore[misc]
+        check.status = "false"
     with pytest.raises(ValidationError):
         ClaimCheck.model_validate({**check.model_dump(), "extra": 1})
 
