@@ -150,3 +150,76 @@ class Agreement(_Eval):
     @property
     def rate(self) -> float:
         return self.agree / self.total if self.total else 0.0
+
+
+class RawResult(_Eval):
+    """What the raw draft scores through the same scorers: the 'before' of before and after."""
+
+    route: Route
+    false_claims: int = Field(ge=0)
+    forbidden_hits: tuple[str, ...] = ()
+    tone: Tone
+    rule_violations: tuple[str, ...] = ()
+
+
+class CaseResult(_Eval):
+    """Everything measured for one golden case, harmonized and raw."""
+
+    id: CaseId
+    tags: tuple[str, ...] = ()
+    channel: MessageChannel
+    expected_route: Route
+    route: Route
+    facts: FactScore
+    forbidden_hits: tuple[str, ...] = ()
+    traceability: TraceabilityScore
+    tone: Tone
+    tone_reason: str
+    rule_violations: tuple[str, ...] = ()
+    raw: RawResult
+
+    @property
+    def routing_ok(self) -> bool:
+        return self.route == self.expected_route
+
+
+class PackMetrics(_Eval):
+    """The numbers of a pack, after and before the agent. `None` means not measured."""
+
+    cases: int = Field(ge=0)
+    fact_false_claims: int = Field(ge=0)
+    rule_violations: int = Field(ge=0)
+    tone_mean: float
+    routing_accuracy: Fraction
+    traceability: Fraction
+    retrieval_recall_at_5: Fraction | None = None
+    judge_agreement: Fraction
+    raw_false_claims: int = Field(ge=0)
+    raw_forbidden_hits: int = Field(ge=0)
+    raw_tone_mean: float
+
+
+class ThresholdResult(_Eval):
+    """One scorer against its threshold, with a message that names the scorer."""
+
+    scorer: Text
+    value: float | None
+    threshold: float
+    passed: bool
+    message: str
+
+
+class PackResult(_Eval):
+    """The outcome of the evals of one pack."""
+
+    pack: Text
+    cases: tuple[CaseResult, ...]
+    metrics: PackMetrics
+    thresholds: tuple[ThresholdResult, ...]
+    retrieval: RetrievalScore | None = None
+    agreement: Agreement
+    notes: tuple[str, ...] = ()
+
+    @property
+    def passed(self) -> bool:
+        return all(t.passed for t in self.thresholds)

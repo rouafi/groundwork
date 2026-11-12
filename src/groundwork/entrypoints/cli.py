@@ -44,6 +44,7 @@ from groundwork.core.services.packs import (
     load_thresholds,
 )
 from groundwork.core.services.rules_check import rule_problems
+from groundwork.entrypoints.evals_cli import evals_command
 from groundwork.entrypoints.harness_cli import approvals_app, demo_command, harmonize_command
 from groundwork.entrypoints.mcp_server import create_server
 from groundwork.entrypoints.reports import summary, write_run
@@ -59,6 +60,7 @@ from groundwork.entrypoints.wiring import (
 app = typer.Typer(no_args_is_help=True, help="groundwork: an FDE deployment kit")
 app.command("harmonize")(harmonize_command)
 app.command("demo")(demo_command)
+app.command("evals")(evals_command)
 app.add_typer(approvals_app, name="approvals")
 
 PACKS_DIR = Path("client_packs")
@@ -240,9 +242,3 @@ def mcp_serve(
         return
     # Binding all interfaces is intended: the server runs inside a container.
     server.run(transport="streamable-http", host="0.0.0.0", port=MCP_HTTP_PORT)  # noqa: S104
-
-
-@app.command("evals")
-def evals() -> None:
-    """Run golden sets. Implemented in the evals milestone."""
-    typer.echo("No golden sets yet.")

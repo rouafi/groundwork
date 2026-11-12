@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from groundwork.adapters.approval.file import FileApproval
+from groundwork.adapters.approval.memory import MemoryApproval
 from groundwork.core.domain.errors import ApprovalError, NotFoundError
 from groundwork.core.domain.harmonize import ApprovalItem, Decision, HarmonizedEmail
 from groundwork.core.ports.approval import ApprovalPort
@@ -16,6 +17,7 @@ from tests.fakes import InMemoryApproval
 
 ADAPTERS: dict[str, Callable[[Path], ApprovalPort]] = {
     "memory": lambda _: InMemoryApproval(),
+    "adapter-memory": lambda _: MemoryApproval(),
     "file": lambda tmp_path: FileApproval("acme", tmp_path / "var"),
 }
 

@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from groundwork.adapters.messaging.console import ConsoleMessaging
+from groundwork.adapters.messaging.memory import MemoryMessaging
 from groundwork.core.domain.harmonize import HarmonizedEmail
 from groundwork.core.ports.messaging import MessagingPort
 from tests.fakes import RecordingMessaging
@@ -32,6 +33,11 @@ def _console(tmp_path: Path) -> tuple[MessagingPort, Delivered]:
     return port, delivered
 
 
+def _memory(_: Path) -> tuple[MessagingPort, Delivered]:
+    port = MemoryMessaging()
+    return port, lambda: [(to, e.subject, e.body) for e, to in port.sent]
+
+
 def _recording(_: Path) -> tuple[MessagingPort, Delivered]:
     port = RecordingMessaging()
     return port, lambda: [(to, e.subject, e.body) for e, to in port.sent]
@@ -40,6 +46,7 @@ def _recording(_: Path) -> tuple[MessagingPort, Delivered]:
 ADAPTERS: dict[str, Callable[[Path], tuple[MessagingPort, Delivered]]] = {
     "console": _console,
     "recording": _recording,
+    "memory": _memory,
 }
 
 
