@@ -330,7 +330,7 @@ def test_a_live_run_that_does_not_record_keeps_the_existing_trace_and_a_recordin
 
     other = _result("Insight Pro costs 1490.00 EUR, set up in one day.")
     live = World(tmp_path, ScriptedAgent(other), [PRO_OK])
-    harmonize(_without(live, replace_traces=False), request)
+    harmonize(live.flow, request)
     assert path.read_bytes() == recorded
 
     harmonize(_without(live, replace_traces=True), request)

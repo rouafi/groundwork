@@ -81,7 +81,7 @@ class HarmonizeFlow:
     budget: int = DEFAULT_BUDGET
     internal_recipient: str | None = None
     write_traces: bool = True
-    replace_traces: bool = True
+    replace_traces: bool = False
 
 
 @dataclass(frozen=True)

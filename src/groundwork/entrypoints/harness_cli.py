@@ -71,7 +71,10 @@ def approvals_list(
     pack: Annotated[str, typer.Option(help="Client pack name.")], var_dir: Path = VAR_DIR
 ) -> None:
     """List the emails waiting for approval."""
-    pending = FileApproval(pack, var_dir).list_pending()
+    try:
+        pending = FileApproval(pack, var_dir).list_pending()
+    except GroundworkError as exc:
+        raise _fail(str(exc)) from exc
     for item in pending:
         typer.echo(f'{item.id}  to {item.recipient}  "{item.email.subject}"')
         for reason in item.decision.reasons:
@@ -86,7 +89,10 @@ def approvals_show(
     var_dir: Path = VAR_DIR,
 ) -> None:
     """Show a pending email in full, with why it waits: read it before you decide."""
-    item = next((i for i in FileApproval(pack, var_dir).list_pending() if i.id == id), None)
+    try:
+        item = next((i for i in FileApproval(pack, var_dir).list_pending() if i.id == id), None)
+    except GroundworkError as exc:
+        raise _fail(str(exc)) from exc
     if item is None:
         raise _fail(f"approval {id!r} is not pending (see: approvals list)")
     typer.echo(f"To: {item.recipient}\nSubject: {item.email.subject}\n\n{item.email.body}\n")

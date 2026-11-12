@@ -260,3 +260,14 @@ def test_validate_packs_rejects_a_messaging_adapter_that_does_not_exist(
     )
     assert result.exit_code == 1
     assert "unknown messaging adapter 'smtp' (valid: console)" in result.output
+
+
+def test_listing_or_showing_a_broken_approval_file_is_a_clean_error(world: dict[str, Path]) -> None:
+    queue = world["var"] / "approvals" / "acme"
+    queue.mkdir(parents=True)
+    (queue / "old.json").write_text('{"id": "old"}', encoding="utf-8")
+    var = ["--pack", "acme", "--var-dir", str(world["var"])]
+    for command in (["approvals", "list"], ["approvals", "show", "old"]):
+        result = runner.invoke(app, [*command, *var])
+        assert result.exit_code == 1 and "not a valid approval" in result.output
+        assert "Traceback" not in result.output
