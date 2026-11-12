@@ -21,7 +21,7 @@ Three API facts shaped the design (checked against the docs on 2026-11-12):
 - Every approved rule can be traced to a sentence of an interview, and `validate-packs` re-checks it at its exact range.
 - Two model calls per interview instead of one. On the synthetic packs a run costs about 6 cents per client.
 - Recordings are part of the repo: a prompt change is a visible diff in `traces/` and in the committed outputs, and `test_recorded_runs` fails until they are re-recorded.
-- The claim check is a word-containment floor: it flags a `claim_text` that contains none of the product's allowed claims as whole words. It has two known limits, both left to the human review and to the semantic `check_claims` of PRD-003:
+- The claim check is a word-containment floor: it flags a `claim_text` that contains none of the product's allowed claims as whole words. It has two known limits, both left to the human review (`check_claims`, ADR 0008, shares the same matcher and so the same limits):
   - it flags paraphrases of allowed claims ("Setup takes one day" for "Setup in one day"), which are false positives;
   - it does not catch an extra promise written next to an allowed claim ("Single sign-on included, and a 50% discount"), which a test pins.
 - An agent remains the right tool where the path is not known in advance: drafting emails (PRD-005).

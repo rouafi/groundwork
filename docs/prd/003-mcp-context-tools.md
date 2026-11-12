@@ -1,5 +1,5 @@
 # PRD-003: MCP context tools
-Status: todo | Branch: `feat/mcp-tools` | Depends on: 001, 002
+Status: done | Branch: `feat/mcp-tools` | Depends on: 001, 002
 
 ## Goal
 Expose the client's context to any agent through a read-only MCP server: facts, applicable rules, product facts, and claim checking.
@@ -60,6 +60,18 @@ Unit: services and claim verification. Integration: server round trip. Security:
 5. `feat(mcp): expose context tools on the MCP server`
 6. `feat(cli): add mcp-serve with pack and transport options`
 7. `docs: add MCP connection guide and mark PRD-003 done`
+
+## Implementation notes
+- `ClaimCheck` carries a `reason` in addition to `{claim, kind, status, evidence}`, so a reviewer reads why a claim is `false` (for example the catalog price) without a second call.
+- `check_claims` extracts claims on the server with the cheap model (the text as a document), then decides in code. The calling agent is never trusted to list its own claims (ADR 0008).
+- A price is `verified` only when amount and currency both match; a price with no currency, no readable amount or no known product is `unknown`. `$` reads as USD.
+- A product name must equal a catalog name (case and spacing ignored), so a nickname such as "the Pro plan" is `false` if the model reports it as a product name; the prompt asks for names as written.
+- Features reuse the extraction workflow's word containment (`matching_allowed_claim`): a paraphrase stays `unknown`. No step makes a semantic judgment; the PRD-002 note said otherwise and is corrected.
+- `get_rules` rejects a segment or persona outside the domain vocabulary, so a typo does not silently drop the specific rules.
+- Unknown ids, replay misses and vocabulary errors come back as tool errors naming the cause. The `ping` tool is removed.
+- The `mcp` service mounts `domains/` and `traces/` read-only: the image ships neither. `GROUNDWORK_PACK` picks its pack.
+- Claude Desktop's documented config has no working-directory key, so `docs/mcp.md` uses `uv --directory <repo>`; `--env-file .env` keeps the API key out of the Desktop config. Checked by starting the server from `/` with a minimal PATH.
+- AC5 uses the SDK's in-memory client for the tool tests, plus one stdio smoke test of the real command.
 
 ## Risks and open questions
 The MCP SDK changed between v1 and v2 (`FastMCP` became `MCPServer`); read the installed package, not memory.
