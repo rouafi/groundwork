@@ -62,6 +62,7 @@ PASSAGES = 5
 EMBEDDING_ENV = "GROUNDWORK_EMBEDDING"
 EMBEDDING_TRACES_SUBDIR = "embeddings"
 VOYAGE_KEY_ENV = "VOYAGE_API_KEY"
+VOYAGE_RETRIES = 4  # rate limits (3 requests a minute without a payment method) are retried
 
 CRM_ADAPTERS: Mapping[str, Callable[[Path], CrmPort]] = MappingProxyType(
     {"fixture": lambda pack_dir: FixtureCrm(pack_dir / FIXTURES_SUBDIR)}
@@ -137,7 +138,7 @@ def build_embedding(
             )
         from voyageai.client import Client  # imported here so replay runs never load the SDK
 
-        embedding: EmbeddingPort = VoyageEmbedding(Client(), VOYAGE_MODEL)
+        embedding: EmbeddingPort = VoyageEmbedding(Client(max_retries=VOYAGE_RETRIES), VOYAGE_MODEL)
         if env.get(RECORD_ENV) == "1":
             return RecordingEmbedding(embedding, recordings, VOYAGE_MODEL)
         return embedding
