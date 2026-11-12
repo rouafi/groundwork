@@ -30,6 +30,13 @@ Outputs: `rules.proposed.yaml` and `extraction_report.yaml` (dropped, conflicts,
 
 Runs are recorded under `traces/<client>/model/` and replayed offline. To re-record after a prompt change (costs a few cents): delete `traces/<client>/`, then run `GROUNDWORK_MODEL=claude GROUNDWORK_RECORD=1 uv run --env-file .env groundwork extract-rules --pack <client>` and commit the traces with the outputs.
 
+What to expect after a re-recording:
+- The model is not deterministic, so the proposals change: rule ids can shift and no longer match `rules.yaml`. Review the new `rules.proposed.yaml` and update `rules.yaml` by hand; `validate-packs` re-checks every approved quote.
+- The golden checks can fail. A failure means the prompt or the run needs a look, not that the golden data should be edited to pass.
+- Most contradictions on the synthetic packs are paraphrases of allowed claims (false positives); a contradiction is a question for the reviewer, not a verdict. The claim check also does not see an extra promise written next to an allowed claim (ADR 0007), so read every approved claim.
+- Without `--out-dir`, the run writes into the pack, including when it fails (for example a replay miss after a prompt edit): restore the committed outputs with `git checkout client_packs/<client>/` if needed.
+- The cost line is in tokens per stage, not in money.
+
 ## Vector search
 - Scope: interview transcripts, process docs, historical emails.
 - Contextual Retrieval: Claude prepends a short context to each chunk before embedding.
