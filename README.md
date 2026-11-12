@@ -164,7 +164,7 @@ All data in this repo is synthetic.
 
 ## Origin
 
-This pattern comes from deploying AI for manufacturers: structured production data on one side, plant experts' tacit know-how captured through LLM-assisted interviews on the other, validated in two levels before reaching production. The same pattern was later applied to investment-deal scoring.
+This pattern comes from deploying AI for manufacturers: structured production data on one side, plant experts' tacit know-how captured through LLM-assisted interviews on the other, validated in two levels before reaching production.
 
 ---
 
