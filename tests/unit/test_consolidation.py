@@ -165,3 +165,16 @@ def test_claims_outside_allowed_claims_are_contradictions() -> None:
         ("acme-r-003", "acme-p-9"),
         ("acme-r-006", "acme-p-1"),
     ]
+
+
+def test_known_limit_an_extra_promise_next_to_an_allowed_claim_is_not_caught() -> None:
+    """Word containment only asks that an allowed claim appear in the claim_text, so a
+    promise added next to it passes. The human review and check_claims (PRD-003) cover
+    it; this test pins the limit so a stricter matcher shows up as a deliberate change."""
+    padded = _rule(
+        1,
+        kind="claim",
+        product_ids=("acme-p-1",),
+        claim_text="Single sign-on included, and a 50% discount forever.",
+    )
+    assert claim_contradictions([padded], _crm()) == ()
