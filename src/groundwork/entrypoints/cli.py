@@ -1,6 +1,7 @@
 """Command line entrypoint."""
 
 import os
+from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
 
@@ -126,22 +127,39 @@ def _located(pack_dir: Path, message: str) -> str:
     return message if message.startswith(str(pack_dir)) else f"{pack_dir}: {message}"
 
 
+class Transport(StrEnum):
+    """How an MCP client reaches the server."""
+
+    stdio = "stdio"
+    streamable_http = "streamable-http"
+
+
+MCP_HTTP_PORT = 8001
+
+
 @app.command("mcp-serve")
 def mcp_serve(
     pack: Annotated[str, typer.Option(help="Client pack the server reads, fixed at start.")],
+    transport: Annotated[
+        Transport, typer.Option(help="stdio for Claude Desktop, streamable-http for a service.")
+    ] = Transport.streamable_http,
     packs_dir: Path = PACKS_DIR,
     domains_dir: Path = DOMAINS_DIR,
     traces_dir: Path = TRACES_DIR,
 ) -> None:
-    """Serve one pack's read-only context tools over streamable HTTP."""
+    """Serve one pack's read-only context tools (MCP). Nothing is written to stdout on stdio."""
     pack_dir = packs_dir / pack
     try:
         context = build_server_context(pack_dir, domains_dir, traces_dir)
     except PackError as exc:
         typer.echo(_located(pack_dir, exc.message), err=True)
         raise typer.Exit(code=1) from exc
+    server = create_server(context)
+    if transport is Transport.stdio:
+        server.run(transport="stdio")
+        return
     # Binding all interfaces is intended: the server runs inside a container.
-    create_server(context).run(transport="streamable-http", host="0.0.0.0", port=8001)  # noqa: S104
+    server.run(transport="streamable-http", host="0.0.0.0", port=MCP_HTTP_PORT)  # noqa: S104
 
 
 @app.command("demo")
