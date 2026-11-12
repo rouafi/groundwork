@@ -28,4 +28,4 @@ Nothing else in the design depends on this choice: the port, the context pack, t
 - We do not get the SDK's built-in features (sessions, hooks, sub-agents). The harness does not need them.
 - The timeout is enforced by the event loop, at the next await: the tools are in memory and fast, and nothing is sent either way, so a late abort costs time and not safety.
 - If a client needs them, an SDK-backed `AgentPort` adapter can be added beside this one without touching the port or the policy engine. Revisit if the bundled runtime shrinks or the loop grows past a few hundred lines.
-- `CLAUDE.md` still lists the Claude Agent SDK in the stack line; it is not used at this point.
+- `CLAUDE.md` states what the project uses, and the Claude Agent SDK is not on that list.
