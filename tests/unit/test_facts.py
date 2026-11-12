@@ -90,3 +90,13 @@ def test_not_found_error_names_kind_and_id() -> None:
 def test_pack_error_keeps_message() -> None:
     error = PackError("client_packs/acme: bad config")
     assert error.message == str(error) == "client_packs/acme: bad config"
+
+
+def test_model_errors_explain_what_to_do() -> None:
+    from groundwork.core.domain.errors import ModelError, ModelRefusalError, ReplayMissError
+
+    miss = ReplayMissError("abc123", "traces/acme/model/abc123.json")
+    assert isinstance(miss, ModelError)
+    assert "abc123" in str(miss) and "GROUNDWORK_RECORD=1" in str(miss)
+    assert "cyber" in str(ModelRefusalError("cyber"))
+    assert "unspecified" in str(ModelRefusalError(None))

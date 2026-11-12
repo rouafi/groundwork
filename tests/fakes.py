@@ -1,9 +1,70 @@
-"""In-memory CrmPort for tests of the core. Not an adapter: it lives with the tests."""
+"""Test doubles for the ports of the core. Not adapters: they live with the tests."""
 
-from collections.abc import Iterable, Sequence
+import re
+from collections.abc import Callable, Iterable, Sequence
+from typing import Any
+
+from pydantic import BaseModel
 
 from groundwork.core.domain.errors import NotFoundError
 from groundwork.core.domain.facts import Company, Contact, Deal, Product
+from groundwork.core.domain.knowhow import Usage
+from groundwork.core.ports.model import Answer, CitedStatement, Quote, Tier
+
+CALL_USAGE = Usage(input_tokens=10, output_tokens=5)
+
+
+def sentences(document: str) -> tuple[CitedStatement, ...]:
+    """Default `cite` behaviour: every sentence is a statement quoting itself."""
+    return tuple(
+        CitedStatement(
+            text=m.group(), quotes=(Quote(text=m.group(), start=m.start(), end=m.end()),)
+        )
+        for m in re.finditer(r"[^.!?\s][^.!?]*[.!?]", document)
+    )
+
+
+class StubModel:
+    """Scripted ModelPort. Each behaviour is a function of the call's keyword arguments."""
+
+    def __init__(
+        self,
+        *,
+        structured: Callable[..., Any] | None = None,
+        text: Callable[..., str] | None = None,
+        cite: Callable[..., tuple[CitedStatement, ...]] | None = None,
+    ) -> None:
+        self._structured = structured or (lambda **_: {})
+        self._text = text or (lambda **_: "")
+        self._cite = cite or (lambda **kw: sentences(kw["document"]))
+        self.calls: list[tuple[str, dict[str, Any]]] = []
+
+    def complete_structured[S: BaseModel](
+        self, *, tier: Tier, system: str, user: str, schema: type[S], document: str | None = None
+    ) -> Answer[S]:
+        kwargs = {
+            "tier": tier,
+            "system": system,
+            "user": user,
+            "schema": schema,
+            "document": document,
+        }
+        self.calls.append(("complete_structured", kwargs))
+        return Answer(value=schema.model_validate(self._structured(**kwargs)), usage=CALL_USAGE)
+
+    def complete_text(
+        self, *, tier: Tier, system: str, user: str, document: str | None = None
+    ) -> Answer[str]:
+        kwargs = {"tier": tier, "system": system, "user": user, "document": document}
+        self.calls.append(("complete_text", kwargs))
+        return Answer(value=self._text(**kwargs), usage=CALL_USAGE)
+
+    def cite(
+        self, *, tier: Tier, system: str, instruction: str, document: str
+    ) -> Answer[tuple[CitedStatement, ...]]:
+        kwargs = {"tier": tier, "system": system, "instruction": instruction, "document": document}
+        self.calls.append(("cite", kwargs))
+        return Answer(value=self._cite(**kwargs), usage=CALL_USAGE)
 
 
 class InMemoryCrm:

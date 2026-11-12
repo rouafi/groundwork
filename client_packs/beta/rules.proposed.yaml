@@ -1,0 +1,404 @@
+- id: beta-r-001
+  kind: tone
+  statement: Write formal emails to enterprise customers, using full names and titles in the greeting,
+    no emojis, no exclamation marks, and a proper signature with the contract reference.
+  scope:
+    channel: external
+    segments:
+    - enterprise
+    personas: []
+  provenance:
+  - interview_id: beta-i-1
+    quote: Enterprise customers get formal emails. Full names and titles in the greeting, no emojis, no
+      exclamation marks, and a proper signature with the contract reference. Their procurement teams read
+      everything, and a casual email looks like a small supplier.
+    start: 116
+    end: 368
+  product_ids: []
+  status: proposed
+- id: beta-r-002
+  kind: claim
+  statement: Commit in writing only to the 15-minute failure-alert response time for the Predictive Maintenance
+    contract, and never invent a faster response time to win a deal.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-1
+    quote: For the Predictive Maintenance contract we promise failure alerts within 15 minutes, and that
+      is the only response time we put in writing. Never invent a faster one to win a deal.
+    start: 472
+    end: 651
+  product_ids:
+  - beta-p-1
+  claim_text: Failure alerts within 15 minutes
+  status: proposed
+- id: beta-r-003
+  kind: practice
+  statement: When a plant asks for a faster response time, such as five minutes, handle the request through
+    the contract, not through an email.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-1
+    quote: If a plant asks for five minutes, the answer goes through the contract, not through an email.
+    start: 652
+    end: 745
+  product_ids: []
+  status: proposed
+- id: beta-r-004
+  kind: claim
+  statement: Never put prices in the body of an email to a customer, regardless of their size; put them
+    in an attached formal quote document with a reference number, and state in the email that the quote
+    is attached and when it expires.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-1
+    quote: 'VP of sales: We never put prices in the body of an email to a customer, whatever their size.
+      Prices go in a formal quote document, attached, with a reference number, because procurement needs
+      that document to open a purchase order. The email says the quote is attached and when it expires.'
+    start: 798
+    end: 1087
+  product_ids: []
+  status: proposed
+- id: beta-r-005
+  kind: claim
+  statement: Never state a discount in writing outside the formal quote.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-1
+    quote: No discount appears in writing outside the quote. Our deals are six figures, a percentage in
+      an email is a liability.
+    start: 1158
+    end: 1275
+  product_ids: []
+  status: proposed
+- id: beta-r-006
+  kind: practice
+  statement: Send one follow-up email after five business days, then follow up with a call instead of
+    chasing by email.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-1
+    quote: 'VP of sales: One follow-up after five business days, then a call. Large accounts hate being
+      chased by email.'
+    start: 1759
+    end: 1867
+  product_ids: []
+  status: proposed
+- id: beta-r-007
+  kind: practice
+  statement: In every follow-up, restate the open action and who owns it on the customer's side.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-1
+    quote: And every follow-up restates the open action and who owns it on their side.
+    start: 1868
+    end: 1943
+  product_ids: []
+  status: proposed
+- id: beta-r-008
+  kind: tone
+  statement: Write every email so it can be forwarded to a director without editing, because the reader
+    is rarely the decision-maker.
+  scope:
+    channel: external
+    segments: []
+    personas:
+    - economic-buyer
+  provenance:
+  - interview_id: beta-i-1
+    quote: 'VP of sales: That the person reading is rarely the person deciding. Write so the email can
+      be forwarded to a director without editing.'
+    start: 1995
+    end: 2129
+  product_ids: []
+  status: proposed
+- id: beta-r-009
+  kind: tone
+  statement: Write casual, direct emails to mid-sized customers using first names and short sentences,
+    avoiding corporate phrasing, while staying precise.
+  scope:
+    channel: external
+    segments:
+    - mid-market
+    personas: []
+  provenance:
+  - interview_id: beta-i-2
+    quote: With mid-sized customers we write casually and directly. First names, short sentences, no corporate
+      phrasing.
+    start: 136
+    end: 245
+  - interview_id: beta-i-2
+    quote: 'Regional manager: Not for mid-sized accounts, no. Casual, but still precise. Casual does not
+      mean vague.'
+    start: 482
+    end: 586
+  product_ids: []
+  status: proposed
+- id: beta-r-010
+  kind: claim
+  statement: Do not tell customers with a line down that spare parts arrive next day anywhere in the world.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-2
+    quote: I tell them spare parts arrive next day anywhere in the world, because that is what keeps them
+      calm on the phone.
+    start: 728
+    end: 841
+  - interview_id: beta-i-2
+    quote: Most of the time it is true.
+    start: 842
+    end: 870
+  product_ids:
+  - beta-p-3
+  claim_text: Spare parts arrive next day anywhere in the world.
+  status: proposed
+- id: beta-r-011
+  kind: practice
+  statement: Always put the assigned technician lead in copy on every email that touches a technical question.
+  scope:
+    channel: internal
+    segments: []
+    personas:
+    - technical-evaluator
+  provenance:
+  - interview_id: beta-i-2
+    quote: 'Regional manager: Every email that touches a technical question goes to the assigned technician
+      lead in copy. Always. The plant manager will forward it to them anyway, and if they are in copy
+      from the start, we save a day.'
+    start: 925
+    end: 1147
+  product_ids: []
+  status: proposed
+- id: beta-r-012
+  kind: claim
+  statement: For mid-sized customers who ask, state the list price in the email, such as Technician Training
+    at 9600 dollars, and send a formal quote if they proceed.
+  scope:
+    channel: external
+    segments:
+    - mid-market
+    personas: []
+  provenance:
+  - interview_id: beta-i-2
+    quote: 'Regional manager: For mid-sized customers I am fine giving the list price in the email when
+      they ask, especially for training. Technician Training is 9600 dollars and they want to know that
+      before they book a meeting. A formal quote follows if they go ahead.'
+    start: 1202
+    end: 1460
+  product_ids:
+  - beta-p-4
+  status: proposed
+- id: beta-r-013
+  kind: tone
+  statement: When something goes wrong, say what happened, apologize once, give the new time, and do not
+    hide behind operational constraints.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-2
+    quote: 'Regional manager: Own it. If our technician was late, say it, apologize once, and give the
+      new time. Do not hide behind "operational constraints".'
+    start: 1518
+    end: 1664
+  product_ids: []
+  status: proposed
+- id: beta-r-014
+  kind: practice
+  statement: Visit the plants, then write to customers as people you have met.
+  scope:
+    channel: any
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-2
+    quote: 'Regional manager: Visit the plants. Then write to people like you have met them, because you
+      have.'
+    start: 1729
+    end: 1827
+  product_ids: []
+  status: proposed
+- id: beta-r-015
+  kind: claim
+  statement: In the On-site Audit confirmation email, promise that the report is delivered within 10 business
+    days after the visit, and never promise a shorter time, even when the auditor thinks he can do it
+    faster.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-3
+    quote: For an On-site Audit, we promise the report is delivered within 10 business days after the
+      visit, and we put that in the confirmation email. We never promise a shorter time, even when the
+      auditor thinks he can do it faster.
+    start: 140
+    end: 363
+  product_ids:
+  - beta-p-2
+  claim_text: The report is delivered within 10 business days after the visit.
+  status: proposed
+- id: beta-r-016
+  kind: claim
+  statement: Limit Technician Training to twelve technicians per session, and if a customer wants to send
+    more, tell them clearly that it is a second session instead of squeezing them in.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-3
+    quote: 'Service delivery lead: Technician Training includes certification, up to twelve technicians
+      per session.'
+    start: 399
+    end: 503
+  - interview_id: beta-i-3
+    quote: If they want to send fourteen people, that is a second session, and we say so clearly instead
+      of squeezing them in.
+    start: 585
+    end: 700
+  product_ids:
+  - beta-p-4
+  claim_text: Technician Training is limited to twelve technicians per session.
+  status: proposed
+- id: beta-r-017
+  kind: claim
+  statement: In the Technician Training confirmation email, list who is enrolled and state that certification
+    is included.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-3
+    quote: The confirmation email lists who is enrolled and says certification is included.
+    start: 504
+    end: 584
+  product_ids:
+  - beta-p-4
+  claim_text: Certification is included in Technician Training.
+  status: proposed
+- id: beta-r-018
+  kind: practice
+  statement: Put the ticket number and the site name in the subject line of every internal handoff email
+    between the sales team and the service delivery team.
+  scope:
+    channel: internal
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-3
+    quote: 'Service delivery lead: Internal handoffs between the sales team and my team always include
+      the ticket number and the site name in the subject line.'
+    start: 745
+    end: 892
+  - interview_id: beta-i-3
+    quote: Without the site name, an internal email is useless.
+    start: 927
+    end: 979
+  product_ids: []
+  status: proposed
+- id: beta-r-019
+  kind: claim
+  statement: Never write safety conclusions to a customer before the report is final and reviewed, even
+    if the auditor saw something worrying on site.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-3
+    quote: 'Service delivery lead: Safety conclusions before the report is final. An auditor might see
+      something worrying on site, but nothing about safety goes in an email until the report is reviewed.
+      A preliminary remark in writing can end up in a legal file.'
+    start: 1056
+    end: 1306
+  product_ids:
+  - beta-p-2
+  status: proposed
+- id: beta-r-020
+  kind: practice
+  statement: When writing to technical evaluators, the maintenance engineers, attach the checklist used
+    on site and name the standards audited against, so they can prepare.
+  scope:
+    channel: external
+    segments: []
+    personas:
+    - technical-evaluator
+  provenance:
+  - interview_id: beta-i-3
+    quote: 'Service delivery lead: For the technical evaluators, the maintenance engineers, we attach
+      the checklist we use on site and name the standards we audit against. They want to prepare.'
+    start: 1359
+    end: 1540
+  product_ids: []
+  status: proposed
+- id: beta-r-021
+  kind: tone
+  statement: 'When writing to economic buyers, summarize in three lines: what we found, the risk, and
+    the recommended next step.'
+  scope:
+    channel: external
+    segments: []
+    personas:
+    - economic-buyer
+  provenance:
+  - interview_id: beta-i-3
+    quote: 'For the economic buyers we summarize in three lines: what we found, the risk, the recommended
+      next step.'
+    start: 1541
+    end: 1645
+  product_ids: []
+  status: proposed
+- id: beta-r-022
+  kind: practice
+  statement: Do not answer price questions yourself; leave prices to sales and forward the customer's
+    question to their account owner the same day.
+  scope:
+    channel: external
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-3
+    quote: 'Service delivery lead: I leave prices to sales. If a customer asks me, I forward the question
+      to their account owner the same day, I do not answer it myself.'
+    start: 1669
+    end: 1826
+  product_ids: []
+  status: proposed
+- id: beta-r-023
+  kind: practice
+  statement: After a phone call, confirm everything in writing, including date, scope and names.
+  scope:
+    channel: any
+    segments: []
+    personas: []
+  provenance:
+  - interview_id: beta-i-3
+    quote: 'Service delivery lead: Confirm everything in writing after a phone call. Date, scope, names.
+      It protects the customer and it protects us.'
+    start: 1854
+    end: 1991
+  product_ids: []
+  status: proposed

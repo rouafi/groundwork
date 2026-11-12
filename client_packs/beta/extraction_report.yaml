@@ -1,0 +1,45 @@
+pack: beta
+dropped: []
+conflicts:
+- rule_ids:
+  - beta-r-004
+  - beta-r-012
+  reason: r-004 forbids prices in the email body for every customer regardless of size, while r-012 allows
+    stating the list price in the email for mid-market customers who ask.
+- rule_ids:
+  - beta-r-012
+  - beta-r-022
+  reason: r-022 says not to answer price questions and to forward them to the account owner, while r-012
+    says to state the list price in the email for mid-market customers who ask.
+contradictions:
+- rule_id: beta-r-010
+  product_id: beta-p-3
+  claim_text: Spare parts arrive next day anywhere in the world.
+- rule_id: beta-r-015
+  product_id: beta-p-2
+  claim_text: The report is delivered within 10 business days after the visit.
+- rule_id: beta-r-016
+  product_id: beta-p-4
+  claim_text: Technician Training is limited to twelve technicians per session.
+- rule_id: beta-r-017
+  product_id: beta-p-4
+  claim_text: Certification is included in Technician Training.
+gaps: []
+questions: []
+failures: []
+usage:
+- stage: ground
+  calls: 3
+  usage:
+    input_tokens: 7739
+    output_tokens: 2762
+- stage: type
+  calls: 3
+  usage:
+    input_tokens: 6214
+    output_tokens: 2253
+- stage: consolidate
+  calls: 1
+  usage:
+    input_tokens: 2582
+    output_tokens: 680
