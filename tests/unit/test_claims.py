@@ -92,9 +92,16 @@ def test_an_allowed_feature_is_verified_against_its_product() -> None:
     assert (result.status, result.evidence) == ("verified", "acme-p-2")
 
 
-def test_an_allowed_feature_without_a_product_is_looked_up_in_the_whole_catalog() -> None:
+def test_a_feature_without_a_product_is_unknown_and_names_who_allows_it() -> None:
     result = _one(text="We include single sign-on.", kind="feature")
-    assert (result.status, result.evidence) == ("verified", "acme-p-3")
+    assert (result.status, result.evidence) == ("unknown", None)
+    assert "allowed only for acme-p-3" in result.reason
+
+
+def test_a_feature_no_product_allows_is_unknown() -> None:
+    result = _one(text="We include a free laptop.", kind="feature", product_id="acme-p-404")
+    assert result.status == "unknown"
+    assert "not in any allowed claims" in result.reason
 
 
 def test_an_unlisted_feature_is_unknown_not_false() -> None:

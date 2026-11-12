@@ -5,9 +5,11 @@ document: untrusted data). Step 2 is deterministic and decides the status:
 - price: the amount and currency must equal the product's price, else `false`;
   a price that cannot be read fully, or for no known product, is `unknown`.
 - product_name: the name must be in the catalog, else `false` (fabricated product).
-- feature: an `allowed_claims` entry of the product (or of any product when none is
-  named) must appear in the claim, else `unknown`. Word containment, like the
-  extraction workflow (ADR 0007): a paraphrase of an allowed claim stays `unknown`.
+- feature: an `allowed_claims` entry of the named product must appear in the claim,
+  else `unknown`. With no product named, it is `unknown` and the reason lists the
+  products that allow it: a feature true of one product is not true of the offer.
+  Word containment, like the extraction workflow (ADR 0007): a paraphrase of an
+  allowed claim stays `unknown`.
 - other: `unknown`.
 
 The model only finds claims; it never decides whether one is true.
@@ -61,7 +63,7 @@ def verify(claim: ExtractedClaim, catalog: Sequence[Product]) -> ClaimCheck:
         return _product_name(claim, catalog)
     if claim.kind == "feature":
         product = by_id.get(claim.product_id or "")
-        return _feature(claim, (product,) if product else catalog)
+        return _feature(claim, product) if product else _unattached_feature(claim, catalog)
     return _check(claim, "unknown", "no fact to check this kind of claim against")
 
 
@@ -120,13 +122,18 @@ def _product_name(claim: ExtractedClaim, catalog: Sequence[Product]) -> ClaimChe
     return _check(claim, "verified", f"{product.id} is {product.name}", product.id)
 
 
-def _feature(claim: ExtractedClaim, products: Sequence[Product]) -> ClaimCheck:
-    for product in products:
-        allowed = matching_allowed_claim(claim.text, product.allowed_claims)
-        if allowed is not None:
-            return _check(claim, "verified", f"{product.id} allows {allowed!r}", product.id)
-    names = ", ".join(p.id for p in products) or "the catalog"
-    return _check(claim, "unknown", f"not in the allowed claims of {names}; a human decides")
+def _feature(claim: ExtractedClaim, product: Product) -> ClaimCheck:
+    allowed = matching_allowed_claim(claim.text, product.allowed_claims)
+    if allowed is None:
+        reason = f"not in the allowed claims of {product.id}; a human decides"
+        return _check(claim, "unknown", reason)
+    return _check(claim, "verified", f"{product.id} allows {allowed!r}", product.id)
+
+
+def _unattached_feature(claim: ExtractedClaim, catalog: Sequence[Product]) -> ClaimCheck:
+    allowing = [p.id for p in catalog if matching_allowed_claim(claim.text, p.allowed_claims)]
+    where = f"allowed only for {', '.join(allowing)}" if allowing else "not in any allowed claims"
+    return _check(claim, "unknown", f"no product named; {where}; a human decides")
 
 
 def _check(
