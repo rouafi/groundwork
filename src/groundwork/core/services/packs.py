@@ -9,7 +9,7 @@ from pydantic import BaseModel, RootModel, ValidationError
 
 from groundwork.core.domain.domain_pack import DomainPack
 from groundwork.core.domain.errors import PackError
-from groundwork.core.domain.evals import GoldenCase, Thresholds
+from groundwork.core.domain.evals import CalibrationCase, GoldenCase, Thresholds
 from groundwork.core.domain.golden import ExtractionGolden
 from groundwork.core.domain.harmonize import DemoCase
 from groundwork.core.domain.knowhow import Interview, Rule
@@ -28,6 +28,7 @@ DEMO_FILE = "demo_cases.json"
 GOLDEN_FILE = "golden.jsonl"
 THRESHOLDS_FILE = "thresholds.yaml"
 RUBRIC_FILE = "rubric.md"
+CALIBRATION_FILE = "judge_calibration.jsonl"
 CHUNKS_FILE = Path("index") / "chunks.jsonl"
 RETRIEVAL_FILE = "retrieval.jsonl"
 FRONT_MATTER = "---\n"
@@ -92,6 +93,11 @@ def load_golden(pack_dir: Path) -> tuple[GoldenCase, ...]:
         duplicates = sorted({i for i in ids if ids.count(i) > 1})
         raise PackError(f"{pack_dir / GOLDEN_FILE}: duplicate case ids {duplicates}")
     return cases
+
+
+def load_calibration(pack_dir: Path) -> tuple[CalibrationCase, ...]:
+    """Read `<pack_dir>/judge_calibration.jsonl`: emails a human scored for tone."""
+    return _load_jsonl(pack_dir / CALIBRATION_FILE, CalibrationCase)
 
 
 def load_thresholds(pack_dir: Path) -> Thresholds | None:

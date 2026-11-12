@@ -88,7 +88,11 @@ def _outside(
 
 
 def golden_case_problems(
-    cases: Sequence[GoldenCase], crm: CrmPort, has_thresholds: bool, has_rubric: bool
+    cases: Sequence[GoldenCase],
+    crm: CrmPort,
+    has_thresholds: bool,
+    has_rubric: bool,
+    has_calibration: bool = True,
 ) -> list[str]:
     """Every golden case whose contact is unknown, and what a pack with a golden set lacks."""
     known = set(crm.list_contact_ids())
@@ -101,6 +105,8 @@ def golden_case_problems(
         problems.append("golden.jsonl has cases but thresholds.yaml is missing")
     if cases and not has_rubric:
         problems.append("golden.jsonl has cases but rubric.md is missing")
+    if cases and not has_calibration:
+        problems.append("golden.jsonl has cases but judge_calibration.jsonl is missing")
     return problems
 
 

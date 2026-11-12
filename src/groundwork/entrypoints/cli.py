@@ -28,6 +28,7 @@ from groundwork.core.services.integrity import (
 )
 from groundwork.core.services.packs import (
     CHUNKS_FILE,
+    load_calibration,
     load_chunks,
     load_demo_cases,
     load_domain_pack,
@@ -97,6 +98,7 @@ def pack_problems(pack_dir: Path, domains_dir: Path) -> list[str]:
         golden_cases = load_golden(pack_dir)
         thresholds = load_thresholds(pack_dir)
         rubric = load_rubric(pack_dir)
+        calibration = load_calibration(pack_dir)
         load_pack_policies(pack_dir)
     except PackError as exc:
         return [_located(pack_dir, exc.message)]
@@ -106,7 +108,9 @@ def pack_problems(pack_dir: Path, domains_dir: Path) -> list[str]:
     problems += chunk_problems(chunks, interviews)
     problems += question_problems(questions, interviews)
     problems += demo_problems(demo_cases, crm)
-    problems += golden_case_problems(golden_cases, crm, thresholds is not None, rubric is not None)
+    problems += golden_case_problems(
+        golden_cases, crm, thresholds is not None, rubric is not None, bool(calibration)
+    )
     return [_located(pack_dir, p) for p in problems]
 
 

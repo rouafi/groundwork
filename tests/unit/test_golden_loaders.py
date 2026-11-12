@@ -65,11 +65,14 @@ def test_a_golden_set_needs_a_known_contact_thresholds_and_a_rubric(tmp_path: Pa
     cases = load_golden(
         _golden(tmp_path, CASE, {**CASE, "id": "acme-002", "contact_id": "acme-c-404"})
     )
-    problems = golden_case_problems(cases, crm, has_thresholds=False, has_rubric=False)
+    problems = golden_case_problems(
+        cases, crm, has_thresholds=False, has_rubric=False, has_calibration=False
+    )
     assert problems == [
         "golden case acme-002: unknown contact 'acme-c-404'",
         "golden.jsonl has cases but thresholds.yaml is missing",
         "golden.jsonl has cases but rubric.md is missing",
+        "golden.jsonl has cases but judge_calibration.jsonl is missing",
     ]
-    assert golden_case_problems(cases[:1], crm, True, True) == []
-    assert golden_case_problems((), crm, False, False) == []
+    assert golden_case_problems(cases[:1], crm, True, True, True) == []
+    assert golden_case_problems((), crm, False, False, False) == []

@@ -6,7 +6,7 @@ the route, and the thresholds turn those measures into a verdict (docs/evals.md)
 """
 
 import re
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -106,3 +106,47 @@ class RetrievalScore(_Eval):
     @property
     def recall(self) -> float:
         return self.found / self.total if self.total else 0.0
+
+
+Tone = Annotated[int, Field(ge=1, le=5)]
+
+
+class CalibrationCase(_Eval):
+    """An email a human scored for tone, from 1 to 5. The labels are the human's alone."""
+
+    id: CaseId
+    subject: Text
+    body: Text
+    human_tone: Tone
+
+
+class RuleVerdict(_Eval):
+    """The judge's verdict on one rule the email had to follow."""
+
+    rule_id: Text
+    verdict: Literal["complied", "violated", "not_applicable"]
+    reason: str
+
+
+class JudgeVerdict(_Eval):
+    """What the judge returns for one email: a tone score, and a verdict per rule."""
+
+    tone: Tone
+    tone_reason: str
+    rules: tuple[RuleVerdict, ...] = ()
+
+    @property
+    def violations(self) -> tuple[str, ...]:
+        return tuple(r.rule_id for r in self.rules if r.verdict == "violated")
+
+
+class Agreement(_Eval):
+    """How often the judge lands within one point of the human label."""
+
+    agree: int = Field(ge=0)
+    total: int = Field(ge=0)
+    differences: tuple[int, ...] = ()
+
+    @property
+    def rate(self) -> float:
+        return self.agree / self.total if self.total else 0.0
