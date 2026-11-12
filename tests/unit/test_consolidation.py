@@ -141,8 +141,15 @@ def test_claims_outside_allowed_claims_are_contradictions() -> None:
     invented = _rule(2, kind="claim", product_ids=("acme-p-1",), claim_text="24/7 phone support")
     unknown = _rule(3, kind="claim", product_ids=("acme-p-9",), claim_text="anything")
     prohibition = _rule(4, kind="claim", product_ids=("acme-p-1",))
-    found = claim_contradictions([allowed, invented, unknown, prohibition], _crm())
+    paraphrase = _rule(
+        5, kind="claim", product_ids=("acme-p-1",), claim_text="Pro has single sign-on included."
+    )
+    partial = _rule(6, kind="claim", product_ids=("acme-p-1",), claim_text="single sign")
+    found = claim_contradictions(
+        [allowed, invented, unknown, prohibition, paraphrase, partial], _crm()
+    )
     assert [(c.rule_id, c.product_id) for c in found] == [
         ("acme-r-002", "acme-p-1"),
         ("acme-r-003", "acme-p-9"),
+        ("acme-r-006", "acme-p-1"),
     ]

@@ -6,6 +6,7 @@ contradiction between what people say and what the system of record says. It is
 reported before review and blocks `validate-packs` once such a rule is approved.
 """
 
+import re
 from collections.abc import Mapping, Sequence
 
 from groundwork.core.domain.domain_pack import DomainPack
@@ -104,9 +105,12 @@ def _allowed(claim_text: str, product_id: str, crm: CrmPort) -> bool:
         (product,) = crm.get_products([product_id])
     except NotFoundError:
         return False
-    wanted = _key(claim_text)
-    return any(_key(allowed) == wanted for allowed in product.allowed_claims)
+    wanted = f" {_key(claim_text)} "
+    return any(f" {_key(allowed)} " in wanted for allowed in product.allowed_claims)
 
 
 def _key(text: str) -> str:
-    return normalize(text).casefold().rstrip(".")
+    """Lowercase words only, so 'The pack includes two training sessions.' contains 'Two
+    training sessions'. Containment is a deterministic floor, not a semantic check:
+    judging whether a sentence adds an unlisted promise is check_claims (PRD-003)."""
+    return " ".join(re.findall(r"[a-z0-9%.]+(?<!\.)", normalize(text).casefold()))
