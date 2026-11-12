@@ -1,5 +1,5 @@
 # PRD-004: Vector search for know-how
-Status: todo | Branch: `feat/vector-search` | Depends on: 002
+Status: done | Branch: `feat/vector-search` | Depends on: 002
 
 ## Goal
 Make raw interview text searchable with hybrid retrieval and Contextual Retrieval, exposed as an MCP tool. This is the first PRD to cut if time is short.
@@ -60,3 +60,11 @@ Unit: chunking, fusion, context prompt assembly. Contract: vector store. Integra
 
 ## Risks and open questions
 Embedding recordings need a real Voyage key once. If unavailable, stop and ask. Do not generate fake vectors for the demo.
+
+## Implementation notes
+- `ModelPort.complete_text` has no `cached_context`: the whole interview goes as `document`, which already carries untrusted text as a separate block. The contextualization prompt is `domains/comms/prompts/contextualize.md`.
+- A chunk is a verbatim span of its interview (paragraphs joined by a blank line), a short last chunk of under 60 words joins the previous one when it fits, and `validate-packs` rejects a chunk that is not in its interview or an index that lacks an interview. That is how criterion 6 is enforced for every pack, besides the integration test.
+- The pack config gains `embedding: replay | voyage` (default `replay`, overridable by `GROUNDWORK_EMBEDDING`); `vector_store` accepts `lancedb` and `memory`. The Voyage model id is `voyage-4`, one constant in `adapters/embedding/voyage.py`.
+- `groundwork index` also embeds the pack's `retrieval.jsonl` questions as queries, so recording covers them. In replay, `search_knowhow` answers those and any query recorded before; other queries are an error naming the missing recording (ADR 0009).
+- Client packs may now hold `.jsonl` (the index and the retrieval questions): the data-only test accepts JSON Lines next to JSON, YAML and Markdown.
+- Voyage limits an account without a payment method to 3 requests per minute; recording a second pack right after the first can hit it. Wait a minute and re-run, with `GROUNDWORK_MODEL=replay` so the recorded contexts are not paid for again.
