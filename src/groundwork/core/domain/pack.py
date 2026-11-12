@@ -12,5 +12,6 @@ class PackConfig(BaseModel):
     messaging: str
     vector_store: str
     model: str
+    embedding: str = "replay"
     # A folder name under domains/: a slug, so it can never escape that folder.
     domain: str = Field(pattern=r"^[a-z][a-z0-9-]*$")

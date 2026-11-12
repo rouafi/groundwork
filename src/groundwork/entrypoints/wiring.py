@@ -11,13 +11,23 @@ from pathlib import Path
 from types import MappingProxyType
 
 from groundwork.adapters.crm.fixture import FixtureCrm
+from groundwork.adapters.embedding.replay import (
+    EmbeddingRecordings,
+    RecordingEmbedding,
+    ReplayEmbedding,
+)
+from groundwork.adapters.embedding.voyage import VOYAGE_MODEL, VoyageEmbedding
 from groundwork.adapters.model.claude import ClaudeModel
 from groundwork.adapters.model.recording import Recordings, specs_from_env
 from groundwork.adapters.model.replay import RecordingModel, ReplayModel
+from groundwork.adapters.vector.lance import LanceDbStore
+from groundwork.adapters.vector.memory import InMemoryVectorStore
 from groundwork.core.domain.errors import ModelError, PackError
 from groundwork.core.domain.pack import PackConfig
 from groundwork.core.ports.crm import CrmPort
+from groundwork.core.ports.embedding import EmbeddingPort
 from groundwork.core.ports.model import ModelPort
+from groundwork.core.ports.vector_store import VectorStorePort
 from groundwork.core.services.packs import (
     CONFIG_FILE,
     load_domain_pack,
@@ -33,11 +43,19 @@ MODEL_ENV = "GROUNDWORK_MODEL"
 RECORD_ENV = "GROUNDWORK_RECORD"
 CREDENTIAL_ENVS = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
 CLAIMS_PROMPT = "extract_claims"
+CONTEXT_PROMPT = "contextualize"
+EMBEDDING_ENV = "GROUNDWORK_EMBEDDING"
+EMBEDDING_TRACES_SUBDIR = "embeddings"
+VOYAGE_KEY_ENV = "VOYAGE_API_KEY"
 
 CRM_ADAPTERS: Mapping[str, Callable[[Path], CrmPort]] = MappingProxyType(
     {"fixture": lambda pack_dir: FixtureCrm(pack_dir / FIXTURES_SUBDIR)}
 )
 MODEL_ADAPTERS = ("claude", "replay")
+EMBEDDING_ADAPTERS = ("replay", "voyage")
+STORE_ADAPTERS: Mapping[str, Callable[[], VectorStorePort]] = MappingProxyType(
+    {"lancedb": LanceDbStore, "memory": InMemoryVectorStore}
+)
 
 
 def build_crm(pack_dir: Path, config: PackConfig) -> CrmPort:
@@ -79,6 +97,51 @@ def build_model(
         return RecordingModel(model, recordings, specs) if env.get(RECORD_ENV) == "1" else model
     valid = ", ".join(MODEL_ADAPTERS)
     raise PackError(f"{pack_dir / CONFIG_FILE}: unknown model adapter {name!r} (valid: {valid})")
+
+
+def build_embedding(
+    pack_dir: Path,
+    config: PackConfig,
+    traces_dir: Path,
+    env: Mapping[str, str] = os.environ,
+) -> EmbeddingPort:
+    """Build the embedding adapter: `GROUNDWORK_EMBEDDING` overrides `embedding:` in the config.
+
+    Recordings live in `<traces_dir>/<pack>/embeddings/`. With `voyage` and
+    `GROUNDWORK_RECORD=1`, every vector is recorded there for replay.
+    """
+    name = env.get(EMBEDDING_ENV) or config.embedding
+    recordings = EmbeddingRecordings(traces_dir / pack_dir.name / EMBEDDING_TRACES_SUBDIR)
+    if name == "replay":
+        return ReplayEmbedding(recordings, VOYAGE_MODEL)
+    if name == "voyage":
+        if not (env.get(VOYAGE_KEY_ENV) or os.environ.get(VOYAGE_KEY_ENV)):
+            raise ModelError(
+                f"{EMBEDDING_ENV}=voyage needs {VOYAGE_KEY_ENV}: set it in .env "
+                "and run with uv run --env-file .env"
+            )
+        from voyageai.client import Client  # imported here so replay runs never load the SDK
+
+        embedding: EmbeddingPort = VoyageEmbedding(Client(), VOYAGE_MODEL)
+        if env.get(RECORD_ENV) == "1":
+            return RecordingEmbedding(embedding, recordings, VOYAGE_MODEL)
+        return embedding
+    valid = ", ".join(EMBEDDING_ADAPTERS)
+    raise PackError(
+        f"{pack_dir / CONFIG_FILE}: unknown embedding adapter {name!r} (valid: {valid})"
+    )
+
+
+def build_store(pack_dir: Path, config: PackConfig) -> VectorStorePort:
+    """Build the vector store the pack selects with `vector_store:` in its config."""
+    factory = STORE_ADAPTERS.get(config.vector_store)
+    if factory is None:
+        valid = ", ".join(sorted(STORE_ADAPTERS))
+        raise PackError(
+            f"{pack_dir / CONFIG_FILE}: unknown vector_store {config.vector_store!r} "
+            f"(valid: {valid})"
+        )
+    return factory()
 
 
 def build_server_context(

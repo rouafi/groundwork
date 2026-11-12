@@ -11,6 +11,7 @@ from groundwork.core.domain.errors import PackError
 from groundwork.core.domain.golden import ExtractionGolden
 from groundwork.core.domain.knowhow import Interview, Rule
 from groundwork.core.domain.pack import PackConfig
+from groundwork.core.domain.search import Chunk
 
 DOMAIN_FILE = "domain.yaml"
 CONFIG_FILE = "config.yaml"
@@ -18,6 +19,7 @@ PROMPTS_DIR = "prompts"
 INTERVIEWS_DIR = "interviews"
 EXTRACTION_GOLDEN_FILE = Path("evals") / "extraction_golden.yaml"
 RULES_FILE = "rules.yaml"
+CHUNKS_FILE = Path("index") / "chunks.jsonl"
 FRONT_MATTER = "---\n"
 
 
@@ -48,6 +50,20 @@ def load_rules(pack_dir: Path) -> tuple[Rule, ...]:
     if not path.is_file():
         return ()
     return _load_yaml_model(path, _Rules).root
+
+
+def load_chunks(pack_dir: Path) -> tuple[Chunk, ...]:
+    """Read `<pack_dir>/index/chunks.jsonl`. A pack that was never indexed has no chunks."""
+    path = pack_dir / CHUNKS_FILE
+    if not path.is_file():
+        return ()
+    chunks = []
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        try:
+            chunks.append(Chunk.model_validate_json(line))
+        except ValidationError as exc:
+            raise PackError(f"{path}:{number}: {_summarize(exc)}") from exc
+    return tuple(chunks)
 
 
 def load_extraction_golden(pack_dir: Path) -> ExtractionGolden | None:
