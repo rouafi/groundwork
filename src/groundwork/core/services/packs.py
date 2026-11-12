@@ -1,5 +1,6 @@
 """Load client and domain packs from disk into validated domain types."""
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,7 @@ from pydantic import BaseModel, RootModel, ValidationError
 from groundwork.core.domain.domain_pack import DomainPack
 from groundwork.core.domain.errors import PackError
 from groundwork.core.domain.golden import ExtractionGolden
+from groundwork.core.domain.harmonize import DemoCase
 from groundwork.core.domain.knowhow import Interview, Rule
 from groundwork.core.domain.pack import PackConfig
 from groundwork.core.domain.policy import Policies, PolicyOverrides
@@ -21,6 +23,7 @@ INTERVIEWS_DIR = "interviews"
 EXTRACTION_GOLDEN_FILE = Path("evals") / "extraction_golden.yaml"
 RULES_FILE = "rules.yaml"
 POLICIES_FILE = "policies.yaml"
+DEMO_FILE = "demo_cases.json"
 CHUNKS_FILE = Path("index") / "chunks.jsonl"
 RETRIEVAL_FILE = "retrieval.jsonl"
 FRONT_MATTER = "---\n"
@@ -75,6 +78,24 @@ def _load_jsonl[M: BaseModel](path: Path, model: type[M]) -> tuple[M, ...]:
         except ValidationError as exc:
             raise PackError(f"{path}:{number}: {_summarize(exc)}") from exc
     return tuple(items)
+
+
+def load_demo_cases(pack_dir: Path) -> tuple[DemoCase, ...]:
+    """Read `<pack_dir>/demo_cases.json`, a list of cases. A pack without it has none."""
+    path = pack_dir / DEMO_FILE
+    if not path.is_file():
+        return ()
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        cases = tuple(DemoCase.model_validate(item) for item in raw)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise PackError(f"{path}: not a JSON list of demo cases ({exc})") from exc
+    except ValidationError as exc:
+        raise PackError(f"{path}: {_summarize(exc)}") from exc
+    ids = [c.case_id for c in cases]
+    if len(set(ids)) != len(ids):
+        raise PackError(f"{path}: case ids must be unique")
+    return cases
 
 
 def load_domain_policies(domains_dir: Path, domain: str) -> Policies:

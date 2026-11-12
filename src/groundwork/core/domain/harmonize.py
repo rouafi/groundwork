@@ -104,3 +104,19 @@ class ApprovalItem(_Harmonize):
     decision: Decision
     status: ApprovalStatus = "pending"
     reason: str | None = None
+
+
+class DemoCase(_Harmonize):
+    """A case a pack shows in its demo: one request with a case id and a title."""
+
+    case_id: Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9_-]*$")]
+    title: Text
+    contact_id: Id
+    channel: MessageChannel
+    draft: Text
+
+    @property
+    def request(self) -> HarmonizeRequest:
+        return HarmonizeRequest(
+            contact_id=self.contact_id, channel=self.channel, draft=self.draft, case_id=self.case_id
+        )

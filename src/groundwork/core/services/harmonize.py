@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from groundwork.core.domain.claims import ClaimCheck
-from groundwork.core.domain.errors import GroundworkError
+from groundwork.core.domain.errors import EmbeddingMissError, GroundworkError
 from groundwork.core.domain.facts import Contact
 from groundwork.core.domain.harmonize import (
     AgentStep,
@@ -86,8 +86,10 @@ class HarmonizeOutcome:
 def harmonize(flow: HarmonizeFlow, request: HarmonizeRequest) -> HarmonizeOutcome:
     """Run the flow for one request. Raises `NotFoundError` for an unknown contact."""
     contact = contact_context(flow.crm, request.contact_id)
-    passages = tuple(flow.search(request.draft)) if flow.search else ()
+    passages, note = _passages(flow, request)
     pack = build_context_pack(contact, flow.rules, passages, request.channel, flow.budget)
+    if note:
+        pack = pack.model_copy(update={"truncated": (*pack.truncated, note)})
     events: list[TraceEvent] = [request_event(request, flow.system), context_event(pack)]
     try:
         result = flow.agent.run(
@@ -113,6 +115,19 @@ def harmonize(flow: HarmonizeFlow, request: HarmonizeRequest) -> HarmonizeOutcom
         claim_checks=checks,
         context=pack,
     )
+
+
+def _passages(
+    flow: HarmonizeFlow, request: HarmonizeRequest
+) -> tuple[tuple[SearchHit, ...], str | None]:
+    """The passages for the draft. Without a recorded embedding of it (replay) there are none,
+    and the pack says so: passages are an enrichment, never a reason to fail the run."""
+    if flow.search is None:
+        return (), None
+    try:
+        return tuple(flow.search(request.draft)), None
+    except EmbeddingMissError:
+        return (), "passages unavailable: the draft's embedding is not recorded (replay)"
 
 
 def _act(

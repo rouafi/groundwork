@@ -4,9 +4,11 @@ Works through `CrmPort` only, so the same check runs on fixtures in CI and,
 later, on a live CRM from a manual command.
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from groundwork.core.domain.domain_pack import DomainPack
+from groundwork.core.domain.harmonize import DemoCase
 from groundwork.core.ports.crm import CrmPort
 
 
@@ -82,3 +84,13 @@ def _outside(
 ) -> IntegrityIssue:
     problem = f"has {field} {value!r}, not in the domain vocabulary ({', '.join(allowed)})"
     return IntegrityIssue(kind, id, problem)
+
+
+def demo_problems(cases: Sequence[DemoCase], crm: CrmPort) -> list[str]:
+    """Every demo case whose contact is not in the CRM, by case id."""
+    known = set(crm.list_contact_ids())
+    return [
+        f"demo case {case.case_id}: unknown contact {case.contact_id!r}"
+        for case in cases
+        if case.contact_id not in known
+    ]
