@@ -132,12 +132,12 @@ Every step produces a **validated artifact** in `client_packs/<client>/`. The pl
 | Day | Step | Artifact | Exit criteria |
 |---|---|---|---|
 | 1 | **Needs collection**: use case, users, internal vs external, systems, success metric, risks | `discovery.yaml` | Sponsor signs off the use case and the metric |
-| 2 | **Facts mapping**: connect the CRM, map entities to the domain schema | `facts_mapping.yaml` | 100% of required fields mapped |
+| 2 | **Facts**: connect the CRM, load its export | `config.yaml`, `fixtures/` | Fixtures load and agree with the domain schema |
 | 3 | **Know-how capture**: 3 to 5 expert interviews, extraction, human review | `interviews/`, `rules.yaml` | Every rule has provenance and scope |
-| 4 | **Golden set**: 20 cases built with the experts, thresholds agreed | `golden.jsonl`, `thresholds.yaml` | Level-1 evals pass the thresholds |
-| 5 | **Go-live**: policies, rollout plan, monitoring | `policies.yaml`, `go_live.md` | Internal auto-send live, external queue live |
+| 4 | **Golden set**: 20 cases built with the experts, thresholds agreed | `golden.jsonl`, `thresholds.yaml`, `rubric.md`, `judge_calibration.jsonl` | At least 20 cases, thresholds and calibration present |
+| 5 | **Go-live**: policies, rollout plan, monitoring | `policies.yaml`, `go_live.md` | Checklist ticked, level-1 evals pass the thresholds |
 
-Interview script and discovery canvas: [`playbook/`](playbook/).
+`uv run groundwork new-pack <client>` builds the skeleton from [`playbook/`](playbook/) (discovery canvas, interview script, go-live checklist); `uv run groundwork validate-packs --pack <client> --stage dayN` says whether day N is done. The sign-off, rule approvals and go-live ticks stay with people. In Claude Code, the `client-onboarding` skill walks the days. Details: [docs/playbook.md](docs/playbook.md).
 
 ---
 

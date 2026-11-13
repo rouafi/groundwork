@@ -1,5 +1,5 @@
 # PRD-007: Playbook and onboarding skill
-Status: todo | Branch: `feat/playbook-skill` | Depends on: 006
+Status: done | Branch: `feat/playbook-skill` | Depends on: 006
 
 ## Goal
 Make the 5-day client playbook executable: templates, a pack scaffolder, stage-based validation, and a Claude skill that runs the onboarding with the FDE.
@@ -55,3 +55,12 @@ Unit: DiscoveryDoc validation, stage checks. Integration: scaffold then validate
 
 ## Risks and open questions
 Do not create a real third client pack in the repo; the scaffolder is tested in a temp dir. A short screen capture of the skill on a throwaway pack is welcome for PRD-008.
+
+## Implementation notes
+- Commits: the stage checks came in two (days 1 to 3, then days 4 and 5, which needed PRD-006's loaders), so there are seven commits instead of six.
+- `validate-packs` keeps its unstaged behavior (what CI runs); `--stage` and `--pack` are new, and `--traces-dir` tells day 5 where the recordings are. Stages are cumulative and each problem is prefixed with its day.
+- Day 4 also requires `rubric.md` (the evals need it) and that every golden case names a contact in the fixtures. Day 5 runs `build_eval_deps` and `run_pack` on replay whatever the environment says, and holds the pack to its own thresholds (not `--allow-unmet-thresholds`); it skips the evals, and says so, when days 1 to 4 already fail. Today both synthetic packs would fail day 5 on thresholds, which is correct.
+- `new-pack` builds `.new-<client>` and renames it, never overwrites, and checks the name and the domain. The tests scaffold a pack in a temporary folder; no third client pack is in the repo.
+- Deviation: `acme` and `beta` have no `discovery.yaml` or `go_live.md`, so they fail the stages. Nobody can sign off for a synthetic client, so none was invented (ADR 0011).
+- The skill is short and links the templates. Its tests pin the frontmatter, that every link and repo path exists, that every `groundwork` command it names exists, and that it never contains an instruction to sign off, approve or tick (and that the scan catches those instructions).
+- Not done: the short screen capture of the skill on a throwaway pack (welcome for PRD-008).
