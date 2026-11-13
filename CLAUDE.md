@@ -32,7 +32,7 @@ What it actually uses:
 - `make setup`: install deps and git hooks
 - `make check`: lint, types, architecture rules, tests, pack validation, evals report on replay
 - `make demo`: replay recorded runs, no API key; `make live` runs them with Claude and Voyage (needs `.env`)
-- `uv run groundwork harmonize | approvals | demo | index | extract-rules | validate-packs | evals | mcp-serve`
+- `uv run groundwork harmonize | approvals | demo | index | extract-rules | validate-packs | evals | new-pack | mcp-serve`
 - `make evals`: replay the golden sets (strict); `uv run groundwork evals --model claude --resume` records only what is missing (paid)
 - `make up` / `make down`: API and MCP server via Docker Compose
 
@@ -45,7 +45,7 @@ What it actually uses:
 | Golden sets, scorers, thresholds, traces | docs/evals.md |
 | Secrets, data, LLM guardrails, side effects | docs/security.md |
 | Commits, branches, PRs, tests, definition of done | docs/conventions.md |
-| Client onboarding, packs, discovery | docs/playbook.md |
+| Client onboarding, packs, discovery, stage checks, the onboarding skill | docs/playbook.md |
 | The MCP server, Claude Desktop connection | docs/mcp.md |
 | Building a feature | the matching PRD in docs/prd/ (read the index first) |
 | The verification loop | docs/workflow.md |

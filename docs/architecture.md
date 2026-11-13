@@ -50,6 +50,8 @@ internal_recipient: handoffs@acme.example  # where internal emails go, never a c
 ## Pack validation
 `groundwork validate-packs` runs in pre-commit and CI. For every folder in `client_packs/` it checks the config schema, that the domain exists, that the CRM fixtures load, and `check_integrity` (`core/services/integrity.py`): dangling references (deal to contact, contact to company, deal to products) and segments or personas outside the domain vocabulary. The check goes through `CrmPort` only, so it will run unchanged against a live CRM from a manual command (CI never calls a real CRM). Each problem is printed with its pack, kind and id, for example `client_packs/acme: deal acme-d-3 references missing contact acme-c-99`. It also loads the interviews and checks `rules.yaml` and the extraction golden data (see docs/knowledge.md).
 
+`validate-packs --pack <client> --stage dayN` (`entrypoints/stages.py`) checks what days 1 to N of the playbook must have produced, and `groundwork new-pack <client>` (`core/services/scaffold.py`) builds the skeleton from `playbook/`. Day 5 runs the evals on replay and fails a pack below its thresholds. The sign-off, rule approvals and go-live ticks are fields only a person sets (docs/playbook.md, ADR 0011).
+
 CRM fixtures live in `client_packs/<client>/fixtures/hubspot/` in HubSpot CRM v3 shape; the mapping and its simplifications are documented in `adapters/crm/hubspot_mapping.py`.
 
 ## Request flow (`core/services/harmonize.py`)

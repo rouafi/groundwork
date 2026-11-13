@@ -47,7 +47,9 @@ from groundwork.core.services.rules_check import rule_problems
 from groundwork.entrypoints.evals_cli import evals_command
 from groundwork.entrypoints.harness_cli import approvals_app, demo_command, harmonize_command
 from groundwork.entrypoints.mcp_server import create_server
+from groundwork.entrypoints.playbook_cli import PLAYBOOK_DIR, new_pack_command
 from groundwork.entrypoints.reports import summary, write_run
+from groundwork.entrypoints.stages import Stage, stage_problems
 from groundwork.entrypoints.wiring import (
     CONTEXT_PROMPT,
     build_crm,
@@ -59,6 +61,7 @@ from groundwork.entrypoints.wiring import (
 
 app = typer.Typer(no_args_is_help=True, help="groundwork: an FDE deployment kit")
 app.command("harmonize")(harmonize_command)
+app.command("new-pack")(new_pack_command)
 app.command("demo")(demo_command)
 app.command("evals")(evals_command)
 app.add_typer(approvals_app, name="approvals")
@@ -70,16 +73,41 @@ CONCURRENCY_ENV = "GROUNDWORK_MAX_CONCURRENCY"
 
 
 @app.command("validate-packs")
-def validate_packs(packs_dir: Path = PACKS_DIR, domains_dir: Path = DOMAINS_DIR) -> None:
-    """Validate every client pack: config, domain, CRM facts, interviews, rules and claims."""
+def validate_packs(
+    packs_dir: Path = PACKS_DIR,
+    domains_dir: Path = DOMAINS_DIR,
+    traces_dir: Path = TRACES_DIR,
+    playbook_dir: Annotated[
+        Path, typer.Option(help="Playbook templates; day 5 compares go_live.md with them.")
+    ] = PLAYBOOK_DIR,
+    pack: Annotated[str | None, typer.Option(help="Validate only this pack.")] = None,
+    stage: Annotated[
+        Stage | None,
+        typer.Option(help="Check what days 1 to N of the playbook must have produced."),
+    ] = None,
+) -> None:
+    """Validate client packs: everything, or with --stage what a playbook day must have produced."""
     packs = _pack_dirs(packs_dir)
+    if pack is not None:
+        packs = [p for p in packs if p.name == pack]
+        if not packs:
+            typer.echo(f"{packs_dir / pack}: no such pack", err=True)
+            raise typer.Exit(code=1)
     invalid = 0
     for pack_dir in packs:
-        problems = pack_problems(pack_dir, domains_dir)
+        problems = (
+            [
+                _located(pack_dir, p)
+                for p in stage_problems(pack_dir, stage, domains_dir, traces_dir, playbook_dir)
+            ]
+            if stage
+            else pack_problems(pack_dir, domains_dir)
+        )
         invalid += bool(problems)
         for problem in problems:
             typer.echo(problem, err=True)
-    typer.echo(f"{len(packs)} pack(s) checked, {invalid} invalid")
+    where = f" at {stage.value}" if stage else ""
+    typer.echo(f"{len(packs)} pack(s) checked{where}, {invalid} invalid")
     if invalid:
         raise typer.Exit(code=1)
 

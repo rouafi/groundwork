@@ -1,0 +1,19 @@
+# Discovery, day 1 of the playbook (docs/playbook.md): what the use case is, for whom, and how
+# success is measured. Fill every field from what the sponsor said, in their words.
+# The sponsor signs it off. That is a person's action, recorded by editing status and
+# signed_off_by by hand: the assistant that helps you fill this file never does it.
+client: __CLIENT__
+sponsor: ""          # who owns the use case and will sign it off, with their role
+use_case: ""         # one or two sentences: what is written, for whom, and what goes wrong today
+users: []            # who writes or reads these messages, for example: [account managers]
+channels: []         # internal, external, or both
+systems: []          # one entry per system, for example:
+                     #   - name: HubSpot
+                     #     role: contacts, deals and products (read only)
+success_metric:
+  name: ""           # the measure, for example: external emails corrected by a manager
+  baseline: ""       # where it stands today, with how you know
+  target: ""         # where the sponsor wants it, and by when
+risks: []            # what could go wrong in the sponsor's eyes, for example: a wrong price reaches a customer
+status: draft        # draft until the sponsor signs off
+signed_off_by: null  # name and role of the person who signed off, once they have
