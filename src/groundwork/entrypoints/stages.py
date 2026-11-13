@@ -4,8 +4,15 @@
 its signed-off discovery. Every problem starts with its day, then the file and the field, so
 a person knows what to fill. Nothing here signs, approves or ticks anything: those are human
 actions, and this module only reports whether they were recorded.
+
+Day 5 runs the evals on replay, whatever the environment says, and holds the pack to its own
+thresholds: it never accepts a pack below them.
 """
 
+import os
+import re
+from collections.abc import Iterator
+from contextlib import contextmanager
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
@@ -14,32 +21,58 @@ import yaml
 from pydantic import ValidationError
 
 from groundwork.core.domain.discovery import DiscoveryDoc
-from groundwork.core.domain.errors import PackError
+from groundwork.core.domain.errors import GroundworkError, PackError
+from groundwork.core.services.evals.runner import run_pack
 from groundwork.core.services.integrity import check_integrity
 from groundwork.core.services.packs import (
+    CALIBRATION_FILE,
+    GOLDEN_FILE,
+    POLICIES_FILE,
+    RUBRIC_FILE,
+    THRESHOLDS_FILE,
+    load_calibration,
     load_domain_pack,
+    load_golden,
     load_interviews,
     load_pack_config,
+    load_pack_policies,
+    load_rubric,
     load_rules,
+    load_thresholds,
 )
 from groundwork.core.services.rules_check import rule_problems
-from groundwork.entrypoints.wiring import build_crm
+from groundwork.entrypoints.evals_cli import build_eval_deps
+from groundwork.entrypoints.wiring import EMBEDDING_ENV, MODEL_ENV, RECORD_ENV, build_crm
 
 DISCOVERY_FILE = "discovery.yaml"
+GO_LIVE_FILE = "go_live.md"
 MIN_INTERVIEWS = 3
+MIN_GOLDEN_CASES = 20
+CHECKBOX = re.compile(r"^\s*[-*] \[(?P<mark>[ xX])\]\s*(?P<text>.*)$")
 
 
 class Stage(StrEnum):
     day1 = "day1"
     day2 = "day2"
     day3 = "day3"
+    day4 = "day4"
+    day5 = "day5"
 
 
-def stage_problems(pack_dir: Path, stage: Stage, domains_dir: Path) -> list[str]:
-    """Every problem of days 1 to `stage`, each prefixed by its day."""
+def stage_problems(
+    pack_dir: Path, stage: Stage, domains_dir: Path, traces_dir: Path = Path("traces")
+) -> list[str]:
+    """Every problem of days 1 to `stage`, each prefixed by its day.
+
+    Day 5 runs the evals only when days 1 to 4 are clean: a broken pack cannot be measured.
+    """
     problems: list[str] = []
     for day in Stage:
-        problems += [f"{day.value}: {p}" for p in _CHECKS[day](pack_dir, domains_dir)]
+        if day is Stage.day5:
+            found = _day5(pack_dir, domains_dir, traces_dir, measurable=not problems)
+        else:
+            found = _CHECKS[day](pack_dir, domains_dir)
+        problems += [f"{day.value}: {p}" for p in found]
         if day == stage:
             break
     return problems
@@ -107,9 +140,97 @@ def _day3(pack_dir: Path, domains_dir: Path) -> list[str]:
     return problems + rule_problems(rules, by_id, domain, crm)
 
 
+def _day4(pack_dir: Path, domains_dir: Path) -> list[str]:
+    try:
+        config = load_pack_config(pack_dir)
+        crm = build_crm(pack_dir, config)
+        cases = load_golden(pack_dir)
+        thresholds = load_thresholds(pack_dir)
+        calibration = load_calibration(pack_dir)
+        rubric = load_rubric(pack_dir)
+    except PackError as exc:
+        return [exc.message]
+    problems = []
+    if len(cases) < MIN_GOLDEN_CASES:
+        problems.append(
+            f"{GOLDEN_FILE}: {len(cases)} case(s) found, at least {MIN_GOLDEN_CASES} needed"
+        )
+    contacts = set(crm.list_contact_ids())
+    problems += [
+        f"{GOLDEN_FILE}: case {c.id} uses contact {c.contact_id}, which is not in the fixtures"
+        for c in cases
+        if c.contact_id not in contacts
+    ]
+    if thresholds is None:
+        problems.append(f"{THRESHOLDS_FILE} not found: agree the thresholds with the sponsor")
+    if rubric is None:
+        problems.append(f"{RUBRIC_FILE} not found: the judge scores tone against it")
+    if not calibration:
+        problems.append(
+            f"{CALIBRATION_FILE}: no email scored by a person: the judge cannot be calibrated"
+        )
+    return problems
+
+
+def _day5(pack_dir: Path, domains_dir: Path, traces_dir: Path, measurable: bool) -> list[str]:
+    problems: list[str] = []
+    try:
+        if not (pack_dir / POLICIES_FILE).is_file():
+            problems.append(f"{POLICIES_FILE} not found: write the pack's policies, even if empty")
+        else:
+            load_pack_policies(pack_dir)
+    except PackError as exc:
+        problems.append(exc.message)
+    problems += _checklist_problems(pack_dir / GO_LIVE_FILE)
+    if not measurable:
+        return [*problems, "evals: not run: fix days 1 to 4 first"]
+    return problems + _eval_problems(pack_dir, domains_dir, traces_dir)
+
+
+def _checklist_problems(path: Path) -> list[str]:
+    if not path.is_file():
+        return [f"{GO_LIVE_FILE} not found (groundwork new-pack creates it)"]
+    boxes = [
+        m for line in path.read_text(encoding="utf-8").splitlines() if (m := CHECKBOX.match(line))
+    ]
+    if not boxes:
+        return [f"{GO_LIVE_FILE}: no checklist box: copy playbook/go-live-checklist.md"]
+    return [
+        f"{GO_LIVE_FILE}: not ticked: {m['text']} (a person ticks it after checking the point)"
+        for m in boxes
+        if m["mark"] == " "
+    ]
+
+
+def _eval_problems(pack_dir: Path, domains_dir: Path, traces_dir: Path) -> list[str]:
+    """Run the pack's evals on replay and name every threshold it misses."""
+    try:
+        with _replay_only():
+            result = run_pack(build_eval_deps(pack_dir, domains_dir, traces_dir))
+    except GroundworkError as exc:
+        return [f"evals: {exc}"]
+    return [f"evals: {t.message}" for t in result.thresholds if not t.passed]
+
+
+@contextmanager
+def _replay_only() -> Iterator[None]:
+    """Replay with no recording, whatever the shell says: a stage check never costs money."""
+    keep = {k: os.environ.get(k) for k in (MODEL_ENV, EMBEDDING_ENV, RECORD_ENV)}
+    os.environ[MODEL_ENV] = os.environ[EMBEDDING_ENV] = "replay"
+    os.environ.pop(RECORD_ENV, None)
+    try:
+        yield
+    finally:
+        for key, value in keep.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+
 def _field(error: Any) -> str:
     location = ".".join(str(part) for part in error["loc"])
     return f"{location}: {error['msg']}" if location else str(error["msg"])
 
 
-_CHECKS = {Stage.day1: _day1, Stage.day2: _day2, Stage.day3: _day3}
+_CHECKS = {Stage.day1: _day1, Stage.day2: _day2, Stage.day3: _day3, Stage.day4: _day4}

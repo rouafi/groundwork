@@ -76,6 +76,7 @@ CONCURRENCY_ENV = "GROUNDWORK_MAX_CONCURRENCY"
 def validate_packs(
     packs_dir: Path = PACKS_DIR,
     domains_dir: Path = DOMAINS_DIR,
+    traces_dir: Path = TRACES_DIR,
     pack: Annotated[str | None, typer.Option(help="Validate only this pack.")] = None,
     stage: Annotated[
         Stage | None,
@@ -92,7 +93,10 @@ def validate_packs(
     invalid = 0
     for pack_dir in packs:
         problems = (
-            [_located(pack_dir, p) for p in stage_problems(pack_dir, stage, domains_dir)]
+            [
+                _located(pack_dir, p)
+                for p in stage_problems(pack_dir, stage, domains_dir, traces_dir)
+            ]
             if stage
             else pack_problems(pack_dir, domains_dir)
         )
