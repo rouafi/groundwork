@@ -91,3 +91,27 @@ def test_a_recording_holds_the_request_and_the_vector_but_no_secret(tmp_path: Pa
     record = json.loads(path.read_text())
     assert set(record) == {"request", "vector"}
     assert record["request"] == {"model": "m", "input_type": "query", "text": "a"}
+
+
+def test_voyage_calls_are_paced_when_a_rate_is_set() -> None:
+    now = [0.0]
+    sleeps: list[float] = []
+
+    def sleep(seconds: float) -> None:
+        sleeps.append(seconds)
+        now[0] += seconds
+
+    store = VoyageEmbedding(
+        FakeVoyageClient(), requests_per_minute=3, clock=lambda: now[0], sleep=sleep
+    )
+    for _ in range(3):
+        store.embed(["a"], "query")
+    assert sleeps == [20.0, 20.0]
+
+
+def test_voyage_calls_are_not_paced_by_default() -> None:
+    sleeps: list[float] = []
+    store = VoyageEmbedding(FakeVoyageClient(), sleep=sleeps.append)
+    store.embed(["a"], "query")
+    store.embed(["b"], "query")
+    assert sleeps == []

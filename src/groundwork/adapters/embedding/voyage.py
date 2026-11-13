@@ -5,7 +5,8 @@ retrieval. The model id is the single constant below; it is part of every record
 key, so changing it invalidates the recorded vectors.
 """
 
-from collections.abc import Sequence
+import time
+from collections.abc import Callable, Sequence
 from typing import Any
 
 from voyageai.error import VoyageError
@@ -18,14 +19,36 @@ BATCH_SIZE = 128
 
 
 class VoyageEmbedding:
-    def __init__(self, client: Any, model: str = VOYAGE_MODEL) -> None:
+    """`requests_per_minute` paces the calls for accounts on Voyage's reduced free limits
+    (3 a minute): each call waits until one interval has passed since the previous one."""
+
+    def __init__(
+        self,
+        client: Any,
+        model: str = VOYAGE_MODEL,
+        requests_per_minute: int | None = None,
+        clock: Callable[[], float] = time.monotonic,
+        sleep: Callable[[float], None] = time.sleep,
+    ) -> None:
         self._client = client
         self.model = model
+        self._interval = 60.0 / requests_per_minute if requests_per_minute else 0.0
+        self._clock = clock
+        self._sleep = sleep
+        self._last_call: float | None = None
+
+    def _pace(self) -> None:
+        if self._interval and self._last_call is not None:
+            wait = self._last_call + self._interval - self._clock()
+            if wait > 0:
+                self._sleep(wait)
+        self._last_call = self._clock()
 
     def embed(self, texts: Sequence[str], input_type: InputType) -> list[list[float]]:
         vectors: list[list[float]] = []
         for start in range(0, len(texts), BATCH_SIZE):
             batch = list(texts[start : start + BATCH_SIZE])
+            self._pace()
             try:
                 result = self._client.embed(batch, model=self.model, input_type=input_type)
             except VoyageError as exc:

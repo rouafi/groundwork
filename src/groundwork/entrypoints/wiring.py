@@ -63,6 +63,7 @@ PASSAGES = 5
 EMBEDDING_ENV = "GROUNDWORK_EMBEDDING"
 EMBEDDING_TRACES_SUBDIR = "embeddings"
 VOYAGE_KEY_ENV = "VOYAGE_API_KEY"
+VOYAGE_RPM_ENV = "VOYAGE_RPM"  # set to 3 on a Voyage account without a payment method
 VOYAGE_RETRIES = 4  # rate limits (3 requests a minute without a payment method) are retried
 
 CRM_ADAPTERS: Mapping[str, Callable[[Path], CrmPort]] = MappingProxyType(
@@ -142,7 +143,9 @@ def build_embedding(
             )
         from voyageai.client import Client  # imported here so replay runs never load the SDK
 
-        embedding: EmbeddingPort = VoyageEmbedding(Client(max_retries=VOYAGE_RETRIES), VOYAGE_MODEL)
+        embedding: EmbeddingPort = VoyageEmbedding(
+            Client(max_retries=VOYAGE_RETRIES), VOYAGE_MODEL, _voyage_rpm(env)
+        )
         if env.get(RECORD_ENV) == "1":
             return RecordingEmbedding(embedding, recordings, VOYAGE_MODEL)
         return embedding
@@ -150,6 +153,15 @@ def build_embedding(
     raise PackError(
         f"{pack_dir / CONFIG_FILE}: unknown embedding adapter {name!r} (valid: {valid})"
     )
+
+
+def _voyage_rpm(env: Mapping[str, str]) -> int | None:
+    value = env.get(VOYAGE_RPM_ENV, "")
+    if not value:
+        return None
+    if not value.isdigit() or int(value) < 1:
+        raise PackError(f"{VOYAGE_RPM_ENV} must be a positive integer, got {value!r}")
+    return int(value)
 
 
 def build_store(pack_dir: Path, config: PackConfig) -> VectorStorePort:
