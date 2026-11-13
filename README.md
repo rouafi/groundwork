@@ -13,7 +13,7 @@
 
 Companies want AI on top of the tools they already use (a CRM such as HubSpot, a billing tool, a help desk), but every project starts from zero: the facts are in the software, the know-how is in people's heads, and nobody checks what the AI says before it reaches a customer.
 
-This kit lets a team reuse most of the work from one client to the next and customise only the last part, through a **5-day playbook**. The demo rewrites sales emails on top of HubSpot-shaped data for two fictional clients, and **checks every email against the client's own facts and rules before anything is sent**: a wrong price is blocked, an email to a customer waits for a person to approve it.
+This kit lets a team reuse most of the work from one client to the next and customize only the last part, through a **5-day playbook**. The demo rewrites sales emails on top of HubSpot-shaped data for two fictional clients, and **checks every email against the client's own facts and rules before anything is sent**: a wrong price is blocked, an email to a customer waits for a person to approve it.
 
 All data in this repository is synthetic.
 
@@ -25,7 +25,7 @@ All data in this repository is synthetic.
 make demo   # replays recorded runs: no API key, no network
 ```
 
-It shows, for each client, an email that waits for a person, one that is sent automatically (internal only), and one that is blocked, each with the reason. The 3-minute walkthrough script is in [docs/demo.md](docs/demo.md).
+It shows, for each client, an email that waits for a person, one that is sent automatically (internal only), and one that is blocked (by a stand-in agent that lets a bad draft through, to show the checks hold when the model fails), each with the reason. The 3-minute walkthrough script is in [docs/demo.md](docs/demo.md).
 
 ---
 
@@ -34,7 +34,7 @@ It shows, for each client, an email that waits for a person, one that is sent au
 | Level | What | When |
 |---|---|---|
 | **1. Automated** | Facts vs CRM, rule violations, tone (LLM judge) on a golden set per client, replayed offline | Every commit (CI checks the report; thresholds are not enforced yet) |
-| **2. Human** | External emails go through an approval queue; approval rate is tracked | In production |
+| **2. Human** | External emails go through an approval queue; every approval and rejection is recorded with its reason | In production |
 
 <!-- results:start -->
 Results of the evals on each client's golden set, from recorded runs replayed offline (synthetic data). Generated from [`evals/report.md`](evals/report.md); never typed.

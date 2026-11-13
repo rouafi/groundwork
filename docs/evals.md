@@ -49,7 +49,7 @@ Two of beta's false claims are a claim-check effect, not missing data: `beta-007
 Next steps, for a client: put the sender and the contract reference in the context pack, decide which rules an email cannot show (the judge may mark them `not_applicable`), then re-record. Retrieval recall@5 is 1.0 but the packs have 6 chunks each, so it shows the method, not production quality.
 
 ## Level 2: human, in production
-External emails go through the approval queue. Tracked: approval rate without edits, edit size, rejection reasons. Every rejection becomes a new golden case. Gating internal auto-send on these evals is a follow-up: until it exists, `auto_send` stays a policy a pack can turn off (docs/security.md).
+External emails go through the approval queue. Recorded today: every approval and every rejection, with its reason (`approvals approve`, `approvals reject`). Approval rate and edit size are not computed yet. Every rejection becomes a new golden case. Gating internal auto-send on these evals is a follow-up: until it exists, `auto_send` stays a policy a pack can turn off (docs/security.md).
 
 ## Honesty rules
 - Data is synthetic, and the README says so.
@@ -59,6 +59,7 @@ External emails go through the approval queue. Tracked: approval rate without ed
 ## Commands
 - `make evals`: replay every golden set, no key. Exit 1 while a threshold is unmet (today: both packs).
 - `groundwork evals --write-report`: regenerate `evals/report.md` and `evals/results/<pack>.json` (all packs).
+- `make readme-results`: after `--write-report`, rewrite the results block of the README from the new report (`scripts/readme_results.py`). `make check` fails while the block is stale.
 - `groundwork evals --check-report`: fail if the committed report differs from a replay. `make check` runs it with `--allow-unmet-thresholds`, which prints the unmet thresholds without failing: remove that flag once the packs pass.
 - `groundwork evals --model claude --record`: record every run afresh. Costs money (a few dollars for two packs; not measured) and needs `ANTHROPIC_API_KEY` and `VOYAGE_API_KEY`; `--write-report` and `--check-report` need every pack.
 - `groundwork evals --model claude --resume`: the same, but only the agent traces, judge calls and embeddings with no valid recording go live. Use it after an interrupted run or a one-case change. A change to a prompt makes every agent trace stale, so it re-records them all.

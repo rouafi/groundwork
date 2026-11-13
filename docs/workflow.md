@@ -17,7 +17,7 @@ Maximum 3 iterations, then stop and ask the human.
 ## Two layers
 | Layer | What | Fails when |
 |---|---|---|
-| Deterministic (`make check`) | ruff, mypy strict, import-linter, unit, contract and integration tests, pack validation, coverage of core at least 90%, the evals report on replay (drift fails; unmet thresholds are printed, see docs/evals.md) | any check fails |
+| Deterministic (`make check`) | ruff, mypy strict, import-linter, unit, contract and integration tests, pack validation, coverage of core at least 90%, the evals report on replay (drift fails; unmet thresholds are printed, see docs/evals.md), the README results block in step with that report (`scripts/readme_results.py --check`) | any check fails |
 | `fde-reviewer` | Acts as the forward deployed engineer who deploys this next week: each PRD acceptance criterion verified with evidence, scope, usability, client-readiness, safety, honesty | a criterion is not met, or something would hurt in front of a client |
 
 The deterministic layer is the floor; it carries the layer, test and lint rules a second code reviewer would only repeat. The reviewer runs on a different model than the one that writes the code (`model: opus` in its file, session on Sonnet), which gives some independence for free.
