@@ -1,4 +1,4 @@
-.PHONY: setup lint typecheck arch test test-int check demo live evals up down
+.PHONY: setup lint typecheck arch test test-int check demo live evals readme-results up down
 
 setup:        ## Install deps and git hooks
 	uv sync
@@ -23,6 +23,7 @@ test-int:     ## Integration tests (no paid API)
 check: lint typecheck arch test test-int  ## Everything CI runs
 	uv run groundwork validate-packs
 	uv run groundwork evals --model replay --check-report --allow-unmet-thresholds
+	uv run python scripts/readme_results.py --check
 
 demo:         ## Replay recorded runs, no API key needed
 	GROUNDWORK_MODEL=replay uv run groundwork demo
@@ -32,6 +33,9 @@ live:         ## Real run with Claude (needs .env)
 
 evals:        ## Replay the golden sets for every client pack (strict)
 	uv run groundwork evals --model replay
+
+readme-results: ## Rewrite the results block of the README from evals/report.md
+	uv run python scripts/readme_results.py
 
 up:           ## Start API and MCP server
 	docker compose up --build -d

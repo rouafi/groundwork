@@ -121,7 +121,34 @@ With the default `replay`, only recorded cases run; `GROUNDWORK_MODEL=claude` (a
 | **1. Automated** | Facts vs CRM, rule violations, tone (LLM judge) on a golden set per client, replayed offline | Every commit (CI checks the report; thresholds are not enforced yet) |
 | **2. Human** | External emails go through an approval queue; approval rate is tracked | In production |
 
-Results: see [`evals/report.md`](evals/report.md), generated from recorded runs of the real agent and judge, replayed offline (`make evals`, no key). On the synthetic data, the harmonized email beats the raw draft on every measure (acme: false claims 8 to 0, tone 2.35 to 3.75; beta: false claims 4 to 2, tone 2.00 to 3.10), but **neither pack meets its thresholds yet**: the context lacks a sender identity and a contract reference that the client's rules ask for. How the judge is calibrated, and what the numbers do not prove, is in [docs/evals.md](docs/evals.md) and [ADR 0010](docs/adr/0010-evals-judge-calibration-replay.md).
+<!-- results:start -->
+Results of the evals on each client's golden set, from recorded runs replayed offline (synthetic data). Generated from [`evals/report.md`](evals/report.md); never typed.
+
+| Pack | Cases | Result |
+|---|---|---|
+| acme | 20 | FAIL (rule_violations, tone_mean) |
+| beta | 20 | FAIL (fact_false_claims, rule_violations, tone_mean, routing_accuracy) |
+
+**acme**, before and after the agent:
+
+| | Raw draft | Harmonized |
+|---|---|---|
+| False claims | 8 | 0 |
+| Forbidden-pattern hits | 5 | 0 |
+| Tone, mean from 1 to 5 | 2.35 | 3.75 |
+
+**beta**, before and after the agent:
+
+| | Raw draft | Harmonized |
+|---|---|---|
+| False claims | 4 | 2 |
+| Forbidden-pattern hits | 5 | 1 |
+| Tone, mean from 1 to 5 | 2.00 | 3.10 |
+
+A pack ships only when every threshold passes. Packs marked FAIL are below at least one of theirs, and the report says which.
+<!-- results:end -->
+
+How the judge is calibrated, why a pack can miss its thresholds, and what the numbers do not prove: [docs/evals.md](docs/evals.md) and [ADR 0010](docs/adr/0010-evals-judge-calibration-replay.md).
 
 ---
 
