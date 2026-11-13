@@ -7,114 +7,29 @@
 
 <h2 align="center">Grounded AI on top of any SaaS, client after client.</h2>
 
-<p align="center">An FDE deployment kit: one reusable core, a client pack per client, a 5-day playbook to fill it.</p>
+<p align="center">A deployment kit: one reusable core, a pack per client, a 5-day playbook to fill it.</p>
 
-Most AI deployments restart from scratch at every client: business facts live in the CRM, the know-how lives in people's heads, there is no shared harness and no evals. POCs work once and never scale.
+## In 30 seconds
 
-This kit separates what never changes (the **core**), what is reusable per business domain (**domain packs**), and what is specific to each client (**client packs**). An FDE team ships a new client by filling a client pack through a 5-day playbook, not by writing new code.
+Companies want AI on top of the tools they already use (a CRM such as HubSpot, a billing tool, a help desk), but every project starts from zero: the facts are in the software, the know-how is in people's heads, and nobody checks what the AI says before it reaches a customer.
 
-> Demo use case: **email harmonization** on top of a CRM (HubSpot, Salesforce, Pipedrive...). Same core, two clients, same draft, two different compliant emails.
+This kit lets a team reuse most of the work from one client to the next and customise only the last part, through a **5-day playbook**. The demo rewrites sales emails on top of HubSpot-shaped data for two fictional clients, and **checks every email against the client's own facts and rules before anything is sent**: a wrong price is blocked, an email to a customer waits for a person to approve it.
 
----
-
-## The layers
-
-<p align="center">
-  <img src="docs/layers.svg" alt="Layers: client packs as rows, domain packs as columns, a shared core underneath" width="100%">
-</p>
-
-| Layer | Contains | Changes | Owned by | Code allowed |
-|---|---|---|---|---|
-| **Core** | Ontology engine, MCP context server, agent harness, eval runner, tracing | Rarely | Platform team | Yes |
-| **Domain pack** | Domain ontology schema (facts + know-how concepts), skills and prompts, policy templates, eval scorers | Per new domain | FDE lead | Minimal |
-| **Client pack** | Ontology instances, interviews, extracted rules, connector config, thresholds, golden set | Per client | FDE on the engagement | **No: data and config only** |
-
-**Precedence:** `client > domain > core`, through config only. Every client pack is schema-validated in CI: if it does not validate, it does not ship.
+All data in this repository is synthetic.
 
 ---
 
-## Two ontologies that talk
-
-```mermaid
-graph LR
-  subgraph Facts["Facts (structured, from CRM)"]
-    Company --> Contact
-    Contact --> Deal
-    Deal --> Product
-  end
-  subgraph KnowHow["Know-how (unstructured, from interviews)"]
-    Rule --> Tone
-    Rule --> Claim
-    Rule -->|provenance| Interview
-  end
-  Product <-->|bridge| Claim
-  Contact -->|segment, persona| Rule
-```
-
-- **Facts** come from the client's systems (a CRM such as HubSpot or Salesforce, an ERP, a billing tool...). They are the source of truth for names, prices, deal stages.
-- **Know-how** is extracted from expert interviews by Claude, reviewed by a human, and stored with its **provenance** (interview, quote) and **scope** (internal/external, segment, persona).
-- **The bridge** (Product, Segment, Persona) lets the agent ask: *"what can I say to this contact, and how?"*
-
----
-
-## How it runs
-
-```mermaid
-graph LR
-  Draft[Draft + contact id] --> Harness
-  Harness -->|context pack| MCP[MCP context server]
-  MCP --> Facts & KnowHow
-  Harness --> Check{check_claims}
-  Check -->|internal, valid| Send[Auto-send]
-  Check -->|external| Queue[Human approval]
-  Check -->|false claim| Block[Blocked]
-```
-
-- **Headless:** CLI, HTTP API, webhooks from the client's SaaS (e.g. a CRM event). No UI.
-- **Context sharing:** the same MCP server feeds the headless agent and Claude Desktop. Sales asks the ontology in Claude; the agent uses the exact same context.
-- **Traceable:** every output cites the ontology nodes it used.
-
----
-
-## Swap any SaaS
-
-Every external system (CRM, email, vector store, model) sits behind a port. Each client pack picks its adapters in config:
-
-```yaml
-# client_packs/acme/config.yaml
-crm: fixture        # CRM-shaped fixtures; live adapters (e.g. HubSpot, Salesforce) plug in here
-messaging: console
-vector_store: lancedb
-model: claude       # or: replay (used by make demo)
-domain: comms       # domain pack under domains/
-```
-
-To add Salesforce: write one adapter in `adapters/crm/`, pass `tests/contracts/`, change one line of config.
-
----
-
-## Quickstart
+## See it run
 
 ```bash
-make demo   # replays recorded runs, no API key needed
-make live   # runs with ANTHROPIC_API_KEY
-make evals  # runs the golden set for every client pack
+make demo   # replays recorded runs: no API key, no network
 ```
 
-Rewrite a draft for a contact, check it against the CRM, and route it (send, approval or blocked). Every run leaves a trace in `traces/`; external emails wait in a queue until a person approves them:
-
-```bash
-uv run groundwork harmonize --pack acme --contact acme-c-5 --channel external --draft draft.txt
-uv run groundwork approvals list --pack acme
-uv run groundwork approvals show <id> --pack acme      # read the email before deciding
-uv run groundwork approvals approve <id> --pack acme   # records the answer and sends, once
-```
-
-With the default `replay`, only recorded cases run; `GROUNDWORK_MODEL=claude` (and `GROUNDWORK_EMBEDDING=voyage` for passages) runs live. The flow is in [docs/architecture.md](docs/architecture.md), the guarantees in [docs/security.md](docs/security.md).
+It shows, for each client, an email that waits for a person, one that is sent automatically (internal only), and one that is blocked, each with the reason.
 
 ---
 
-## Evals: two levels before anything reaches a customer
+## Results: two levels of checks before anything reaches a customer
 
 | Level | What | When |
 |---|---|---|
@@ -168,7 +83,98 @@ Every step produces a **validated artifact** in `client_packs/<client>/`. The pl
 
 ---
 
-## Repo layout
+## The layers
+
+<p align="center">
+  <img src="docs/layers.svg" alt="Layers: client packs as rows, domain packs as columns, a shared core underneath" width="100%">
+</p>
+
+| Layer | Contains | Changes | Owned by | Code allowed |
+|---|---|---|---|---|
+| **Core** | Ontology engine, MCP context server, agent harness, eval runner, tracing | Rarely | Platform team | Yes |
+| **Domain pack** | Domain ontology schema (facts + know-how concepts), skills and prompts, policy templates, eval scorers | Per new domain | FDE lead | Minimal |
+| **Client pack** | Ontology instances, interviews, extracted rules, connector config, thresholds, golden set | Per client | FDE on the engagement | **No: data and config only** |
+
+**Precedence:** `client > domain > core`, through config only. Every client pack is schema-validated in CI: if it does not validate, it does not ship.
+
+---
+
+## For engineers
+
+### Two ontologies that talk
+
+```mermaid
+graph LR
+  subgraph Facts["Facts (structured, from CRM)"]
+    Company --> Contact
+    Contact --> Deal
+    Deal --> Product
+  end
+  subgraph KnowHow["Know-how (unstructured, from interviews)"]
+    Rule --> Tone
+    Rule --> Claim
+    Rule -->|provenance| Interview
+  end
+  Product <-->|bridge| Claim
+  Contact -->|segment, persona| Rule
+```
+
+- **Facts** come from the client's systems (a CRM such as HubSpot or Salesforce, an ERP, a billing tool...). They are the source of truth for names, prices, deal stages.
+- **Know-how** is extracted from expert interviews by Claude, reviewed by a human, and stored with its **provenance** (interview, quote) and **scope** (internal/external, segment, persona).
+- **The bridge** (Product, Segment, Persona) lets the agent ask: *"what can I say to this contact, and how?"*
+
+### How it runs
+
+```mermaid
+graph LR
+  Draft[Draft + contact id] --> Harness
+  Harness -->|context pack| MCP[MCP context server]
+  MCP --> Facts & KnowHow
+  Harness --> Check{check_claims}
+  Check -->|internal, valid| Send[Auto-send]
+  Check -->|external| Queue[Human approval]
+  Check -->|false claim| Block[Blocked]
+```
+
+- **Headless:** CLI, HTTP API, webhooks from the client's SaaS (e.g. a CRM event). No UI.
+- **Context sharing:** the same MCP server feeds the headless agent and Claude Desktop. Sales asks the ontology in Claude; the agent uses the exact same context.
+- **Traceable:** every output cites the ontology nodes it used.
+
+### Swap any SaaS
+
+Every external system (CRM, email, vector store, model) sits behind a port. Each client pack picks its adapters in config:
+
+```yaml
+# client_packs/acme/config.yaml
+crm: fixture        # CRM-shaped fixtures; live adapters (e.g. HubSpot, Salesforce) plug in here
+messaging: console
+vector_store: lancedb
+model: claude       # or: replay (used by make demo)
+domain: comms       # domain pack under domains/
+```
+
+To add Salesforce: write one adapter in `adapters/crm/`, pass `tests/contracts/`, change one line of config.
+
+### Quickstart
+
+```bash
+make demo   # replays recorded runs, no API key needed
+make live   # runs with ANTHROPIC_API_KEY
+make evals  # runs the golden set for every client pack
+```
+
+Rewrite a draft for a contact, check it against the CRM, and route it (send, approval or blocked). Every run leaves a trace in `traces/`; external emails wait in a queue until a person approves them:
+
+```bash
+uv run groundwork harmonize --pack acme --contact acme-c-5 --channel external --draft draft.txt
+uv run groundwork approvals list --pack acme
+uv run groundwork approvals show <id> --pack acme      # read the email before deciding
+uv run groundwork approvals approve <id> --pack acme   # records the answer and sends, once
+```
+
+With the default `replay`, only recorded cases run; `GROUNDWORK_MODEL=claude` (and `GROUNDWORK_EMBEDDING=voyage` for passages) runs live. The flow is in [docs/architecture.md](docs/architecture.md), the guarantees in [docs/security.md](docs/security.md).
+
+### Repo layout
 
 ```
 src/groundwork/
@@ -183,15 +189,11 @@ tests/           unit, contracts, integration
 
 All data in this repo is synthetic.
 
----
-
-## Development
+### Development
 
 `make setup` then `make check`. To use a client's context from Claude Desktop, follow [`docs/mcp.md`](docs/mcp.md). Rules for humans and for Claude Code: [`CLAUDE.md`](CLAUDE.md) and [`docs/conventions.md`](docs/conventions.md).
 
----
-
-## Design decisions
+### Design decisions
 
 - **Client packs are data, not code.** That is what makes the 10th client cheaper than the 1st.
 - **Shared context through MCP.** One source of truth for every agent and every human using Claude.
