@@ -22,7 +22,7 @@ test-int:     ## Integration tests (no paid API)
 
 check: lint typecheck arch test test-int  ## Everything CI runs
 	uv run groundwork validate-packs
-	uv run groundwork evals --check-report --allow-unmet-thresholds
+	uv run groundwork evals --model replay --check-report --allow-unmet-thresholds
 
 demo:         ## Replay recorded runs, no API key needed
 	GROUNDWORK_MODEL=replay uv run groundwork demo
@@ -30,8 +30,8 @@ demo:         ## Replay recorded runs, no API key needed
 live:         ## Real run with Claude (needs .env)
 	GROUNDWORK_MODEL=claude uv run --env-file .env groundwork demo --model claude
 
-evals:        ## Run the golden sets for every client pack
-	uv run groundwork evals
+evals:        ## Replay the golden sets for every client pack (strict)
+	uv run groundwork evals --model replay
 
 up:           ## Start API and MCP server
 	docker compose up --build -d

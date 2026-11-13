@@ -77,7 +77,8 @@ Golden sets are authored by the repo owner, not by the model. If the judge disag
 - Recording: `VOYAGE_RPM` paces Voyage for the free tier; Anthropic calls retry 6 times on server errors (a live run was lost to 503 bursts, which the API reported as "credential validation failed").
 - The harmonize prompt gained three rules after the first run: apply the rules that match the contact, add nothing the draft does not say, leave no placeholders. It made every trace stale, so the demo and eval traces were re-recorded.
 - `tests/integration/test_recorded_demo.py` now asks for at least 3 traces per pack (the demo's, plus the evals').
-- Acme's calibration labels cal-3 and cal-5 follow the judge (1 and 2), accepted by the repo owner after reading its reasons.
+- Acme's calibration labels cal-3 and cal-5 follow the judge (1 and 2): the repo owner read the judge's reasons and agreed in a message of their own ("je suis d'accord avec le juge"); the PRD says to fix the rubric, never the labels, so this is a disclosed exception (docs/evals.md, ADR 0010).
+- `make evals` and `make check` pin `--model replay`, which also forces the replay embedding, so a `GROUNDWORK_MODEL=claude` in the shell never makes a paid call there. `--resume` needs `--model claude`.
 
 ## Acceptance evidence (2026-11-13)
 1. **Not met.** `make evals` replays with no environment variables and runs both packs, but exits 1: acme fails `rule_violations` (9) and `tone_mean` (3.75); beta fails `fact_false_claims` (2), `rule_violations` (35), `tone_mean` (3.10) and `routing_accuracy` (0.90).

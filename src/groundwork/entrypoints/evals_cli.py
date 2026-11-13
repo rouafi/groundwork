@@ -126,6 +126,10 @@ def evals_command(
         os.environ[MODEL_ENV] = model
         if model == "claude":
             os.environ.setdefault(EMBEDDING_ENV, "voyage")
+        elif model == "replay":
+            os.environ[EMBEDDING_ENV] = "replay"  # a replay never reaches a paid API
+    if resume and model != "claude":
+        raise _fail("--resume re-records live: add --model claude (it costs money)")
     if record and resume:
         raise _fail("--record and --resume are exclusive: --resume keeps valid recordings")
     if record or resume:

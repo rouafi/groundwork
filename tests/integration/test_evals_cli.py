@@ -152,3 +152,19 @@ def test_unmet_thresholds_fail_unless_allowed_but_drift_always_fails(
 
     (world["evals"] / "report.md").write_text("edited by hand\n")
     assert _evals(world, "--check-report", "--allow-unmet-thresholds").exit_code == 1
+
+
+def test_a_replay_is_pinned_even_when_the_shell_asks_for_a_live_model(
+    world: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("GROUNDWORK_MODEL", "claude")
+    monkeypatch.setenv("GROUNDWORK_EMBEDDING", "voyage")
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    assert _evals(world, "--model", "replay").exit_code == 0
+
+
+def test_resume_needs_a_live_model_and_excludes_record(world: dict[str, Path]) -> None:
+    no_model = _evals(world, "--resume")
+    both = _evals(world, "--model", "claude", "--resume", "--record")
+    assert no_model.exit_code == 1 and "--model claude" in no_model.output
+    assert both.exit_code == 1 and "exclusive" in both.output
