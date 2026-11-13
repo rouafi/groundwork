@@ -25,7 +25,7 @@ All data in this repository is synthetic.
 make demo   # replays recorded runs: no API key, no network
 ```
 
-It shows, for each client, an email that waits for a person, one that is sent automatically (internal only), and one that is blocked, each with the reason.
+It shows, for each client, an email that waits for a person, one that is sent automatically (internal only), and one that is blocked, each with the reason. The 3-minute walkthrough script is in [docs/demo.md](docs/demo.md).
 
 ---
 
