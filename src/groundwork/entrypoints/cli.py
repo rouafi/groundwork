@@ -47,6 +47,7 @@ from groundwork.core.services.rules_check import rule_problems
 from groundwork.entrypoints.evals_cli import evals_command
 from groundwork.entrypoints.harness_cli import approvals_app, demo_command, harmonize_command
 from groundwork.entrypoints.mcp_server import create_server
+from groundwork.entrypoints.playbook_cli import new_pack_command
 from groundwork.entrypoints.reports import summary, write_run
 from groundwork.entrypoints.wiring import (
     CONTEXT_PROMPT,
@@ -59,6 +60,7 @@ from groundwork.entrypoints.wiring import (
 
 app = typer.Typer(no_args_is_help=True, help="groundwork: an FDE deployment kit")
 app.command("harmonize")(harmonize_command)
+app.command("new-pack")(new_pack_command)
 app.command("demo")(demo_command)
 app.command("evals")(evals_command)
 app.add_typer(approvals_app, name="approvals")
