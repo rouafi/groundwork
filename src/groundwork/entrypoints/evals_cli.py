@@ -98,6 +98,10 @@ def evals_command(
     ] = False,
     model: Annotated[str | None, typer.Option(help="claude runs live; default: replay.")] = None,
     record: Annotated[bool, typer.Option(help="Record model calls and embeddings.")] = False,
+    allow_unmet_thresholds: Annotated[
+        bool,
+        typer.Option(help="Report unmet thresholds without failing (drift still fails)."),
+    ] = False,
     resume: Annotated[
         bool,
         typer.Option(help="Like --record, but only for what has no valid recording yet."),
@@ -113,6 +117,8 @@ def evals_command(
     judge is uncalibrated, or `--check-report` finds the committed report out of date.
     `--model claude` is live and costs money; with `--record` the runs are recorded afresh,
     with `--resume` only the cases and calls with no valid recording are run live.
+    `--allow-unmet-thresholds` is for CI while a pack is below its thresholds: the report
+    drift still fails, the thresholds are only printed.
     """
     if (write_report or check_report) and pack:
         raise _fail("--write-report and --check-report need every pack: drop --pack")
@@ -153,7 +159,9 @@ def evals_command(
             raise typer.Exit(code=1)
     if failed:
         typer.echo(f"thresholds not met: {', '.join(failed)}", err=True)
-        raise typer.Exit(code=1)
+        if not allow_unmet_thresholds:
+            raise typer.Exit(code=1)
+        typer.echo("allowed by --allow-unmet-thresholds: see docs/evals.md", err=True)
 
 
 def _summary(result: PackResult) -> list[str]:

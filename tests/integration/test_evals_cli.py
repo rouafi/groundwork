@@ -136,3 +136,19 @@ def test_a_pack_with_no_golden_set_is_reported(tmp_path: Path) -> None:
     (tmp_path / "client_packs").mkdir()
     result = runner.invoke(app, ["evals", "--packs-dir", str(tmp_path / "client_packs")])
     assert result.exit_code == 1 and "no pack with a golden set" in result.output
+
+
+def test_unmet_thresholds_fail_unless_allowed_but_drift_always_fails(
+    world: dict[str, Path],
+) -> None:
+    (world["pack"] / "thresholds.yaml").write_text("tone_mean_min: 5.0\n")
+    assert _evals(world, "--write-report").exit_code == 1
+    assert (world["evals"] / "report.md").is_file()
+
+    strict = _evals(world, "--check-report")
+    allowed = _evals(world, "--check-report", "--allow-unmet-thresholds")
+    assert strict.exit_code == 1 and "thresholds not met: acme" in strict.output
+    assert allowed.exit_code == 0 and "allowed by --allow-unmet-thresholds" in allowed.output
+
+    (world["evals"] / "report.md").write_text("edited by hand\n")
+    assert _evals(world, "--check-report", "--allow-unmet-thresholds").exit_code == 1

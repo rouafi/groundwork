@@ -22,6 +22,7 @@ test-int:     ## Integration tests (no paid API)
 
 check: lint typecheck arch test test-int  ## Everything CI runs
 	uv run groundwork validate-packs
+	uv run groundwork evals --check-report --allow-unmet-thresholds
 
 demo:         ## Replay recorded runs, no API key needed
 	GROUNDWORK_MODEL=replay uv run groundwork demo
