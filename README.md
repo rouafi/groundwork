@@ -7,13 +7,79 @@
 
 <h2 align="center">Grounded AI on top of any SaaS, client after client.</h2>
 
-<p align="center">An FDE deployment kit: one reusable core, a client pack per client, a 5-day playbook to fill it.</p>
+<p align="center">A deployment kit: one reusable core, a pack per client, a 5-day playbook to fill it.</p>
 
-Most AI deployments restart from scratch at every client: business facts live in the CRM, the know-how lives in people's heads, there is no shared harness and no evals. POCs work once and never scale.
+## In 30 seconds
 
-This kit separates what never changes (the **core**), what is reusable per business domain (**domain packs**), and what is specific to each client (**client packs**). An FDE team ships a new client by filling a client pack through a 5-day playbook, not by writing new code.
+Companies want AI on top of the tools they already use (a CRM such as HubSpot, a billing tool, a help desk), but every project starts from zero: the facts are in the software, the know-how is in people's heads, and nobody checks what the AI says before it reaches a customer.
 
-> Demo use case: **email harmonization** on top of a CRM (HubSpot, Salesforce, Pipedrive...). Same core, two clients, same draft, two different compliant emails.
+This kit lets a team reuse most of the work from one client to the next and customize only the last part, through a **5-day playbook**. The demo rewrites sales emails on top of HubSpot-shaped data for two fictional clients, and **checks every email against the client's own facts and rules before anything is sent**: a wrong price is blocked, an email to a customer waits for a person to approve it.
+
+All data in this repository is synthetic.
+
+---
+
+## See it run
+
+```bash
+make demo   # replays recorded runs: no API key, no network
+```
+
+It shows, for each client, an email that waits for a person, one that is sent automatically (internal only), and one that is blocked (by a stand-in agent that lets a bad draft through, to show the checks hold when the model fails), each with the reason. The 3-minute walkthrough script is in [docs/demo.md](docs/demo.md).
+
+---
+
+## Results: two levels of checks before anything reaches a customer
+
+| Level | What | When |
+|---|---|---|
+| **1. Automated** | Facts vs CRM, rule violations, tone (LLM judge) on a golden set per client, replayed offline | Every commit (CI checks the report; thresholds are not enforced yet) |
+| **2. Human** | External emails go through an approval queue; every approval is recorded, and every rejection needs a reason | In production |
+
+<!-- results:start -->
+Results of the evals on each client's golden set, from recorded runs replayed offline (synthetic data). Generated from [`evals/report.md`](evals/report.md); never typed.
+
+| Pack | Cases | Result |
+|---|---|---|
+| acme | 20 | FAIL (rule_violations, tone_mean) |
+| beta | 20 | FAIL (fact_false_claims, rule_violations, tone_mean, routing_accuracy) |
+
+**acme**, before and after the agent:
+
+| | Raw draft | Harmonized |
+|---|---|---|
+| False claims | 8 | 0 |
+| Forbidden-pattern hits | 5 | 0 |
+| Tone, mean from 1 to 5 | 2.35 | 3.75 |
+
+**beta**, before and after the agent:
+
+| | Raw draft | Harmonized |
+|---|---|---|
+| False claims | 4 | 2 |
+| Forbidden-pattern hits | 5 | 1 |
+| Tone, mean from 1 to 5 | 2.00 | 3.10 |
+
+A pack ships only when every threshold passes. Packs marked FAIL are below at least one of theirs, and the report says which.
+<!-- results:end -->
+
+How the judge is calibrated, why a pack can miss its thresholds, and what the numbers do not prove: [docs/evals.md](docs/evals.md) and [ADR 0010](docs/adr/0010-evals-judge-calibration-replay.md).
+
+---
+
+## Playbook: a new client in 5 days
+
+Every step produces a **validated artifact** in `client_packs/<client>/`. The playbook is not a document next to the code: it is how the code gets its inputs.
+
+| Day | Step | Artifact | Exit criteria |
+|---|---|---|---|
+| 1 | **Needs collection**: use case, users, internal vs external, systems, success metric, risks | `discovery.yaml` | Sponsor signs off the use case and the metric |
+| 2 | **Facts**: connect the CRM, load its export | `config.yaml`, `fixtures/` | Fixtures load and agree with the domain schema |
+| 3 | **Know-how capture**: 3 to 5 expert interviews, extraction, human review | `interviews/`, `rules.yaml` | Every rule has provenance and scope |
+| 4 | **Golden set**: 20 cases built with the experts, thresholds agreed | `golden.jsonl`, `thresholds.yaml`, `rubric.md`, `judge_calibration.jsonl` | At least 20 cases, thresholds and calibration present |
+| 5 | **Go-live**: policies, rollout plan, monitoring | `policies.yaml`, `go_live.md` | Checklist ticked, level-1 evals pass the thresholds |
+
+`uv run groundwork new-pack <client>` builds the skeleton from [`playbook/`](playbook/) (discovery canvas, interview script, go-live checklist); `uv run groundwork validate-packs --pack <client> --stage dayN` says whether day N is done. The sign-off, rule approvals and go-live ticks stay with people. In Claude Code, the `client-onboarding` skill walks the days. Details: [docs/playbook.md](docs/playbook.md).
 
 ---
 
@@ -33,7 +99,9 @@ This kit separates what never changes (the **core**), what is reusable per busin
 
 ---
 
-## Two ontologies that talk
+## For engineers
+
+### Two ontologies that talk
 
 ```mermaid
 graph LR
@@ -55,9 +123,7 @@ graph LR
 - **Know-how** is extracted from expert interviews by Claude, reviewed by a human, and stored with its **provenance** (interview, quote) and **scope** (internal/external, segment, persona).
 - **The bridge** (Product, Segment, Persona) lets the agent ask: *"what can I say to this contact, and how?"*
 
----
-
-## How it runs
+### How it runs
 
 ```mermaid
 graph LR
@@ -74,9 +140,7 @@ graph LR
 - **Context sharing:** the same MCP server feeds the headless agent and Claude Desktop. Sales asks the ontology in Claude; the agent uses the exact same context.
 - **Traceable:** every output cites the ontology nodes it used.
 
----
-
-## Swap any SaaS
+### Swap any SaaS
 
 Every external system (CRM, email, vector store, model) sits behind a port. Each client pack picks its adapters in config:
 
@@ -91,9 +155,7 @@ domain: comms       # domain pack under domains/
 
 To add Salesforce: write one adapter in `adapters/crm/`, pass `tests/contracts/`, change one line of config.
 
----
-
-## Quickstart
+### Quickstart
 
 ```bash
 make demo   # replays recorded runs, no API key needed
@@ -112,36 +174,7 @@ uv run groundwork approvals approve <id> --pack acme   # records the answer and 
 
 With the default `replay`, only recorded cases run; `GROUNDWORK_MODEL=claude` (and `GROUNDWORK_EMBEDDING=voyage` for passages) runs live. The flow is in [docs/architecture.md](docs/architecture.md), the guarantees in [docs/security.md](docs/security.md).
 
----
-
-## Evals: two levels before anything reaches a customer
-
-| Level | What | When |
-|---|---|---|
-| **1. Automated** | Facts vs CRM, rule violations, tone (LLM judge) on a golden set per client, replayed offline | Every commit (CI checks the report; thresholds are not enforced yet) |
-| **2. Human** | External emails go through an approval queue; approval rate is tracked | In production |
-
-Results: see [`evals/report.md`](evals/report.md), generated from recorded runs of the real agent and judge, replayed offline (`make evals`, no key). On the synthetic data, the harmonized email beats the raw draft on every measure (acme: false claims 8 to 0, tone 2.35 to 3.75; beta: false claims 4 to 2, tone 2.00 to 3.10), but **neither pack meets its thresholds yet**: the context lacks a sender identity and a contract reference that the client's rules ask for. How the judge is calibrated, and what the numbers do not prove, is in [docs/evals.md](docs/evals.md) and [ADR 0010](docs/adr/0010-evals-judge-calibration-replay.md).
-
----
-
-## Playbook: a new client in 5 days
-
-Every step produces a **validated artifact** in `client_packs/<client>/`. The playbook is not a document next to the code: it is how the code gets its inputs.
-
-| Day | Step | Artifact | Exit criteria |
-|---|---|---|---|
-| 1 | **Needs collection**: use case, users, internal vs external, systems, success metric, risks | `discovery.yaml` | Sponsor signs off the use case and the metric |
-| 2 | **Facts**: connect the CRM, load its export | `config.yaml`, `fixtures/` | Fixtures load and agree with the domain schema |
-| 3 | **Know-how capture**: 3 to 5 expert interviews, extraction, human review | `interviews/`, `rules.yaml` | Every rule has provenance and scope |
-| 4 | **Golden set**: 20 cases built with the experts, thresholds agreed | `golden.jsonl`, `thresholds.yaml`, `rubric.md`, `judge_calibration.jsonl` | At least 20 cases, thresholds and calibration present |
-| 5 | **Go-live**: policies, rollout plan, monitoring | `policies.yaml`, `go_live.md` | Checklist ticked, level-1 evals pass the thresholds |
-
-`uv run groundwork new-pack <client>` builds the skeleton from [`playbook/`](playbook/) (discovery canvas, interview script, go-live checklist); `uv run groundwork validate-packs --pack <client> --stage dayN` says whether day N is done. The sign-off, rule approvals and go-live ticks stay with people. In Claude Code, the `client-onboarding` skill walks the days. Details: [docs/playbook.md](docs/playbook.md).
-
----
-
-## Repo layout
+### Repo layout
 
 ```
 src/groundwork/
@@ -156,15 +189,11 @@ tests/           unit, contracts, integration
 
 All data in this repo is synthetic.
 
----
+### Development
 
-## Development
+`make setup` then `make check`. To use a client's context from Claude Desktop, follow [`docs/mcp.md`](docs/mcp.md). Rules for humans and for Claude Code: [`CLAUDE.md`](CLAUDE.md) and [`docs/conventions.md`](docs/conventions.md). To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
 
-`make setup` then `make check`. To use a client's context from Claude Desktop, follow [`docs/mcp.md`](docs/mcp.md). Rules for humans and for Claude Code: [`CLAUDE.md`](CLAUDE.md) and [`docs/conventions.md`](docs/conventions.md).
-
----
-
-## Design decisions
+### Design decisions
 
 - **Client packs are data, not code.** That is what makes the 10th client cheaper than the 1st.
 - **Shared context through MCP.** One source of truth for every agent and every human using Claude.

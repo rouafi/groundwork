@@ -28,7 +28,7 @@ One PRD per pull request. A PRD is the contract between the plan and the code: C
 | [005](005-agent-harness.md) | Agent harness, policies and traces | `feat/agent-harness` | 001, 002, 003 | done |
 | [006](006-evals.md) | Evals, golden sets and report | `feat/evals` | 005 | partial: thresholds not met |
 | [007](007-playbook-skill.md) | Playbook and onboarding skill | `feat/playbook-skill` | 006 | done |
-| [008](008-delivery.md) | Delivery: README v2, demo, release | `docs/delivery` | 006 | todo |
+| [008](008-delivery.md) | Delivery: README v2, demo, release | `docs/delivery` | 006 | partial: capture, reader check and tag left to a person |
 
 ## Order and cut line
 Run in numeric order. If time runs short, cut in this order: 004 first (everything else works without it), then the optional parts of 007. Never cut `check_claims` (003), the policy engine (005) or the evals (006).

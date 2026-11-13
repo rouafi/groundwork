@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif">
+  <title>groundwork social preview</title>
+  <rect width="1280" height="640" fill="#F7F4EE"/>
+  <!-- The logo mark, scaled 4.5x: client rows, domain columns, the core underneath. -->
+  <g transform="translate(120 150) scale(4.5)">
+    <rect x="4" y="4" width="56" height="8" rx="3" fill="#B7791F"/>
+    <rect x="4" y="15" width="56" height="8" rx="3" fill="#B7791F"/>
+    <rect x="4" y="26" width="17" height="15" rx="3" fill="#2F7D6D"/>
+    <rect x="23.5" y="26" width="17" height="15" rx="3" fill="#2F7D6D"/>
+    <rect x="43" y="26" width="17" height="15" rx="3" fill="#2F7D6D"/>
+    <rect x="4" y="44" width="56" height="16" rx="4" fill="#1F3A5F"/>
+  </g>
+  <text x="440" y="270" font-size="96" font-weight="700" letter-spacing="-2" fill="#1A2230">groundwork</text>
+  <text x="440" y="340" font-size="38" fill="#1A2230">Grounded AI on top of any SaaS,</text>
+  <text x="440" y="390" font-size="38" fill="#1A2230">client after client.</text>
+  <text x="440" y="470" font-size="28" fill="#4A5568">A reusable core, a pack per client, a 5-day playbook.</text>
+  <text x="120" y="580" font-size="24" fill="#4A5568">Synthetic demo data. Checks before anything is sent.</text>
+</svg>

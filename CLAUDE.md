@@ -34,6 +34,7 @@ What it actually uses:
 - `make demo`: replay recorded runs, no API key; `make live` runs them with Claude and Voyage (needs `.env`)
 - `uv run groundwork harmonize | approvals | demo | index | extract-rules | validate-packs | evals | new-pack | mcp-serve`
 - `make evals`: replay the golden sets (strict); `uv run groundwork evals --model claude --resume` records only what is missing (paid)
+- `make readme-results`: rewrite the results block of the README from `evals/report.md` (never edit the block by hand; `make check` fails if it is stale)
 - `make up` / `make down`: API and MCP server via Docker Compose
 
 ## Read on demand (do not load everything)
