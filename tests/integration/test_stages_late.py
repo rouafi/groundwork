@@ -47,7 +47,8 @@ UNMET = {**MET, "tone_mean_min": 5.0, "fact_false_claims": 0}
 
 def _validate(packs: Path, stage: str, pack: str) -> Result:
     args = ["validate-packs", "--packs-dir", str(packs), "--domains-dir", str(REPO / "domains"),
-            "--traces-dir", str(REPO / "traces"), "--pack", pack, "--stage", stage]  # fmt: skip
+            "--traces-dir", str(REPO / "traces"), "--playbook-dir", str(REPO / "playbook"),
+            "--pack", pack, "--stage", stage]  # fmt: skip
     return runner.invoke(app, args)
 
 
@@ -212,3 +213,19 @@ def test_day5_writes_no_file_in_the_pack_or_in_traces(ready_pack: Path) -> None:
     _validate(ready_pack, "day5", "acme")
     assert snapshot(ready_pack) == packs_before
     assert snapshot(REPO / "traces") == traces_before
+
+
+def test_day5_reports_a_box_deleted_from_the_checklist(ready_pack: Path) -> None:
+    path = ready_pack / "acme" / "go_live.md"
+    path.write_text("# Go-live\n- [x] ok\n", encoding="utf-8")
+    result = _validate(ready_pack, "day5", "acme")
+    assert result.exit_code == 1
+    assert result.output.count("go_live.md: box missing") == 15
+    assert "box missing: There is a way to switch the assistant off" in result.output
+
+
+def test_day5_holds_a_box_a_client_added_to_the_same_rule(ready_pack: Path) -> None:
+    path = ready_pack / "acme" / "go_live.md"
+    path.write_text(path.read_text() + "- [ ] The legal team read the emails.\n", encoding="utf-8")
+    result = _validate(ready_pack, "day5", "acme")
+    assert result.exit_code == 1 and "not ticked: The legal team read the emails." in result.output

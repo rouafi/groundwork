@@ -46,6 +46,7 @@ from groundwork.entrypoints.wiring import EMBEDDING_ENV, MODEL_ENV, RECORD_ENV, 
 
 DISCOVERY_FILE = "discovery.yaml"
 GO_LIVE_FILE = "go_live.md"
+CHECKLIST_TEMPLATE = "go-live-checklist.md"
 MIN_INTERVIEWS = 3
 MIN_GOLDEN_CASES = 20
 CHECKBOX = re.compile(r"^\s*[-*] \[(?P<mark>[ xX])\]\s*(?P<text>.*)$")
@@ -60,7 +61,11 @@ class Stage(StrEnum):
 
 
 def stage_problems(
-    pack_dir: Path, stage: Stage, domains_dir: Path, traces_dir: Path = Path("traces")
+    pack_dir: Path,
+    stage: Stage,
+    domains_dir: Path,
+    traces_dir: Path = Path("traces"),
+    playbook_dir: Path = Path("playbook"),
 ) -> list[str]:
     """Every problem of days 1 to `stage`, each prefixed by its day.
 
@@ -69,7 +74,7 @@ def stage_problems(
     problems: list[str] = []
     for day in Stage:
         if day is Stage.day5:
-            found = _day5(pack_dir, domains_dir, traces_dir, measurable=not problems)
+            found = _day5(pack_dir, domains_dir, traces_dir, playbook_dir, measurable=not problems)
         else:
             found = _CHECKS[day](pack_dir, domains_dir)
         problems += [f"{day.value}: {p}" for p in found]
@@ -172,7 +177,9 @@ def _day4(pack_dir: Path, domains_dir: Path) -> list[str]:
     return problems
 
 
-def _day5(pack_dir: Path, domains_dir: Path, traces_dir: Path, measurable: bool) -> list[str]:
+def _day5(
+    pack_dir: Path, domains_dir: Path, traces_dir: Path, playbook_dir: Path, measurable: bool
+) -> list[str]:
     problems: list[str] = []
     try:
         if not (pack_dir / POLICIES_FILE).is_file():
@@ -181,25 +188,44 @@ def _day5(pack_dir: Path, domains_dir: Path, traces_dir: Path, measurable: bool)
             load_pack_policies(pack_dir)
     except PackError as exc:
         problems.append(exc.message)
-    problems += _checklist_problems(pack_dir / GO_LIVE_FILE)
+    problems += _checklist_problems(pack_dir / GO_LIVE_FILE, playbook_dir / CHECKLIST_TEMPLATE)
     if not measurable:
         return [*problems, "evals: not run: fix days 1 to 4 first"]
     return problems + _eval_problems(pack_dir, domains_dir, traces_dir)
 
 
-def _checklist_problems(path: Path) -> list[str]:
+def _checklist_problems(path: Path, template: Path) -> list[str]:
+    """Every box of the playbook's checklist must be in `go_live.md` and ticked.
+
+    A box deleted from the pack's copy counts as a box not ticked: the gate cannot be
+    passed by shortening the list. Boxes a client adds are held to the same rule.
+    """
     if not path.is_file():
         return [f"{GO_LIVE_FILE} not found (groundwork new-pack creates it)"]
-    boxes = [
-        m for line in path.read_text(encoding="utf-8").splitlines() if (m := CHECKBOX.match(line))
+    if not template.is_file():
+        return [f"{template}: playbook checklist not found: run from the repository root"]
+    expected = [text for _, text in _boxes(template)]
+    found = _boxes(path)
+    if not found:
+        return [f"{GO_LIVE_FILE}: no checklist box: copy {template}"]
+    ticked = {text for mark, text in found if mark != " "}
+    present = {text for _, text in found}
+    problems = [
+        f"{GO_LIVE_FILE}: box missing: {text} (copy it back from {template})"
+        for text in expected
+        if text not in present
     ]
-    if not boxes:
-        return [f"{GO_LIVE_FILE}: no checklist box: copy playbook/go-live-checklist.md"]
-    return [
-        f"{GO_LIVE_FILE}: not ticked: {m['text']} (a person ticks it after checking the point)"
-        for m in boxes
-        if m["mark"] == " "
+    problems += [
+        f"{GO_LIVE_FILE}: not ticked: {text} (a person ticks it after checking the point)"
+        for _, text in found
+        if text not in ticked
     ]
+    return problems
+
+
+def _boxes(path: Path) -> list[tuple[str, str]]:
+    lines = path.read_text(encoding="utf-8").splitlines()
+    return [(m["mark"], m["text"].strip()) for line in lines if (m := CHECKBOX.match(line))]
 
 
 def _eval_problems(pack_dir: Path, domains_dir: Path, traces_dir: Path) -> list[str]:

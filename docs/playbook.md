@@ -18,11 +18,11 @@ A stage is cumulative: `day3` also checks days 1 and 2. Each problem starts with
 | 5 | Go-live: policies, checklist ([template](../playbook/go-live-checklist.md)), recorded evals | `policies.yaml`, `go_live.md` | policies load, every box is ticked, and the evals pass their thresholds on replay |
 
 ## What only a person does
-No script and no assistant does these for you; a stage fails until they are recorded.
+No script and no assistant does these for you. Days 1, 3 and 5 refuse to pass until the sign-off, an approved rule and the ticks are recorded; day 4 checks the thresholds file exists, and the agreement with the sponsor is a box of the day-5 checklist.
 - **Day 1:** the sponsor signs off the use case and the metric (`status: signed_off`, `signed_off_by`).
 - **Day 3:** an expert reviews the proposals of `extract-rules` and approves each rule in `rules.yaml`.
 - **Day 4:** the experts and the sponsor agree the thresholds. A threshold is never lowered to pass.
-- **Day 5:** a person ticks each box of `go_live.md`, after checking the point.
+- **Day 5:** a person ticks each box of `go_live.md`, after checking the point. A box deleted from the copy is reported as missing, so the list cannot be shortened to pass.
 
 ## Notes
 - `extract-rules`, `index` and `evals --model claude --record` call paid APIs. Run them knowingly; the stage checks themselves never do (day 5 replays).

@@ -47,7 +47,7 @@ from groundwork.core.services.rules_check import rule_problems
 from groundwork.entrypoints.evals_cli import evals_command
 from groundwork.entrypoints.harness_cli import approvals_app, demo_command, harmonize_command
 from groundwork.entrypoints.mcp_server import create_server
-from groundwork.entrypoints.playbook_cli import new_pack_command
+from groundwork.entrypoints.playbook_cli import PLAYBOOK_DIR, new_pack_command
 from groundwork.entrypoints.reports import summary, write_run
 from groundwork.entrypoints.stages import Stage, stage_problems
 from groundwork.entrypoints.wiring import (
@@ -77,6 +77,7 @@ def validate_packs(
     packs_dir: Path = PACKS_DIR,
     domains_dir: Path = DOMAINS_DIR,
     traces_dir: Path = TRACES_DIR,
+    playbook_dir: Path = PLAYBOOK_DIR,
     pack: Annotated[str | None, typer.Option(help="Validate only this pack.")] = None,
     stage: Annotated[
         Stage | None,
@@ -95,7 +96,7 @@ def validate_packs(
         problems = (
             [
                 _located(pack_dir, p)
-                for p in stage_problems(pack_dir, stage, domains_dir, traces_dir)
+                for p in stage_problems(pack_dir, stage, domains_dir, traces_dir, playbook_dir)
             ]
             if stage
             else pack_problems(pack_dir, domains_dir)
