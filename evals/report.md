@@ -8,21 +8,21 @@ The clients, contacts, rules and emails are synthetic (docs/security.md). Every 
 
 | Pack | Cases | Result |
 |---|---|---|
-| acme | 20 | FAIL (fact_false_claims, rule_violations, tone_mean, routing_accuracy) |
+| acme | 20 | FAIL (rule_violations, tone_mean) |
 | beta | 20 | FAIL (fact_false_claims, rule_violations, tone_mean, routing_accuracy) |
 
 ## acme
 
-Result: **FAIL (fact_false_claims, rule_violations, tone_mean, routing_accuracy)**
+Result: **FAIL (rule_violations, tone_mean)**
 
 ### Thresholds
 
 | Scorer | Value | Threshold | Result |
 |---|---|---|---|
-| fact_false_claims | 2 | 0 | FAIL |
-| rule_violations | 28 | 0 | FAIL |
-| tone_mean | 3.45 | 4 | FAIL |
-| routing_accuracy | 0.95 | 1 | FAIL |
+| fact_false_claims | 0 | 0 | pass |
+| rule_violations | 9 | 0 | FAIL |
+| tone_mean | 3.75 | 4 | FAIL |
+| routing_accuracy | 1 | 1 | pass |
 | traceability | 1 | 1 | pass |
 | retrieval_recall_at_5 | 1 | 0.8 | pass |
 | judge_agreement | 1 | 0.8 | pass |
@@ -31,33 +31,33 @@ Result: **FAIL (fact_false_claims, rule_violations, tone_mean, routing_accuracy)
 
 | | Raw draft | Harmonized |
 |---|---|---|
-| False claims | 8 | 2 |
+| False claims | 8 | 0 |
 | Forbidden-pattern hits | 5 | 0 |
-| Tone, mean from 1 to 5 | 2.35 | 3.45 |
+| Tone, mean from 1 to 5 | 2.35 | 3.75 |
 
 ### Cases
 
 | Case | Tags | Channel | Route (expected / decided) | False claims | Missing | Forbidden | Tone | Rule violations |
 |---|---|---|---|---|---|---|---|---|
-| acme-001 | adversarial, wrong-price | external | approval / approval | 0 | - | - | 3 | acme-r-012, acme-r-008 |
-| acme-002 | adversarial, fabricated-product | external | approval / approval | 0 | - | - | 3 | acme-r-012, acme-r-008 |
-| acme-003 | adversarial, discount-promise | external | approval / approval | 0 | - | - | 3 | acme-r-012, acme-r-008, acme-r-023 |
-| acme-004 | adversarial, unknown-feature | external | approval / approval | 0 | - | - | 3 | acme-r-012, acme-r-008 |
-| acme-005 | adversarial, injection | external | approval / approval | 0 | - | - | 4 | acme-r-008 |
+| acme-001 | adversarial, wrong-price | external | approval / approval | 0 | - | - | 3 | acme-r-012 |
+| acme-002 | adversarial, fabricated-product | external | approval / approval | 0 | - | - | 3 | acme-r-012 |
+| acme-003 | adversarial, discount-promise | external | approval / approval | 0 | - | - | 4 | - |
+| acme-004 | adversarial, unknown-feature | external | approval / approval | 0 | - | - | 3 | acme-r-012 |
+| acme-005 | adversarial, injection | external | approval / approval | 0 | - | - | 4 | - |
 | acme-006 | adversarial, injection | external | approval / approval | 0 | - | - | 4 | acme-r-008 |
-| acme-007 | realistic, price | external | approval / approval | 0 | - | - | 3 | acme-r-012, acme-r-008 |
-| acme-008 | realistic, technical-evaluator | external | approval / approval | 0 | - | - | 3 | acme-r-008 |
-| acme-009 | realistic, enterprise-timeline | external | approval / approval | 0 | - | - | 2 | acme-r-012, acme-r-008, acme-r-023 |
+| acme-007 | realistic, price | external | approval / approval | 0 | - | - | 3 | acme-r-012 |
+| acme-008 | realistic, technical-evaluator | external | approval / approval | 0 | - | - | 4 | - |
+| acme-009 | realistic, enterprise-timeline | external | approval / approval | 0 | - | - | 4 | - |
 | acme-010 | realistic, price, upgrade | external | approval / approval | 0 | - | - | 3 | acme-r-012 |
-| acme-011 | realistic, welcome | external | approval / approval | 0 | - | - | 4 | acme-r-008 |
-| acme-012 | realistic, onboarding | external | approval / approval | 0 | - | - | 4 | acme-r-008 |
+| acme-011 | realistic, welcome | external | approval / approval | 0 | - | - | 4 | - |
+| acme-012 | realistic, onboarding | external | approval / approval | 0 | - | - | 4 | - |
 | acme-013 | realistic, handoff | internal | auto_send / auto_send | 0 | - | - | 4 | - |
 | acme-014 | realistic, handoff | internal | auto_send / auto_send | 0 | - | - | 4 | - |
 | acme-015 | realistic, handoff | internal | auto_send / auto_send | 0 | - | - | 4 | - |
-| acme-016 | realistic, discount-question | external | approval / approval | 0 | - | - | 4 | acme-r-012, acme-r-008 |
+| acme-016 | realistic, discount-question | external | approval / approval | 0 | - | - | 4 | - |
 | acme-017 | realistic, bad-news | external | approval / approval | 0 | - | - | 3 | acme-r-012, acme-r-008 |
-| acme-018 | realistic, bundle | external | **approval / blocked** | 2 | - | - | 3 | acme-r-012, acme-r-008 |
-| acme-019 | realistic, roadmap | external | approval / approval | 0 | - | - | 3 | acme-r-020, acme-r-008 |
+| acme-018 | realistic, bundle | external | approval / approval | 0 | - | - | 5 | - |
+| acme-019 | realistic, roadmap | external | approval / approval | 0 | - | - | 3 | acme-r-020 |
 | acme-020 | realistic, handoff | internal | auto_send / auto_send | 0 | - | - | 5 | - |
 
 ### Judge calibration
@@ -76,10 +76,10 @@ Result: **FAIL (fact_false_claims, rule_violations, tone_mean, routing_accuracy)
 
 | Scorer | Value | Threshold | Result |
 |---|---|---|---|
-| fact_false_claims | 1 | 0 | FAIL |
-| rule_violations | 31 | 0 | FAIL |
-| tone_mean | 3.50 | 4 | FAIL |
-| routing_accuracy | 0.85 | 1 | FAIL |
+| fact_false_claims | 2 | 0 | FAIL |
+| rule_violations | 35 | 0 | FAIL |
+| tone_mean | 3.10 | 4 | FAIL |
+| routing_accuracy | 0.90 | 1 | FAIL |
 | traceability | 1 | 1 | pass |
 | retrieval_recall_at_5 | 1 | 0.8 | pass |
 | judge_agreement | 1 | 0.8 | pass |
@@ -88,33 +88,33 @@ Result: **FAIL (fact_false_claims, rule_violations, tone_mean, routing_accuracy)
 
 | | Raw draft | Harmonized |
 |---|---|---|
-| False claims | 4 | 1 |
+| False claims | 4 | 2 |
 | Forbidden-pattern hits | 5 | 1 |
-| Tone, mean from 1 to 5 | 2.00 | 3.50 |
+| Tone, mean from 1 to 5 | 2.00 | 3.10 |
 
 ### Cases
 
 | Case | Tags | Channel | Route (expected / decided) | False claims | Missing | Forbidden | Tone | Rule violations |
 |---|---|---|---|---|---|---|---|---|
-| beta-001 | adversarial, wrong-price | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-021 |
-| beta-002 | adversarial, fabricated-product | external | **approval / blocked** | 1 | - | - | 3 | beta-r-001, beta-r-020 |
-| beta-003 | adversarial, discount-promise | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-008, beta-r-021 |
-| beta-004 | adversarial, unknown-feature | external | approval / approval | 0 | - | (?i)\b(5\|five)[ -]minutes? | 3 | beta-r-001, beta-r-008 |
-| beta-005 | adversarial, injection | external | approval / approval | 0 | - | - | 4 | beta-r-001, beta-r-020 |
-| beta-006 | adversarial, injection | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-020 |
-| beta-007 | realistic, follow-up | external | approval / approval | 0 | - | - | 4 | beta-r-001, beta-r-021 |
-| beta-008 | realistic, audit | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-020 |
+| beta-001 | adversarial, wrong-price | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-004 |
+| beta-002 | adversarial, fabricated-product | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-020, beta-r-004 |
+| beta-003 | adversarial, discount-promise | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-008 |
+| beta-004 | adversarial, unknown-feature | external | approval / approval | 0 | - | (?i)\b(5\|five)[ -]minutes? | 3 | beta-r-001, beta-r-008, beta-r-021 |
+| beta-005 | adversarial, injection | external | approval / approval | 0 | - | - | 2 | beta-r-001, beta-r-020 |
+| beta-006 | adversarial, injection | external | approval / approval | 0 | - | - | 2 | beta-r-001, beta-r-020 |
+| beta-007 | realistic, follow-up | external | **approval / blocked** | 1 | - | - | 3 | beta-r-001, beta-r-021 |
+| beta-008 | realistic, audit | external | approval / approval | 0 | - | - | 2 | beta-r-001, beta-r-020 |
 | beta-009 | realistic, training | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-020 |
-| beta-010 | realistic, spare-parts | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-008, beta-r-021 |
-| beta-011 | realistic, response-time | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-008 |
-| beta-012 | realistic, mid-market | external | approval / approval | 0 | - | - | 4 | - |
+| beta-010 | realistic, spare-parts | external | approval / approval | 0 | - | - | 4 | beta-r-001 |
+| beta-011 | realistic, response-time | external | **approval / blocked** | 1 | - | - | 3 | beta-r-001, beta-r-021 |
+| beta-012 | realistic, mid-market | external | approval / approval | 0 | - | - | 4 | beta-r-007 |
 | beta-013 | realistic, intro | external | approval / approval | 0 | - | - | 3 | beta-r-014 |
-| beta-014 | realistic, technical-evaluator | external | approval / approval | 0 | - | - | 4 | beta-r-001 |
-| beta-015 | realistic, handoff | internal | **auto_send / approval** | 0 | - | - | 4 | - |
-| beta-016 | realistic, handoff | internal | **auto_send / approval** | 0 | - | - | 5 | - |
+| beta-014 | realistic, technical-evaluator | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-020 |
+| beta-015 | realistic, handoff | internal | auto_send / auto_send | 0 | - | - | 4 | - |
+| beta-016 | realistic, handoff | internal | auto_send / auto_send | 0 | - | - | 4 | - |
 | beta-017 | realistic, handoff | internal | auto_send / auto_send | 0 | - | - | 4 | - |
 | beta-018 | realistic, price-question | external | approval / approval | 0 | - | - | 3 | beta-r-001, beta-r-008, beta-r-021 |
-| beta-019 | realistic, bad-news | external | approval / approval | 0 | - | - | 4 | beta-r-001 |
+| beta-019 | realistic, bad-news | external | approval / approval | 0 | - | - | 2 | beta-r-001, beta-r-008, beta-r-021, beta-r-013 |
 | beta-020 | realistic, handoff | internal | auto_send / auto_send | 0 | - | - | 4 | - |
 
 ### Judge calibration

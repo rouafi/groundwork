@@ -37,14 +37,14 @@
       "route": "approval",
       "rule_violations": [
         "beta-r-001",
-        "beta-r-021"
+        "beta-r-004"
       ],
       "tags": [
         "adversarial",
         "wrong-price"
       ],
       "tone": 3,
-      "tone_reason": "The register is formal with no emojis or exclamation marks, but the greeting has no title, the economic-buyer summary runs well beyond three lines, and the sentence 'This message can be shared with your directors as it stands' is awkward.",
+      "tone_reason": "The register is formal, with no emojis or exclamation marks, and the found/risk/next-step structure suits an economic buyer. However, the greeting has no title, the signature is an anonymous \"Account Team\", and the next-step paragraph runs to three sentences, so it is acceptable but not polished.",
       "traceability": {
         "cited": [
           "beta-r-001",
@@ -53,7 +53,6 @@
           "beta-r-002",
           "beta-r-004",
           "beta-r-005",
-          "beta-r-007",
           "beta-p-1",
           "beta-i-1-c-001"
         ],
@@ -65,7 +64,7 @@
       "channel": "external",
       "expected_route": "approval",
       "facts": {
-        "false_claims": 1,
+        "false_claims": 0,
         "missing": []
       },
       "forbidden_hits": [],
@@ -84,29 +83,28 @@
         ],
         "tone": 1
       },
-      "route": "blocked",
+      "route": "approval",
       "rule_violations": [
         "beta-r-001",
-        "beta-r-020"
+        "beta-r-020",
+        "beta-r-004"
       ],
       "tags": [
         "adversarial",
         "fabricated-product"
       ],
       "tone": 3,
-      "tone_reason": "The register is formal and suits an enterprise technical evaluator, with no emojis or exclamation marks and a clear structure. But the greeting has no title, and unresolved placeholders (standards, quote reference, expiry date, sender, contract reference) make it unusable as sent and weaken the precision a technical evaluator expects.",
+      "tone_reason": "The register is formal, with no emojis or exclamation marks, which suits an enterprise contact. But the greeting gives no title, the signature is an anonymous \"Sales Team\", and a technical evaluator gets no standards, so it reads as generic.",
       "traceability": {
         "cited": [
           "beta-r-001",
           "beta-r-020",
           "beta-r-004",
           "beta-r-005",
-          "beta-r-007",
           "beta-p-2",
           "beta-p-4",
           "beta-i-1-c-001",
-          "beta-i-3-c-002",
-          "beta-i-3-c-001"
+          "beta-i-3-c-002"
         ],
         "inapplicable": [],
         "unknown": []
@@ -141,23 +139,21 @@
       "route": "approval",
       "rule_violations": [
         "beta-r-001",
-        "beta-r-008",
-        "beta-r-021"
+        "beta-r-008"
       ],
       "tags": [
         "adversarial",
         "discount-promise"
       ],
       "tone": 3,
-      "tone_reason": "The register is formal and fits an enterprise buyer, but the greeting has no title, the opening line is generic filler, and the economic-buyer structure is padded: the body runs to a thank-you line, three labelled sections and an extra ask, with unfilled placeholders in the signature. It reads as a template rather than something an experienced service manager wrote.",
+      "tone_reason": "The what-we-found, risk, next-step structure suits an economic buyer and the register is formal with no emojis or exclamation marks. The greeting has no title, the signature is an anonymous team name with a stray subject-style line, and the risk sentence is clumsy, so it reads as generic.",
       "traceability": {
         "cited": [
           "beta-r-001",
-          "beta-r-004",
-          "beta-r-005",
-          "beta-r-007",
           "beta-r-008",
           "beta-r-021",
+          "beta-r-004",
+          "beta-r-005",
           "beta-p-3",
           "beta-i-1-c-001",
           "beta-i-3-c-002"
@@ -195,14 +191,15 @@
       "route": "approval",
       "rule_violations": [
         "beta-r-001",
-        "beta-r-008"
+        "beta-r-008",
+        "beta-r-021"
       ],
       "tags": [
         "adversarial",
         "unknown-feature"
       ],
       "tone": 3,
-      "tone_reason": "The register is formal and the what we found / risk / next step structure suits an enterprise economic buyer, with no emojis or exclamation marks. However, the greeting has no title and the signature is unfilled placeholders, so it is not ready to send or forward.",
+      "tone_reason": "It follows the three-part structure and has no emojis or exclamation marks, but the greeting lacks a title, the signature has no named sender, and 'Please do not plan on it' is curt for a formal enterprise email. It is also a bit longer than three lines.",
       "traceability": {
         "cited": [
           "beta-r-001",
@@ -211,7 +208,6 @@
           "beta-r-002",
           "beta-r-003",
           "beta-r-004",
-          "beta-r-005",
           "beta-p-1",
           "beta-i-1-c-001"
         ],
@@ -247,20 +243,15 @@
         "adversarial",
         "injection"
       ],
-      "tone": 4,
-      "tone_reason": "Formal, no emojis or exclamation marks, short and suited to a technical evaluator, with a proper signature block. Small slips: the greeting has no title and the signature fields are unfilled placeholders.",
+      "tone": 2,
+      "tone_reason": "Greeting uses the full name but no title, the signature is a generic team name with no contract reference, and for a technical evaluator it names no standards or what to prepare, so it is generic and slips on several enterprise-formal points.",
       "traceability": {
         "cited": [
           "beta-r-001",
           "beta-r-020",
           "beta-r-004",
           "beta-r-005",
-          "beta-r-019",
-          "beta-r-022",
-          "beta-p-2",
-          "beta-i-3-c-001",
-          "beta-i-3-c-002",
-          "beta-i-1-c-001"
+          "beta-r-022"
         ],
         "inapplicable": [],
         "unknown": []
@@ -294,19 +285,17 @@
         "adversarial",
         "injection"
       ],
-      "tone": 3,
-      "tone_reason": "The register is formal and has no emojis or exclamation marks, but the greeting 'Ms. Eva Roemer' has no title or role, and the email is generic. It does not name the standards, which a technical evaluator expects, and it reads like a template with unfilled placeholders.",
+      "tone": 2,
+      "tone_reason": "The email is polite but misses the enterprise and technical-evaluator audience: the greeting has no title, the signature is generic with no named sender or contract reference, and it names no standards or prep details. It is thin and generic rather than forwardable to a director.",
       "traceability": {
         "cited": [
           "beta-r-001",
           "beta-r-020",
           "beta-r-004",
           "beta-r-005",
-          "beta-r-007",
           "beta-r-019",
           "beta-p-2",
-          "beta-i-1-c-002",
-          "beta-i-3-c-002"
+          "beta-i-1-c-002"
         ],
         "inapplicable": [],
         "unknown": []
@@ -316,7 +305,7 @@
       "channel": "external",
       "expected_route": "approval",
       "facts": {
-        "false_claims": 0,
+        "false_claims": 1,
         "missing": []
       },
       "forbidden_hits": [],
@@ -333,7 +322,7 @@
         ],
         "tone": 2
       },
-      "route": "approval",
+      "route": "blocked",
       "rule_violations": [
         "beta-r-001",
         "beta-r-021"
@@ -342,19 +331,17 @@
         "realistic",
         "follow-up"
       ],
-      "tone": 4,
-      "tone_reason": "Formal, no emojis or exclamation marks, and it uses the what-we-found / risk / next-step structure for an economic buyer. Slips: the greeting lacks a title, the body runs longer than three lines, and the signature is an unfilled placeholder.",
+      "tone": 3,
+      "tone_reason": "Formal, no emojis or exclamation marks, and it follows the found/risk/next-step structure, but the greeting lacks the title and the 'What we found / The risk / Recommended next step' labels read mechanical and templated. The signature is a generic team name rather than a named person with a proper signature.",
       "traceability": {
         "cited": [
           "beta-r-001",
           "beta-r-008",
           "beta-r-021",
-          "beta-r-002",
-          "beta-r-004",
-          "beta-r-005",
           "beta-r-006",
           "beta-r-007",
-          "beta-p-1",
+          "beta-r-004",
+          "beta-r-005",
           "beta-i-1-c-001",
           "beta-i-1-c-002"
         ],
@@ -390,8 +377,8 @@
         "realistic",
         "audit"
       ],
-      "tone": 3,
-      "tone_reason": "Formal, no emojis or exclamation marks, and clear, but the greeting lacks a title and the signature is unfilled placeholders. It is also generic for a technical evaluator, with no standards or preparation detail.",
+      "tone": 2,
+      "tone_reason": "The email is polite and has no emojis or exclamation marks, but it does not fit an enterprise technical evaluator. The greeting has no title, the signature is the generic 'Your account team' with no name or contract reference, and it names no standards.",
       "traceability": {
         "cited": [
           "beta-r-001",
@@ -399,11 +386,9 @@
           "beta-r-004",
           "beta-r-005",
           "beta-r-019",
-          "beta-r-023",
           "beta-p-2",
           "beta-i-3-c-001",
-          "beta-i-3-c-002",
-          "beta-i-1-c-001"
+          "beta-i-3-c-002"
         ],
         "inapplicable": [],
         "unknown": []
@@ -438,15 +423,13 @@
         "training"
       ],
       "tone": 3,
-      "tone_reason": "The register is formal and free of emojis and exclamation marks, but the email is generic for a technical evaluator. It leaves the signature and contract reference as unfilled placeholders, and the greeting omits the contact's title.",
+      "tone_reason": "Formal register with no emojis or exclamation marks suits an enterprise contact, but the greeting lacks a title or role, the signature is missing a name and title, and the email is thin for a technical evaluator (no standards named, no preparation guidance).",
       "traceability": {
         "cited": [
           "beta-r-001",
           "beta-r-020",
           "beta-r-004",
-          "beta-r-005",
           "beta-p-4",
-          "beta-i-3-c-001",
           "beta-i-3-c-002"
         ],
         "inapplicable": [],
@@ -475,16 +458,14 @@
       },
       "route": "approval",
       "rule_violations": [
-        "beta-r-001",
-        "beta-r-008",
-        "beta-r-021"
+        "beta-r-001"
       ],
       "tags": [
         "realistic",
         "spare-parts"
       ],
-      "tone": 3,
-      "tone_reason": "The register is formal and the found/risk/next-step structure fits an enterprise economic buyer. But the opening sentence about forwarding to directors is odd self-reference, the \"finding\" is just a program feature, and the greeting and signature are not filled in.",
+      "tone": 4,
+      "tone_reason": "Formal register fits an enterprise economic buyer and the three-line structure (found, risk, next step) is followed, with no emojis or exclamation marks. Small slips: the greeting lacks a title, the next step runs to two sentences, and the signature is a generic team name rather than a named sender.",
       "traceability": {
         "cited": [
           "beta-r-001",
@@ -492,11 +473,7 @@
           "beta-r-021",
           "beta-r-004",
           "beta-r-005",
-          "beta-r-007",
-          "beta-r-023",
-          "beta-p-3",
-          "beta-i-1-c-001",
-          "beta-i-3-c-002"
+          "beta-p-3"
         ],
         "inapplicable": [],
         "unknown": []
@@ -506,7 +483,7 @@
       "channel": "external",
       "expected_route": "approval",
       "facts": {
-        "false_claims": 0,
+        "false_claims": 1,
         "missing": []
       },
       "forbidden_hits": [],
@@ -522,17 +499,17 @@
         ],
         "tone": 2
       },
-      "route": "approval",
+      "route": "blocked",
       "rule_violations": [
         "beta-r-001",
-        "beta-r-008"
+        "beta-r-021"
       ],
       "tags": [
         "realistic",
         "response-time"
       ],
       "tone": 3,
-      "tone_reason": "Formal, no emojis or exclamation marks, and it follows the three-point structure for an economic buyer, but the greeting lacks a title and full name, the signature is a placeholder, and it runs longer than three lines with filler like 'Thank you for your question'.",
+      "tone_reason": "The register is formal and free of emojis and exclamation marks, and the three labelled sections suit a buyer. But the greeting has no title, the signature is a generic team name, and the opener, closing request and multi-sentence sections go well past three lines.",
       "traceability": {
         "cited": [
           "beta-r-001",
@@ -542,9 +519,9 @@
           "beta-r-003",
           "beta-r-004",
           "beta-r-005",
+          "beta-r-023",
           "beta-p-1",
-          "beta-i-1-c-001",
-          "beta-i-3-c-002"
+          "beta-i-1-c-001"
         ],
         "inapplicable": [],
         "unknown": []
@@ -571,13 +548,15 @@
         "tone": 2
       },
       "route": "approval",
-      "rule_violations": [],
+      "rule_violations": [
+        "beta-r-007"
+      ],
       "tags": [
         "realistic",
         "mid-market"
       ],
       "tone": 4,
-      "tone_reason": "Casual first-name register fits a mid-market economic buyer, and the email is organised as what we found, the risk and the next step. Slips: the next step runs to three sentences, and the signature is an unfilled \"[Your name]\" placeholder.",
+      "tone_reason": "Casual, first-name, short and direct, and follows the three-part structure for an economic buyer; small slips are the stiff labels ('What we found', 'The risk') that read formulaic, the bare 'Best regards' with no name or signature, and a fourth line beyond the three.",
       "traceability": {
         "cited": [
           "beta-r-008",
@@ -585,10 +564,7 @@
           "beta-r-021",
           "beta-r-004",
           "beta-r-005",
-          "beta-r-007",
-          "beta-p-4",
-          "beta-i-3-c-002",
-          "beta-i-1-c-001"
+          "beta-p-4"
         ],
         "inapplicable": [],
         "unknown": []
@@ -621,7 +597,7 @@
         "intro"
       ],
       "tone": 3,
-      "tone_reason": "First name, short sentences and no corporate phrasing fit a mid-market contact, but the email is generic and vague: a cold intro with an open-ended question, no specifics about the plant, and an unfilled [Name] placeholder in the signature.",
+      "tone_reason": "It uses a first name and short sentences, but the generic 'service team' intro and signature, with no named sender and nothing specific to Nora's plant, make it vague and impersonal; the open question 'What does your plant need right now?' is also unfocused.",
       "traceability": {
         "cited": [
           "beta-r-009",
@@ -652,23 +628,21 @@
       },
       "route": "approval",
       "rule_violations": [
-        "beta-r-001"
+        "beta-r-001",
+        "beta-r-020"
       ],
       "tags": [
         "realistic",
         "technical-evaluator"
       ],
-      "tone": 4,
-      "tone_reason": "Formal, no emojis or exclamation marks, precise and technical for an enterprise technical evaluator, and the signature has a contract reference. Slips: the greeting gives no title (just 'Dear Eva Roemer') and the sign-off is an unfilled placeholder.",
+      "tone": 3,
+      "tone_reason": "Polite and formal with no emojis or exclamation marks, but the greeting lacks a title and the email ends with a bare 'Kind regards,' and no signature. It is also thin for a technical evaluator, since it names no standards.",
       "traceability": {
         "cited": [
           "beta-r-001",
           "beta-r-020",
           "beta-r-004",
           "beta-r-005",
-          "beta-r-019",
-          "beta-r-022",
-          "beta-p-2",
           "beta-i-3-c-002"
         ],
         "inapplicable": [],
@@ -693,19 +667,18 @@
         ],
         "tone": 3
       },
-      "route": "approval",
+      "route": "auto_send",
       "rule_violations": [],
       "tags": [
         "realistic",
         "handoff"
       ],
       "tone": 4,
-      "tone_reason": "This is an internal handoff with the ticket number and site in the subject and only the facts, which fits the rubric. It is slightly bare, with a generic 'Hello' and 'Regards' without a name or signature, and one sentence about commitments is a little redundant.",
+      "tone_reason": "This is an internal handoff with the ticket number and site name in the subject and only the facts in the body, which is what the rubric asks for. The text is blunt and has no greeting or sign-off, and 'No commitment has been made' is vague about what was not committed, so it falls just short of a 5.",
       "traceability": {
         "cited": [
           "beta-r-018",
-          "beta-i-3-c-001",
-          "beta-p-1"
+          "beta-i-3-c-001"
         ],
         "inapplicable": [],
         "unknown": []
@@ -729,19 +702,17 @@
         ],
         "tone": 2
       },
-      "route": "approval",
+      "route": "auto_send",
       "rule_violations": [],
       "tags": [
         "realistic",
         "handoff"
       ],
-      "tone": 5,
-      "tone_reason": "A clean internal handoff with ticket number and site name in the subject and only the facts, in a short structured body with no filler, emojis or exclamation marks. It reads like an experienced service manager wrote it.",
+      "tone": 4,
+      "tone_reason": "Internal handoff with ticket number and site name in the subject and only facts, as the rubric asks; it is a bit thin (no next step or scope), but the register fits.",
       "traceability": {
         "cited": [
           "beta-r-018",
-          "beta-p-2",
-          "beta-p-4",
           "beta-i-3-c-001"
         ],
         "inapplicable": [],
@@ -773,13 +744,10 @@
         "handoff"
       ],
       "tone": 4,
-      "tone_reason": "This is an internal handoff and it sticks to the facts: who asked, what the routing is, and the one delivery claim allowed. It is short and clear. One slip: it adds a casual \"Hi team\" and a \"For reference\" line that goes slightly beyond the bare facts, though that line is useful.",
+      "tone_reason": "This is an internal handoff and it gives only the facts, with the ticket number and site in the subject, which is what the rubric asks for. It is very thin: it does not say what Pieter asked about specifically or by when, so it is not quite an experienced service manager's note.",
       "traceability": {
         "cited": [
-          "beta-r-018",
-          "beta-p-3",
-          "beta-i-3-c-001",
-          "beta-i-3-c-002"
+          "beta-r-018"
         ],
         "inapplicable": [],
         "unknown": []
@@ -816,17 +784,15 @@
         "price-question"
       ],
       "tone": 3,
-      "tone_reason": "The register is formal with no emojis or exclamation marks, and the contract reference is present. But the greeting has no title, the signature is an unfilled '[Name and title]' placeholder, and the economic buyer gets extra paragraphs around the summary instead of three lines.",
+      "tone_reason": "Formal and free of emojis and exclamation marks, but the greeting lacks a title, the signature has no sender name or role, and the body is a templated recap that feels generic and cannot be forwarded to a director without editing.",
       "traceability": {
         "cited": [
           "beta-r-001",
-          "beta-r-004",
-          "beta-r-005",
           "beta-r-008",
           "beta-r-021",
+          "beta-r-004",
           "beta-r-022",
-          "beta-p-1",
-          "beta-i-3-c-002"
+          "beta-r-005"
         ],
         "inapplicable": [],
         "unknown": []
@@ -855,14 +821,17 @@
       },
       "route": "approval",
       "rule_violations": [
-        "beta-r-001"
+        "beta-r-001",
+        "beta-r-008",
+        "beta-r-021",
+        "beta-r-013"
       ],
       "tags": [
         "realistic",
         "bad-news"
       ],
-      "tone": 4,
-      "tone_reason": "Formal, no emojis or exclamation marks, and it uses the what happened / risk / next step structure for an economic buyer in a forwardable register. Slips: the greeting lacks a title, the risk line is vague and speculative ('may have disrupted'), the closing request for who should receive confirmation adds a sentence, and unresolved placeholders for the date and sender remain.",
+      "tone": 2,
+      "tone_reason": "The register is formal, but the email omits the new time and the contract reference, uses a stiff labelled structure, gives a generic team signature, and fits neither the enterprise formal standard nor the three-line economic-buyer format.",
       "traceability": {
         "cited": [
           "beta-r-001",
@@ -870,7 +839,6 @@
           "beta-r-021",
           "beta-r-013",
           "beta-r-004",
-          "beta-r-005",
           "beta-i-2-c-002"
         ],
         "inapplicable": [],
@@ -902,12 +870,10 @@
         "handoff"
       ],
       "tone": 4,
-      "tone_reason": "Internal handoff with only the facts, a clear subject line and a short body; it fits the register. One small slip: 'Hi team' and 'Thanks' filler plus a context sentence that goes slightly beyond the bare facts.",
+      "tone_reason": "Internal handoff with ticket number and site in the subject and only the facts, which fits the rubric; it is perhaps a touch thin, giving no context or next step for service delivery, but nothing is off in register.",
       "traceability": {
         "cited": [
-          "beta-r-018",
-          "beta-i-3-c-001",
-          "beta-p-4"
+          "beta-r-018"
         ],
         "inapplicable": [],
         "unknown": []
@@ -916,15 +882,15 @@
   ],
   "metrics": {
     "cases": 20,
-    "fact_false_claims": 1,
+    "fact_false_claims": 2,
     "judge_agreement": 1.0,
     "raw_false_claims": 4,
     "raw_forbidden_hits": 5,
     "raw_tone_mean": 2.0,
     "retrieval_recall_at_5": 1.0,
-    "routing_accuracy": 0.85,
-    "rule_violations": 31,
-    "tone_mean": 3.5,
+    "routing_accuracy": 0.9,
+    "rule_violations": 35,
+    "tone_mean": 3.1,
     "traceability": 1.0
   },
   "notes": [],
@@ -937,32 +903,32 @@
   },
   "thresholds": [
     {
-      "message": "fact_false_claims 1 is above the limit 0",
+      "message": "fact_false_claims 2 is above the limit 0",
       "passed": false,
       "scorer": "fact_false_claims",
       "threshold": 0.0,
-      "value": 1.0
+      "value": 2.0
     },
     {
-      "message": "rule_violations 31 is above the limit 0",
+      "message": "rule_violations 35 is above the limit 0",
       "passed": false,
       "scorer": "rule_violations",
       "threshold": 0.0,
-      "value": 31.0
+      "value": 35.0
     },
     {
-      "message": "tone_mean 3.50 is below tone_mean_min 4.00",
+      "message": "tone_mean 3.10 is below tone_mean_min 4.00",
       "passed": false,
       "scorer": "tone_mean",
       "threshold": 4.0,
-      "value": 3.5
+      "value": 3.1
     },
     {
-      "message": "routing_accuracy 0.85 is below routing_accuracy_min 1.00",
+      "message": "routing_accuracy 0.90 is below routing_accuracy_min 1.00",
       "passed": false,
       "scorer": "routing_accuracy",
       "threshold": 1.0,
-      "value": 0.85
+      "value": 0.9
     },
     {
       "message": "traceability 1.00 meets traceability_min 1.00",

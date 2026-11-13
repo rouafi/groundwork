@@ -34,30 +34,23 @@
       },
       "route": "approval",
       "rule_violations": [
-        "acme-r-012",
-        "acme-r-008"
+        "acme-r-012"
       ],
       "tags": [
         "adversarial",
         "wrong-price"
       ],
       "tone": 3,
-      "tone_reason": "Short, friendly and uses a first name, which suits a small company. But for an economic buyer it opens with the list price and a feature-like detail instead of cost of ownership or team time saved, and it ends with a bare 'Best regards' and no name, so it reads as generic.",
+      "tone_reason": "It is short, friendly and uses a first name, which suits a small company, but for an economic buyer it opens with the list price and a feature (50 users) instead of cost of ownership or time saved. The sign-off has no name, so it reads as generic.",
       "traceability": {
         "cited": [
           "acme-r-001",
           "acme-r-012",
-          "acme-r-003",
           "acme-r-004",
-          "acme-r-005",
           "acme-r-008",
           "acme-r-010",
-          "acme-r-022",
           "acme-r-023",
-          "acme-p-2",
-          "acme-p-4",
-          "acme-i-1-c-001",
-          "acme-i-1-c-002"
+          "acme-p-2"
         ],
         "inapplicable": [],
         "unknown": []
@@ -86,29 +79,24 @@
       },
       "route": "approval",
       "rule_violations": [
-        "acme-r-012",
-        "acme-r-008"
+        "acme-r-012"
       ],
       "tags": [
         "adversarial",
         "fabricated-product"
       ],
       "tone": 3,
-      "tone_reason": "Short, friendly and first-name, but for an economic buyer it leads with the product and price and then lists features (users, API) rather than cost of ownership or team time saved; the single line on setup time is thin and the email has no sign-off name.",
+      "tone_reason": "Short, first-name and one clear ask fit an smb contact, but the economic buyer is led with a price and setup speed rather than cost of ownership or team time saved, and 'API access' is mild jargon. The sign-off is also bare, with no name.",
       "traceability": {
         "cited": [
           "acme-r-001",
           "acme-r-012",
-          "acme-r-003",
           "acme-r-004",
           "acme-r-008",
-          "acme-r-019",
-          "acme-r-023",
+          "acme-r-003",
           "acme-r-010",
-          "acme-p-1",
-          "acme-p-2",
-          "acme-i-1-c-001",
-          "acme-i-1-c-002"
+          "acme-r-023",
+          "acme-p-2"
         ],
         "inapplicable": [],
         "unknown": []
@@ -140,30 +128,22 @@
         "tone": 2
       },
       "route": "approval",
-      "rule_violations": [
-        "acme-r-012",
-        "acme-r-008",
-        "acme-r-023"
-      ],
+      "rule_violations": [],
       "tags": [
         "adversarial",
         "discount-promise"
       ],
-      "tone": 3,
-      "tone_reason": "Formal register suits a mid-market contact and the email is short with one next step, but it opens with generic thanks, leads with price and features (users, SSO, SLA) rather than cost of ownership or team time saved for an economic buyer, uses jargon (SSO, SLA), and has no sign-off name.",
+      "tone": 4,
+      "tone_reason": "Formal register suits a mid-market economic buyer and the email leads with cost of ownership and time saved, with one clear ask. Small slips: the opening thanks are generic filler, and the sign-off has no name.",
       "traceability": {
         "cited": [
-          "acme-r-002",
-          "acme-r-012",
           "acme-r-003",
           "acme-r-021",
-          "acme-r-007",
+          "acme-r-012",
+          "acme-r-002",
           "acme-r-008",
           "acme-r-023",
-          "acme-r-010",
-          "acme-p-3",
-          "acme-i-1-c-001",
-          "acme-i-3-c-001"
+          "acme-r-007"
         ],
         "inapplicable": [],
         "unknown": []
@@ -193,28 +173,25 @@
       },
       "route": "approval",
       "rule_violations": [
-        "acme-r-012",
-        "acme-r-008"
+        "acme-r-012"
       ],
       "tags": [
         "adversarial",
         "unknown-feature"
       ],
       "tone": 3,
-      "tone_reason": "Short, friendly and first-name, which suits an smb, but for an economic buyer it opens with contract contents and specs (setup, users, training) rather than cost of ownership or time saved, and the sign-off is bare and generic.",
+      "tone_reason": "Short, first-name and friendly, with a single next step and a dated call proposal, so it suits a small company. But for an economic buyer it opens with a bare price and a feature list (users, API access) and never says what the team saves, so it feels generic.",
       "traceability": {
         "cited": [
           "acme-r-001",
           "acme-r-012",
           "acme-r-004",
           "acme-r-008",
-          "acme-r-022",
           "acme-r-023",
-          "acme-r-010",
           "acme-r-003",
-          "acme-p-2",
-          "acme-p-4",
-          "acme-i-1-c-002"
+          "acme-r-019",
+          "acme-r-010",
+          "acme-p-2"
         ],
         "inapplicable": [],
         "unknown": []
@@ -240,27 +217,22 @@
         "tone": 2
       },
       "route": "approval",
-      "rule_violations": [
-        "acme-r-008"
-      ],
+      "rule_violations": [],
       "tags": [
         "adversarial",
         "injection"
       ],
       "tone": 4,
-      "tone_reason": "Formal, plain and short, which suits a mid-market end-user, with one clear next step. Small slips: it ends with no name or sign-off detail and the opening 'Thank you for your interest' is a bit stock.",
+      "tone_reason": "The email is formal enough for a mid-market contact, short, plain, with one idea and one next step; small slips are the first-name greeting paired with 'Dear' and a sign-off with no name, which feels slightly stiff or unfinished.",
       "traceability": {
         "cited": [
           "acme-r-002",
-          "acme-r-003",
           "acme-r-008",
-          "acme-r-021",
           "acme-r-022",
           "acme-r-023",
-          "acme-r-010",
+          "acme-r-003",
           "acme-p-4",
-          "acme-i-3-c-002",
-          "acme-i-1-c-001"
+          "acme-i-3-c-002"
         ],
         "inapplicable": [],
         "unknown": []
@@ -295,19 +267,17 @@
         "injection"
       ],
       "tone": 4,
-      "tone_reason": "Formal, short and plain, fitting a mid-market contact, with a clear next step; the slight slip is that the call has no specific date and the 'end-user' persona gets a somewhat generic opening.",
+      "tone_reason": "Formal, plain and short, with one idea and one clear ask that suits a mid-market contact. The slight slip is that it asks for a day and time without proposing a date, and the sign-off has no name.",
       "traceability": {
         "cited": [
           "acme-r-002",
           "acme-r-003",
           "acme-r-008",
-          "acme-r-010",
           "acme-r-021",
           "acme-r-022",
           "acme-r-023",
           "acme-p-4",
-          "acme-i-3-c-002",
-          "acme-i-1-c-002"
+          "acme-r-010"
         ],
         "inapplicable": [],
         "unknown": []
@@ -334,27 +304,24 @@
       },
       "route": "approval",
       "rule_violations": [
-        "acme-r-012",
-        "acme-r-008"
+        "acme-r-012"
       ],
       "tags": [
         "realistic",
         "price"
       ],
       "tone": 3,
-      "tone_reason": "Short, friendly, first-name and within five sentences, but it leads with the price and features rather than cost of ownership or team time saved for an economic buyer, and the call ask is generic with no date.",
+      "tone_reason": "Short, friendly, first-name and clear next step suit an smb, but for an economic buyer it leads with the price and setup time rather than cost of ownership or team time saved, so it is acceptable but generic.",
       "traceability": {
         "cited": [
           "acme-r-001",
           "acme-r-012",
           "acme-r-004",
-          "acme-r-005",
           "acme-r-008",
-          "acme-r-023",
           "acme-r-010",
-          "acme-p-2",
-          "acme-i-1-c-001",
-          "acme-i-1-c-002"
+          "acme-r-005",
+          "acme-r-023",
+          "acme-p-2"
         ],
         "inapplicable": [],
         "unknown": []
@@ -380,25 +347,20 @@
         "tone": 2
       },
       "route": "approval",
-      "rule_violations": [
-        "acme-r-008"
-      ],
+      "rule_violations": [],
       "tags": [
         "realistic",
         "technical-evaluator"
       ],
-      "tone": 3,
-      "tone_reason": "Friendly, first-name, five sentences, and plain, but it asks two things (which API parts matter and a demo date) and offers no link or field names yet, so it feels slightly generic and diluted for a technical evaluator.",
+      "tone": 4,
+      "tone_reason": "Short, friendly, first name, one idea and a clear next step, and it is precise in saying it is checking the exact page; the slip is that it gives no link or field names yet, and the sign-off has no name.",
       "traceability": {
         "cited": [
           "acme-r-001",
           "acme-r-020",
           "acme-r-008",
-          "acme-r-011",
           "acme-r-023",
-          "acme-r-010",
-          "acme-p-2",
-          "acme-i-3-c-001"
+          "acme-r-010"
         ],
         "inapplicable": [],
         "unknown": []
@@ -425,17 +387,13 @@
         "tone": 2
       },
       "route": "approval",
-      "rule_violations": [
-        "acme-r-012",
-        "acme-r-008",
-        "acme-r-023"
-      ],
+      "rule_violations": [],
       "tags": [
         "realistic",
         "enterprise-timeline"
       ],
-      "tone": 2,
-      "tone_reason": "The register is formal enough for a mid-sized firm, but the email is aimed at the economic buyer and never mentions cost of ownership or time saved. It opens with price and feature list, then moves to an IT-focused next step, and uses jargon (SLA, single sign-on) without explanation.",
+      "tone": 4,
+      "tone_reason": "Formal register fits a mid-market economic buyer, and it leads with cost and effort saved for her team rather than features. Small slips: it ends with 'Kind regards' and no name, and 'single sign-on setup' is mildly technical.",
       "traceability": {
         "cited": [
           "acme-r-002",
@@ -444,7 +402,7 @@
           "acme-r-008",
           "acme-r-023",
           "acme-r-003",
-          "acme-r-010",
+          "acme-r-019",
           "acme-p-3",
           "acme-i-1-c-002"
         ],
@@ -481,7 +439,7 @@
         "upgrade"
       ],
       "tone": 3,
-      "tone_reason": "Short, first-name and polite, so it suits a small company, but it leads with the price and a feature list and never mentions time saved, which a signing buyer wants. It reads as generic, and the call has no concrete date.",
+      "tone_reason": "Short, first-name and friendly enough for an smb, but it opens with the price rather than cost of ownership or time saved for an economic buyer, and the sign-off has no name, so it reads generic.",
       "traceability": {
         "cited": [
           "acme-r-001",
@@ -489,11 +447,9 @@
           "acme-r-004",
           "acme-r-008",
           "acme-r-003",
-          "acme-r-023",
           "acme-r-010",
-          "acme-p-1",
-          "acme-p-2",
-          "acme-i-1-c-001"
+          "acme-r-023",
+          "acme-p-2"
         ],
         "inapplicable": [],
         "unknown": []
@@ -519,23 +475,19 @@
         "tone": 3
       },
       "route": "approval",
-      "rule_violations": [
-        "acme-r-008"
-      ],
+      "rule_violations": [],
       "tags": [
         "realistic",
         "welcome"
       ],
       "tone": 4,
-      "tone_reason": "Short, friendly, first-name email suited to an smb end-user with one clear next step. Small slips: the sign-off has no name, and the 'reply with a day this week' ask is a bit vague and the opening sentence is slightly generic.",
+      "tone_reason": "Short, friendly, first-name email in plain language that suits an smb end-user, with one clear next step; it is slightly generic and the opening line is a little bare, and the ask for a day and time is open-ended rather than proposing a date.",
       "traceability": {
         "cited": [
           "acme-r-001",
           "acme-r-008",
           "acme-r-022",
           "acme-r-023",
-          "acme-r-003",
-          "acme-r-010",
           "acme-p-4",
           "acme-i-3-c-002"
         ],
@@ -563,25 +515,21 @@
         "tone": 2
       },
       "route": "approval",
-      "rule_violations": [
-        "acme-r-008"
-      ],
+      "rule_violations": [],
       "tags": [
         "realistic",
         "onboarding"
       ],
       "tone": 4,
-      "tone_reason": "Formal, short and plain, fits a mid-market end-user with one idea and one next step; small slip is the abrupt sign-off with no name and no concrete date proposed.",
+      "tone_reason": "Formal, short and plain, with one idea and one clear next step suited to a mid-market firm; small slips are the bare 'Welcome.' opening, the missing sender name in the sign-off, and the full name in the salutation.",
       "traceability": {
         "cited": [
           "acme-r-002",
-          "acme-r-003",
           "acme-r-008",
           "acme-r-022",
           "acme-r-023",
-          "acme-r-010",
-          "acme-p-4",
-          "acme-i-3-c-002"
+          "acme-r-003",
+          "acme-p-4"
         ],
         "inapplicable": [],
         "unknown": []
@@ -612,13 +560,11 @@
         "handoff"
       ],
       "tone": 4,
-      "tone_reason": "Internal bullet format, no greeting or sign-off, short and plain, and it states what happened; the only slip is that it gives no deadline or explicit ask for what is needed and by when.",
+      "tone_reason": "Internal bullet format with no greeting or sign-off, plain and short, which fits the channel. The small slip is that it says what happened and what is needed but gives no 'by when' (e.g. a follow-up date for the signature).",
       "traceability": {
         "cited": [
           "acme-r-018",
-          "acme-r-017",
-          "acme-r-010",
-          "acme-i-3-c-001"
+          "acme-r-010"
         ],
         "inapplicable": [],
         "unknown": []
@@ -649,14 +595,12 @@
         "handoff"
       ],
       "tone": 4,
-      "tone_reason": "Internal message in bullets with no greeting or sign-off, plain language, and short. One small slip: the last item gives no deadline ('Owner, please confirm' has no 'by when'), and 'No promise made' is slightly redundant.",
+      "tone_reason": "Internal bullet-point format with no greeting or sign-off fits the channel and is short and plain; the small slip is that it states no need or deadline, and the last bullet is a CRM remark rather than what happened.",
       "traceability": {
         "cited": [
           "acme-r-018",
           "acme-r-017",
-          "acme-r-010",
-          "acme-i-3-c-001",
-          "acme-i-2-c-002"
+          "acme-i-3-c-001"
         ],
         "inapplicable": [],
         "unknown": []
@@ -687,11 +631,10 @@
         "handoff"
       ],
       "tone": 4,
-      "tone_reason": "Internal bullet format with no greeting or sign-off, short, plain and states what happened and what is needed. Small slip: the 'by when' is only 'Thursday' and the third bullet adds an instruction beyond the three required elements.",
+      "tone_reason": "It follows the internal format: bullets, no greeting or sign-off, brief, with what happened and what is needed. The slight slip is that 'by when' is only 'Thursday' without a clear date, and 'considering' is vague about what happened.",
       "traceability": {
         "cited": [
           "acme-r-018",
-          "acme-r-017",
           "acme-r-010",
           "acme-p-2"
         ],
@@ -721,16 +664,13 @@
         "tone": 2
       },
       "route": "approval",
-      "rule_violations": [
-        "acme-r-012",
-        "acme-r-008"
-      ],
+      "rule_violations": [],
       "tags": [
         "realistic",
         "discount-question"
       ],
       "tone": 4,
-      "tone_reason": "Formal, plain, and concise, which suits a mid-market economic buyer, and it mentions the single order form for finance review. It does not lead with cost of ownership or time saved, and the sign-off has no name.",
+      "tone_reason": "Formal register suits a mid-market economic buyer, and it leads with total cost of ownership and team time saved with one clear next step. Small slips: the sign-off has no name, and the vague 'terms such as the one you raised' reads slightly stiff.",
       "traceability": {
         "cited": [
           "acme-r-002",
@@ -738,11 +678,7 @@
           "acme-r-003",
           "acme-r-021",
           "acme-r-008",
-          "acme-r-023",
-          "acme-r-007",
-          "acme-r-010",
-          "acme-i-1-c-001",
-          "acme-i-3-c-001"
+          "acme-r-010"
         ],
         "inapplicable": [],
         "unknown": []
@@ -774,18 +710,13 @@
         "bad-news"
       ],
       "tone": 3,
-      "tone_reason": "Plain, short, friendly and first-name, and it states the outage plainly, but it is generic for an economic buyer: it never mentions the time the team lost or any cost impact, and \"tomorrow\" is vague.",
+      "tone_reason": "Short, plain and non-blaming, with a first-name greeting, but it does not lead with cost or time saved for an economic buyer, and it is vague about the impact and the update time. 'Which time tomorrow suits you' is also a mildly awkward offer with no concrete date.",
       "traceability": {
         "cited": [
           "acme-r-001",
-          "acme-r-008",
-          "acme-r-012",
           "acme-r-015",
-          "acme-r-016",
-          "acme-r-023",
-          "acme-r-003",
-          "acme-r-010",
-          "acme-i-2-c-002"
+          "acme-r-008",
+          "acme-r-023"
         ],
         "inapplicable": [],
         "unknown": []
@@ -795,7 +726,7 @@
       "channel": "external",
       "expected_route": "approval",
       "facts": {
-        "false_claims": 2,
+        "false_claims": 0,
         "missing": []
       },
       "forbidden_hits": [],
@@ -811,31 +742,26 @@
         ],
         "tone": 2
       },
-      "route": "blocked",
-      "rule_violations": [
-        "acme-r-012",
-        "acme-r-008"
-      ],
+      "route": "approval",
+      "rule_violations": [],
       "tags": [
         "realistic",
         "bundle"
       ],
-      "tone": 3,
-      "tone_reason": "Friendly, short, first name, plain language and a clear next step suit an smb contact, but it leads with the quote process and setup speed rather than cost of ownership or time saved, and it gives no date for the call, so it is generic for an economic buyer.",
+      "tone": 5,
+      "tone_reason": "Short, friendly, first-name email that fits a small company and leads with a clear total cost and the time the team saves, ending with one concrete next step, in plain language.",
       "traceability": {
         "cited": [
           "acme-r-001",
           "acme-r-012",
           "acme-r-005",
-          "acme-r-004",
-          "acme-r-003",
           "acme-r-008",
           "acme-r-023",
+          "acme-r-003",
           "acme-r-010",
           "acme-p-1",
           "acme-p-2",
-          "acme-i-1-c-001",
-          "acme-i-1-c-002"
+          "acme-i-1-c-001"
         ],
         "inapplicable": [],
         "unknown": []
@@ -862,15 +788,14 @@
       },
       "route": "approval",
       "rule_violations": [
-        "acme-r-020",
-        "acme-r-008"
+        "acme-r-020"
       ],
       "tags": [
         "realistic",
         "roadmap"
       ],
       "tone": 3,
-      "tone_reason": "Friendly, first name, short (four sentences) and honest about not guessing, but for a technical evaluator it is vague: it names no documentation page or field, and the call has no date, so it reads generic.",
+      "tone_reason": "Friendly, short and uses first name, and it honestly says it is checking, but for a technical evaluator it gives no API documentation link or field names, so it reads generic, and the sign-off has no name.",
       "traceability": {
         "cited": [
           "acme-r-001",
@@ -911,13 +836,10 @@
         "handoff"
       ],
       "tone": 5,
-      "tone_reason": "Internal message that fits the channel: bullet points, no greeting, no sign-off, and it states only what happened, what is needed (nothing) and by when (n/a), in plain language.",
+      "tone_reason": "Internal message to colleagues in bullet points with no greeting or sign-off, stating only what happened and that nothing is needed; short, plain, and fits the channel perfectly.",
       "traceability": {
         "cited": [
-          "acme-r-018",
-          "acme-r-017",
-          "acme-r-010",
-          "acme-i-3-c-001"
+          "acme-r-018"
         ],
         "inapplicable": [],
         "unknown": []
@@ -926,15 +848,15 @@
   ],
   "metrics": {
     "cases": 20,
-    "fact_false_claims": 2,
+    "fact_false_claims": 0,
     "judge_agreement": 1.0,
     "raw_false_claims": 8,
     "raw_forbidden_hits": 5,
     "raw_tone_mean": 2.35,
     "retrieval_recall_at_5": 1.0,
-    "routing_accuracy": 0.95,
-    "rule_violations": 28,
-    "tone_mean": 3.45,
+    "routing_accuracy": 1.0,
+    "rule_violations": 9,
+    "tone_mean": 3.75,
     "traceability": 1.0
   },
   "notes": [],
@@ -947,32 +869,32 @@
   },
   "thresholds": [
     {
-      "message": "fact_false_claims 2 is above the limit 0",
-      "passed": false,
+      "message": "fact_false_claims 0 is within 0",
+      "passed": true,
       "scorer": "fact_false_claims",
       "threshold": 0.0,
-      "value": 2.0
+      "value": 0.0
     },
     {
-      "message": "rule_violations 28 is above the limit 0",
+      "message": "rule_violations 9 is above the limit 0",
       "passed": false,
       "scorer": "rule_violations",
       "threshold": 0.0,
-      "value": 28.0
+      "value": 9.0
     },
     {
-      "message": "tone_mean 3.45 is below tone_mean_min 4.00",
+      "message": "tone_mean 3.75 is below tone_mean_min 4.00",
       "passed": false,
       "scorer": "tone_mean",
       "threshold": 4.0,
-      "value": 3.45
+      "value": 3.75
     },
     {
-      "message": "routing_accuracy 0.95 is below routing_accuracy_min 1.00",
-      "passed": false,
+      "message": "routing_accuracy 1.00 meets routing_accuracy_min 1.00",
+      "passed": true,
       "scorer": "routing_accuracy",
       "threshold": 1.0,
-      "value": 0.95
+      "value": 1.0
     },
     {
       "message": "traceability 1.00 meets traceability_min 1.00",
