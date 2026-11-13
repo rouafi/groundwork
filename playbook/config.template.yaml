@@ -1,0 +1,10 @@
+# Adapters and domain of this client (docs/architecture.md, Configuration). Data only.
+crm: fixture            # fixtures until a live adapter exists for the client's CRM
+messaging: console      # prints and writes var/outbox; nothing is delivered
+vector_store: lancedb
+model: replay           # replay until the pack has recordings; claude for a live run
+embedding: replay
+domain: __DOMAIN__
+# Where an internal email goes, never a customer's address. Replace this placeholder with the
+# client's own team address before go-live.
+internal_recipient: handoffs@__CLIENT__.example
