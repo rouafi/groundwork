@@ -1,0 +1,9 @@
+# What this client's pack must reach to ship (docs/evals.md). Counts are maxima, `_min` values
+# are minima. Below a threshold the evals fail and the pack does not ship.
+fact_false_claims: 0            # false claims plus required strings missing, over the golden set
+rule_violations: 0              # forbidden patterns hit plus rules the judge marks violated
+tone_mean_min: 4.0              # mean tone from 1 to 5 against rubric.md
+routing_accuracy_min: 1.0       # the harness decided the expected route on every case
+traceability_min: 1.0           # every cited node exists and every cited rule applies
+retrieval_recall_at_5_min: 0.8  # right passage in the top 5, on retrieval.jsonl
+judge_agreement_min: 0.8        # judge within one point of the human labels
