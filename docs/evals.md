@@ -49,7 +49,7 @@ Two of beta's false claims are a claim-check effect, not missing data: `beta-007
 Next steps, for a client: put the sender and the contract reference in the context pack, decide which rules an email cannot show (the judge may mark them `not_applicable`), then re-record. Retrieval recall@5 is 1.0 but the packs have 6 chunks each, so it shows the method, not production quality.
 
 ## Level 2: human, in production
-External emails go through the approval queue. Recorded today: every approval and every rejection, with its reason (`approvals approve`, `approvals reject`). Approval rate and edit size are not computed yet. Every rejection becomes a new golden case. Gating internal auto-send on these evals is a follow-up: until it exists, `auto_send` stays a policy a pack can turn off (docs/security.md).
+External emails go through the approval queue. Recorded today: every approval, and every rejection with its required reason (`approvals approve`, `approvals reject`). Approval rate and edit size are not computed yet. Every rejection becomes a new golden case. Gating internal auto-send on these evals is a follow-up: until it exists, `auto_send` stays a policy a pack can turn off (docs/security.md).
 
 ## Honesty rules
 - Data is synthetic, and the README says so.

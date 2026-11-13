@@ -34,7 +34,7 @@ It shows, for each client, an email that waits for a person, one that is sent au
 | Level | What | When |
 |---|---|---|
 | **1. Automated** | Facts vs CRM, rule violations, tone (LLM judge) on a golden set per client, replayed offline | Every commit (CI checks the report; thresholds are not enforced yet) |
-| **2. Human** | External emails go through an approval queue; every approval and rejection is recorded with its reason | In production |
+| **2. Human** | External emails go through an approval queue; every approval is recorded, and every rejection needs a reason | In production |
 
 <!-- results:start -->
 Results of the evals on each client's golden set, from recorded runs replayed offline (synthetic data). Generated from [`evals/report.md`](evals/report.md); never typed.
