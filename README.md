@@ -191,7 +191,7 @@ All data in this repo is synthetic.
 
 ### Development
 
-`make setup` then `make check`. To use a client's context from Claude Desktop, follow [`docs/mcp.md`](docs/mcp.md). Rules for humans and for Claude Code: [`CLAUDE.md`](CLAUDE.md) and [`docs/conventions.md`](docs/conventions.md).
+`make setup` then `make check`. To use a client's context from Claude Desktop, follow [`docs/mcp.md`](docs/mcp.md). Rules for humans and for Claude Code: [`CLAUDE.md`](CLAUDE.md) and [`docs/conventions.md`](docs/conventions.md). To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
 
 ### Design decisions
 
