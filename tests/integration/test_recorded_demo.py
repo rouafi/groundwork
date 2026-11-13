@@ -41,7 +41,7 @@ def test_replaying_the_demo_changes_no_recorded_file() -> None:
 @pytest.mark.parametrize("pack", ["acme", "beta"])
 def test_every_recorded_trace_ends_in_a_decision_and_holds_no_secret(pack: str) -> None:
     traces = sorted((TRACES / pack).glob("*.jsonl"))
-    assert len(traces) == 3
+    assert len(traces) >= 3  # the demo traces, plus the ones recorded by the evals
     for path in traces:
         text = path.read_text(encoding="utf-8")
         events = [json.loads(line) for line in text.splitlines()]
