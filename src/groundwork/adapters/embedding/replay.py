@@ -6,6 +6,7 @@ is the sha256 of the model id, the input type and the text, so what one writes t
 other reads, and editing a text or changing the model invalidates the recording.
 """
 
+import contextlib
 import json
 from collections.abc import Sequence
 from pathlib import Path
@@ -58,15 +59,33 @@ class ReplayEmbedding:
 
 
 class RecordingEmbedding:
-    """Serve from `inner` and record every vector, for later replay."""
+    """Serve from `inner` and record every vector, for later replay.
 
-    def __init__(self, inner: EmbeddingPort, recordings: EmbeddingRecordings, model: str) -> None:
+    With `reuse`, a text that already has a recording is not embedded again.
+    """
+
+    def __init__(
+        self,
+        inner: EmbeddingPort,
+        recordings: EmbeddingRecordings,
+        model: str,
+        reuse: bool = False,
+    ) -> None:
         self._inner = inner
         self._recordings = recordings
         self._model = model
+        self._reuse = reuse
 
     def embed(self, texts: Sequence[str], input_type: InputType) -> list[list[float]]:
-        vectors = self._inner.embed(texts, input_type)
-        for text, vector in zip(texts, vectors, strict=True):
-            self._recordings.save(self._model, input_type, text, vector)
-        return vectors
+        known: dict[int, list[float]] = {}
+        if self._reuse:
+            for i, text in enumerate(texts):
+                with contextlib.suppress(EmbeddingMissError):
+                    known[i] = self._recordings.read(embedding_key(self._model, input_type, text))
+        missing = [i for i in range(len(texts)) if i not in known]
+        if missing:
+            fresh = self._inner.embed([texts[i] for i in missing], input_type)
+            for i, vector in zip(missing, fresh, strict=True):
+                self._recordings.save(self._model, input_type, texts[i], vector)
+                known[i] = vector
+        return [known[i] for i in range(len(texts))]

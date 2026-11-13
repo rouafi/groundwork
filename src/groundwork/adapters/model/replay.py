@@ -5,7 +5,7 @@
 back to a live call. Both build the key the same way, so what one writes the other reads.
 """
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import Any
 
 from pydantic import BaseModel
@@ -16,6 +16,7 @@ from groundwork.adapters.model.recording import (
     call_key,
     request_payload,
 )
+from groundwork.core.domain.errors import ReplayMissError
 from groundwork.core.domain.knowhow import Usage
 from groundwork.core.ports.model import Answer, CitedStatement, ModelPort, Tier
 
@@ -72,18 +73,42 @@ class ReplayModel:
 
 
 class RecordingModel:
-    """A ModelPort that delegates to `inner` and records every call it serves."""
+    """A ModelPort that delegates to `inner` and records every call it serves.
+
+    With `reuse`, a call that already has a recording is served from it and only the
+    missing ones go live: a resumed recording does not pay twice for the same call.
+    """
 
     def __init__(
-        self, inner: ModelPort, recordings: Recordings, specs: Mapping[str, ModelSpec]
+        self,
+        inner: ModelPort,
+        recordings: Recordings,
+        specs: Mapping[str, ModelSpec],
+        reuse: bool = False,
     ) -> None:
         self._inner = inner
         self._recordings = recordings
         self._specs = specs
+        self._replay = ReplayModel(recordings, specs) if reuse else None
+
+    def _reused[T](self, serve: Callable[[ModelPort], Answer[T]]) -> Answer[T] | None:
+        if self._replay is None:
+            return None
+        try:
+            return serve(self._replay)
+        except ReplayMissError:
+            return None
 
     def complete_structured[S: BaseModel](
         self, *, tier: Tier, system: str, user: str, schema: type[S], document: str | None = None
     ) -> Answer[S]:
+        reused = self._reused(
+            lambda m: m.complete_structured(
+                tier=tier, system=system, user=user, schema=schema, document=document
+            )
+        )
+        if reused is not None:
+            return reused
         answer = self._inner.complete_structured(
             tier=tier, system=system, user=user, schema=schema, document=document
         )
@@ -96,6 +121,11 @@ class RecordingModel:
     def complete_text(
         self, *, tier: Tier, system: str, user: str, document: str | None = None
     ) -> Answer[str]:
+        reused = self._reused(
+            lambda m: m.complete_text(tier=tier, system=system, user=user, document=document)
+        )
+        if reused is not None:
+            return reused
         answer = self._inner.complete_text(tier=tier, system=system, user=user, document=document)
         self._save(
             "complete_text", tier, _text_inputs(system, user, document), answer, answer.value
@@ -105,6 +135,11 @@ class RecordingModel:
     def cite(
         self, *, tier: Tier, system: str, instruction: str, document: str
     ) -> Answer[tuple[CitedStatement, ...]]:
+        reused = self._reused(
+            lambda m: m.cite(tier=tier, system=system, instruction=instruction, document=document)
+        )
+        if reused is not None:
+            return reused
         answer = self._inner.cite(
             tier=tier, system=system, instruction=instruction, document=document
         )

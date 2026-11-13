@@ -100,3 +100,15 @@ class TraceStaleError(AgentError):
             "re-record it with GROUNDWORK_MODEL=claude GROUNDWORK_RECORD=1 "
             "(run with uv run --env-file .env), then commit traces/."
         )
+
+
+class UncalibratedJudgeError(GroundworkError):
+    """The judge disagrees with the human labels too often for its scores to count."""
+
+    def __init__(self, agreement: float, minimum: float, agree: int, total: int) -> None:
+        self.agreement = agreement
+        super().__init__(
+            f"uncalibrated judge: it agrees with the human labels on {agree} of {total} cases "
+            f"within one point ({agreement:.2f}), below judge_agreement_min {minimum:.2f}. "
+            "Fix the rubric, never the labels."
+        )

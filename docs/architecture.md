@@ -5,7 +5,7 @@
 |---|---|---|---|
 | Domain | `src/groundwork/core/domain` | Contact, Deal, Product, Rule, EmailDraft... | nothing |
 | Ports | `src/groundwork/core/ports` | Interfaces to the outside world | domain |
-| Services | `src/groundwork/core/services` | Pack loading, integrity check, rule extraction workflow, context assembly, rule applicability, claim checks, retrieval, the harmonization flow (context pack, policy engine, approvals); later evals runner | domain, ports |
+| Services | `src/groundwork/core/services` | Pack loading, integrity check, rule extraction workflow, context assembly, rule applicability, claim checks, retrieval, the harmonization flow (context pack, policy engine, approvals), the evals (scorers, judge, runner, report) | domain, ports |
 | Adapters (driven) | `src/groundwork/adapters` | HubSpot, LanceDB, Voyage, Claude, replay, console messaging, file approval | ports, vendor SDKs |
 | Entrypoints (driving) | `src/groundwork/entrypoints` | CLI, HTTP API, MCP server; wire adapters into services | everything |
 | Domain packs | `domains/<domain>` | Ontology schema, skills, prompts, eval scorers | data only |

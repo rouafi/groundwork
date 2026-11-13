@@ -83,3 +83,17 @@ def test_the_pack_config_selects_the_vector_store(name: str, kind: type) -> None
 def test_an_unknown_vector_store_lists_the_valid_ones() -> None:
     with pytest.raises(PackError, match=r"unknown vector_store 'faiss' \(valid: lancedb, memory\)"):
         build_store(PACK, CONFIG.model_copy(update={"vector_store": "faiss"}))
+
+
+def test_resume_makes_the_recording_model_reuse_what_is_recorded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key-not-real")
+    resumed = build_model(
+        PACK, CONFIG, tmp_path, env={"GROUNDWORK_MODEL": "claude", "GROUNDWORK_RECORD": "resume"}
+    )
+    fresh = build_model(
+        PACK, CONFIG, tmp_path, env={"GROUNDWORK_MODEL": "claude", "GROUNDWORK_RECORD": "1"}
+    )
+    assert isinstance(resumed, RecordingModel) and resumed._replay is not None
+    assert isinstance(fresh, RecordingModel) and fresh._replay is None

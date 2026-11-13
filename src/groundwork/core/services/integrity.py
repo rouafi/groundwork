@@ -8,6 +8,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from groundwork.core.domain.domain_pack import DomainPack
+from groundwork.core.domain.evals import GoldenCase
 from groundwork.core.domain.harmonize import DemoCase
 from groundwork.core.ports.crm import CrmPort
 
@@ -84,6 +85,29 @@ def _outside(
 ) -> IntegrityIssue:
     problem = f"has {field} {value!r}, not in the domain vocabulary ({', '.join(allowed)})"
     return IntegrityIssue(kind, id, problem)
+
+
+def golden_case_problems(
+    cases: Sequence[GoldenCase],
+    crm: CrmPort,
+    has_thresholds: bool,
+    has_rubric: bool,
+    has_calibration: bool = True,
+) -> list[str]:
+    """Every golden case whose contact is unknown, and what a pack with a golden set lacks."""
+    known = set(crm.list_contact_ids())
+    problems = [
+        f"golden case {case.id}: unknown contact {case.contact_id!r}"
+        for case in cases
+        if case.contact_id not in known
+    ]
+    if cases and not has_thresholds:
+        problems.append("golden.jsonl has cases but thresholds.yaml is missing")
+    if cases and not has_rubric:
+        problems.append("golden.jsonl has cases but rubric.md is missing")
+    if cases and not has_calibration:
+        problems.append("golden.jsonl has cases but judge_calibration.jsonl is missing")
+    return problems
 
 
 def demo_problems(cases: Sequence[DemoCase], crm: CrmPort) -> list[str]:
