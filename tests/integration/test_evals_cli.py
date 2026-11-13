@@ -36,7 +36,8 @@ CALIBRATION = [
 @pytest.fixture(autouse=True)
 def _replay_env(monkeypatch: pytest.MonkeyPatch) -> None:
     for name in ("GROUNDWORK_MODEL", "GROUNDWORK_EMBEDDING", "GROUNDWORK_RECORD"):
-        monkeypatch.delenv(name, raising=False)
+        monkeypatch.setenv(name, "x")  # registers the variable, so the CLI's own writes are undone
+        monkeypatch.delenv(name)
 
 
 @pytest.fixture
