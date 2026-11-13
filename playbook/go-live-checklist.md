@@ -2,7 +2,8 @@
 
 Copy of this file is `client_packs/<client>/go_live.md`. Each box is ticked by a person who has
 checked the point, not by the assistant. `validate-packs --stage day5` refuses a box left
-unticked.
+unticked, and a box that is missing or reworded: keep each line exactly as it is here, and put
+notes elsewhere. A box you add is held to the same rule.
 
 ## Understood
 - [ ] The sponsor signed off the discovery (`discovery.yaml`, `status: signed_off`).

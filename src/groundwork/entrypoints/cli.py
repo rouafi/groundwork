@@ -77,7 +77,9 @@ def validate_packs(
     packs_dir: Path = PACKS_DIR,
     domains_dir: Path = DOMAINS_DIR,
     traces_dir: Path = TRACES_DIR,
-    playbook_dir: Path = PLAYBOOK_DIR,
+    playbook_dir: Annotated[
+        Path, typer.Option(help="Playbook templates; day 5 compares go_live.md with them.")
+    ] = PLAYBOOK_DIR,
     pack: Annotated[str | None, typer.Option(help="Validate only this pack.")] = None,
     stage: Annotated[
         Stage | None,

@@ -26,6 +26,7 @@ No script and no assistant does these for you. Days 1, 3 and 5 refuse to pass un
 
 ## Notes
 - `extract-rules`, `index` and `evals --model claude --record` call paid APIs. Run them knowingly; the stage checks themselves never do (day 5 replays).
+- Day 5 compares `go_live.md` with `playbook/go-live-checklist.md` line by line: keep each box's wording as the template has it (notes go elsewhere). Run the stages from the repository checkout, or pass `--playbook-dir` (the Docker image does not carry `playbook/`).
 - Day 5 needs recorded runs for the golden set in `traces/<client>/`. Without them it says what is missing.
 - The shipped packs `acme` and `beta` have no `discovery.yaml` or `go_live.md` (nobody signs for a synthetic client), so the stages fail on them by design. The unstaged `validate-packs` is what CI runs.
 - Never create a real client pack in this repository: the tests scaffold one in a temporary folder.

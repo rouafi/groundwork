@@ -58,7 +58,7 @@ Do not create a real third client pack in the repo; the scaffolder is tested in 
 
 ## Implementation notes
 - Commits: the stage checks came in two (days 1 to 3, then days 4 and 5, which needed PRD-006's loaders), so there are seven commits instead of six.
-- `validate-packs` keeps its unstaged behavior (what CI runs); `--stage` and `--pack` are new, and `--traces-dir` tells day 5 where the recordings are. Stages are cumulative and each problem is prefixed with its day.
+- `validate-packs` keeps its unstaged behavior (what CI runs); `--stage` and `--pack` are new, `--traces-dir` tells day 5 where the recordings are, and `--playbook-dir` where the checklist template is (day 5 requires every box of it in `go_live.md`, ticked, with its wording unchanged). Stages are cumulative and each problem is prefixed with its day.
 - Day 4 also requires `rubric.md` (the evals need it) and that every golden case names a contact in the fixtures. Day 5 runs `build_eval_deps` and `run_pack` on replay whatever the environment says, and holds the pack to its own thresholds (not `--allow-unmet-thresholds`); it skips the evals, and says so, when days 1 to 4 already fail. Today both synthetic packs would fail day 5 on thresholds, which is correct.
 - `new-pack` builds `.new-<client>` and renames it, never overwrites, and checks the name and the domain. The tests scaffold a pack in a temporary folder; no third client pack is in the repo.
 - Deviation: `acme` and `beta` have no `discovery.yaml` or `go_live.md`, so they fail the stages. Nobody can sign off for a synthetic client, so none was invented (ADR 0011).

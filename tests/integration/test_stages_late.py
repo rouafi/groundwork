@@ -229,3 +229,23 @@ def test_day5_holds_a_box_a_client_added_to_the_same_rule(ready_pack: Path) -> N
     path.write_text(path.read_text() + "- [ ] The legal team read the emails.\n", encoding="utf-8")
     result = _validate(ready_pack, "day5", "acme")
     assert result.exit_code == 1 and "not ticked: The legal team read the emails." in result.output
+
+
+def test_day5_refuses_an_unticked_copy_of_a_box_that_is_also_ticked(ready_pack: Path) -> None:
+    path = ready_pack / "acme" / "go_live.md"
+    twin = "- [ ] There is a way to switch the assistant off, and the sponsor knows it.\n"
+    path.write_text(path.read_text() + twin, encoding="utf-8")
+    result = _validate(ready_pack, "day5", "acme")
+    assert result.exit_code == 1
+    assert result.output.count("not ticked: There is a way to switch the assistant off") == 1
+
+
+def test_day5_says_how_to_find_the_template_when_it_is_not_where_expected(
+    ready_pack: Path,
+) -> None:
+    domains, traces = str(REPO / "domains"), str(REPO / "traces")
+    args = ["validate-packs", "--packs-dir", str(ready_pack), "--domains-dir", domains,
+            "--traces-dir", traces, "--playbook-dir", str(ready_pack / "nope"),
+            "--pack", "acme", "--stage", "day5"]  # fmt: skip
+    result = runner.invoke(app, args)
+    assert result.exit_code == 1 and "pass --playbook-dir" in result.output

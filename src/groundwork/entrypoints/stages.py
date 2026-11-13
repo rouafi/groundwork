@@ -203,12 +203,14 @@ def _checklist_problems(path: Path, template: Path) -> list[str]:
     if not path.is_file():
         return [f"{GO_LIVE_FILE} not found (groundwork new-pack creates it)"]
     if not template.is_file():
-        return [f"{template}: playbook checklist not found: run from the repository root"]
+        return [
+            f"{template}: playbook checklist not found: "
+            "run from the repository root or pass --playbook-dir"
+        ]
     expected = [text for _, text in _boxes(template)]
     found = _boxes(path)
     if not found:
         return [f"{GO_LIVE_FILE}: no checklist box: copy {template}"]
-    ticked = {text for mark, text in found if mark != " "}
     present = {text for _, text in found}
     problems = [
         f"{GO_LIVE_FILE}: box missing: {text} (copy it back from {template})"
@@ -217,8 +219,8 @@ def _checklist_problems(path: Path, template: Path) -> list[str]:
     ]
     problems += [
         f"{GO_LIVE_FILE}: not ticked: {text} (a person ticks it after checking the point)"
-        for _, text in found
-        if text not in ticked
+        for mark, text in found
+        if mark == " "
     ]
     return problems
 
