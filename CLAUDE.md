@@ -30,10 +30,10 @@ What it actually uses:
 
 ## Commands
 - `make setup`: install deps and git hooks
-- `make check`: lint, types, architecture rules, tests, pack validation
+- `make check`: lint, types, architecture rules, tests, pack validation, evals report on replay
 - `make demo`: replay recorded runs, no API key; `make live` runs them with Claude and Voyage (needs `.env`)
-- `uv run groundwork harmonize | approvals | demo | index | extract-rules | validate-packs | mcp-serve`
-- `make evals`: run golden sets
+- `uv run groundwork harmonize | approvals | demo | index | extract-rules | validate-packs | evals | mcp-serve`
+- `make evals`: replay the golden sets (strict); `uv run groundwork evals --model claude --resume` records only what is missing (paid)
 - `make up` / `make down`: API and MCP server via Docker Compose
 
 ## Read on demand (do not load everything)

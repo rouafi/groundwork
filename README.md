@@ -121,7 +121,7 @@ With the default `replay`, only recorded cases run; `GROUNDWORK_MODEL=claude` (a
 | **1. Automated** | Facts vs CRM, rule violations, tone (LLM judge) on a golden set per client | Every commit (CI) |
 | **2. Human** | External emails go through an approval queue; approval rate is tracked | In production |
 
-Results: see [`evals/report.md`](evals/report.md).
+Results: see [`evals/report.md`](evals/report.md), generated from recorded runs of the real agent and judge, replayed offline (`make evals`, no key). On the synthetic data, the harmonized email beats the raw draft on every measure (acme: false claims 8 to 0, tone 2.35 to 3.75; beta: false claims 4 to 2, tone 2.00 to 3.10), but **neither pack meets its thresholds yet**: the context lacks a sender identity and a contract reference that the client's rules ask for. How the judge is calibrated, and what the numbers do not prove, is in [docs/evals.md](docs/evals.md) and [ADR 0010](docs/adr/0010-evals-judge-calibration-replay.md).
 
 ---
 
