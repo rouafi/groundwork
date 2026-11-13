@@ -13,3 +13,9 @@ def test_the_voyage_rate_is_read_from_the_environment() -> None:
 def test_a_bad_voyage_rate_is_refused(value: str) -> None:
     with pytest.raises(PackError, match="VOYAGE_RPM"):
         _voyage_rpm({"VOYAGE_RPM": value})
+
+
+def test_the_anthropic_clients_retry_server_errors_more_than_the_sdk_default() -> None:
+    from groundwork.entrypoints.wiring import ANTHROPIC_RETRIES
+
+    assert ANTHROPIC_RETRIES > 2  # the SDK default; live recordings hit 503 bursts

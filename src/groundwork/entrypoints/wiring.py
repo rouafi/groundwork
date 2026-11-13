@@ -64,6 +64,7 @@ EMBEDDING_ENV = "GROUNDWORK_EMBEDDING"
 EMBEDDING_TRACES_SUBDIR = "embeddings"
 VOYAGE_KEY_ENV = "VOYAGE_API_KEY"
 VOYAGE_RPM_ENV = "VOYAGE_RPM"  # set to 3 on a Voyage account without a payment method
+ANTHROPIC_RETRIES = 6  # 5xx and overloaded responses are retried with the SDK backoff (up to ~8 s)
 VOYAGE_RETRIES = 4  # rate limits (3 requests a minute without a payment method) are retried
 
 CRM_ADAPTERS: Mapping[str, Callable[[Path], CrmPort]] = MappingProxyType(
@@ -114,7 +115,7 @@ def build_model(
             )
         import anthropic  # imported here so replay runs never load the SDK client
 
-        model: ModelPort = ClaudeModel(anthropic.Anthropic(), specs)
+        model: ModelPort = ClaudeModel(anthropic.Anthropic(max_retries=ANTHROPIC_RETRIES), specs)
         return RecordingModel(model, recordings, specs) if env.get(RECORD_ENV) == "1" else model
     valid = ", ".join(MODEL_ADAPTERS)
     raise PackError(f"{pack_dir / CONFIG_FILE}: unknown model adapter {name!r} (valid: {valid})")
@@ -254,7 +255,7 @@ def build_agent(
         import anthropic  # imported here so replay runs never load the SDK client
 
         return ClaudeAgent(
-            anthropic.AsyncAnthropic(),
+            anthropic.AsyncAnthropic(max_retries=ANTHROPIC_RETRIES),
             lambda: McpToolBox(create_server(context)),
             specs_from_env(env),
             ALLOWED_TOOLS,
