@@ -20,6 +20,7 @@ from groundwork.core.domain.harmonize import (
 from groundwork.core.domain.knowhow import Usage
 from groundwork.core.domain.policy import Limits
 from groundwork.core.domain.trace import TraceEvent, parse_trace, system_digest
+from groundwork.core.ports.agent import AgentPort
 
 
 class ReplayAgent:
@@ -71,3 +72,23 @@ class ReplayAgent:
             raise TraceStaleError(case_id, "system prompt")
         if ContextPack.model_validate(recorded["context_pack"]["context_pack"]) != context:
             raise TraceStaleError(case_id, "context (rules, facts or passages)")
+
+
+class ResumingAgent:
+    """Replay a case that has a valid trace, run only the others live.
+
+    A trace that is missing, unfinished or stale (the prompt, the context or the request
+    changed) is re-run live, so a resumed recording costs only what is not yet recorded.
+    """
+
+    def __init__(self, replay: AgentPort, live: AgentPort) -> None:
+        self._replay = replay
+        self._live = live
+
+    def run(
+        self, *, system: str, context: ContextPack, request: HarmonizeRequest, limits: Limits
+    ) -> AgentResult:
+        try:
+            return self._replay.run(system=system, context=context, request=request, limits=limits)
+        except (TraceMissError, TraceStaleError):
+            return self._live.run(system=system, context=context, request=request, limits=limits)

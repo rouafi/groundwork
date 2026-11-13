@@ -11,7 +11,7 @@ from pathlib import Path
 from types import MappingProxyType
 
 from groundwork.adapters.agent.claude import ClaudeAgent
-from groundwork.adapters.agent.replay import ReplayAgent
+from groundwork.adapters.agent.replay import ReplayAgent, ResumingAgent
 from groundwork.adapters.agent.toolbox import McpToolBox
 from groundwork.adapters.approval.file import FileApproval
 from groundwork.adapters.crm.fixture import FixtureCrm
@@ -55,6 +55,8 @@ FIXTURES_SUBDIR = Path("fixtures") / "hubspot"
 MODEL_TRACES_SUBDIR = "model"
 MODEL_ENV = "GROUNDWORK_MODEL"
 RECORD_ENV = "GROUNDWORK_RECORD"
+RECORD_ON = "1"  # record every call afresh
+RECORD_RESUME = "resume"  # record only what has no valid recording yet
 CREDENTIAL_ENVS = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
 CLAIMS_PROMPT = "extract_claims"
 CONTEXT_PROMPT = "contextualize"
@@ -116,7 +118,9 @@ def build_model(
         import anthropic  # imported here so replay runs never load the SDK client
 
         model: ModelPort = ClaudeModel(anthropic.Anthropic(max_retries=ANTHROPIC_RETRIES), specs)
-        return RecordingModel(model, recordings, specs) if env.get(RECORD_ENV) == "1" else model
+        if env.get(RECORD_ENV) in (RECORD_ON, RECORD_RESUME):
+            return RecordingModel(model, recordings, specs, reuse=_resuming(env))
+        return model
     valid = ", ".join(MODEL_ADAPTERS)
     raise PackError(f"{pack_dir / CONFIG_FILE}: unknown model adapter {name!r} (valid: {valid})")
 
@@ -147,13 +151,17 @@ def build_embedding(
         embedding: EmbeddingPort = VoyageEmbedding(
             Client(max_retries=VOYAGE_RETRIES), VOYAGE_MODEL, _voyage_rpm(env)
         )
-        if env.get(RECORD_ENV) == "1":
-            return RecordingEmbedding(embedding, recordings, VOYAGE_MODEL)
+        if env.get(RECORD_ENV) in (RECORD_ON, RECORD_RESUME):
+            return RecordingEmbedding(embedding, recordings, VOYAGE_MODEL, reuse=_resuming(env))
         return embedding
     valid = ", ".join(EMBEDDING_ADAPTERS)
     raise PackError(
         f"{pack_dir / CONFIG_FILE}: unknown embedding adapter {name!r} (valid: {valid})"
     )
+
+
+def _resuming(env: Mapping[str, str]) -> bool:
+    return env.get(RECORD_ENV) == RECORD_RESUME
 
 
 def _voyage_rpm(env: Mapping[str, str]) -> int | None:
@@ -254,12 +262,15 @@ def build_agent(
             )
         import anthropic  # imported here so replay runs never load the SDK client
 
-        return ClaudeAgent(
+        live = ClaudeAgent(
             anthropic.AsyncAnthropic(max_retries=ANTHROPIC_RETRIES),
             lambda: McpToolBox(create_server(context)),
             specs_from_env(env),
             ALLOWED_TOOLS,
         )
+        if _resuming(env):
+            return ResumingAgent(ReplayAgent(traces_dir / pack_dir.name), live)
+        return live
     valid = ", ".join(MODEL_ADAPTERS)
     raise PackError(f"{pack_dir / CONFIG_FILE}: unknown model adapter {name!r} (valid: {valid})")
 
@@ -303,5 +314,5 @@ def build_flow(
         search=search,
         internal_recipient=config.internal_recipient,
         write_traces=not isinstance(agent, ReplayAgent),
-        replace_traces=env.get(RECORD_ENV) == "1",
+        replace_traces=env.get(RECORD_ENV) in (RECORD_ON, RECORD_RESUME),
     )

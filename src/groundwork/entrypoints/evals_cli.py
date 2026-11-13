@@ -32,6 +32,8 @@ from groundwork.entrypoints.wiring import (
     MODEL_ENV,
     PASSAGES,
     RECORD_ENV,
+    RECORD_ON,
+    RECORD_RESUME,
     build_flow,
     build_server_context,
 )
@@ -96,6 +98,10 @@ def evals_command(
     ] = False,
     model: Annotated[str | None, typer.Option(help="claude runs live; default: replay.")] = None,
     record: Annotated[bool, typer.Option(help="Record model calls and embeddings.")] = False,
+    resume: Annotated[
+        bool,
+        typer.Option(help="Like --record, but only for what has no valid recording yet."),
+    ] = False,
     packs_dir: Path = PACKS_DIR,
     domains_dir: Path = DOMAINS_DIR,
     traces_dir: Path = TRACES_DIR,
@@ -105,7 +111,8 @@ def evals_command(
 
     Replays the recorded runs by default (no key). Exit code 1 if a threshold fails, the
     judge is uncalibrated, or `--check-report` finds the committed report out of date.
-    `--model claude` is live and costs money; with `--record` the runs are recorded.
+    `--model claude` is live and costs money; with `--record` the runs are recorded afresh,
+    with `--resume` only the cases and calls with no valid recording are run live.
     """
     if (write_report or check_report) and pack:
         raise _fail("--write-report and --check-report need every pack: drop --pack")
@@ -113,8 +120,10 @@ def evals_command(
         os.environ[MODEL_ENV] = model
         if model == "claude":
             os.environ.setdefault(EMBEDDING_ENV, "voyage")
-    if record:
-        os.environ[RECORD_ENV] = "1"
+    if record and resume:
+        raise _fail("--record and --resume are exclusive: --resume keeps valid recordings")
+    if record or resume:
+        os.environ[RECORD_ENV] = RECORD_RESUME if resume else RECORD_ON
     names = pack or sorted(p.name for p in packs_dir.iterdir() if (p / GOLDEN_FILE).is_file())
     if not names:
         raise _fail(f"no pack with a golden set under {packs_dir}")
